@@ -10,7 +10,7 @@
 
 **A high-performance dockable desktop productivity sidebar inspired by Apple's 2026 Liquid Glass Design System.**
 
-[✨ Features](#-features) • [🏛️ Architecture](./ARCHITECTURE.md) • [🚀 Quick Start](#-quick-start) • [⌨️ Shortcuts](#-keyboard-shortcuts) • [🎨 Themes](#-12-liquid-glass-themes)
+[✨ Features](#-features) • [🏗️ Architecture (Graphify)](./ARCHITECTURE.md#1-️-system-architecture-graphify) • [🗄️ Database & ERD](./ARCHITECTURE.md#4-️-database-schema--erd) • [🚀 Quick Start](#-quick-start) • [⌨️ Shortcuts](#-keyboard-shortcuts) • [🎨 Themes](#-12-liquid-glass-themes)
 
 </div>
 
@@ -44,6 +44,36 @@
 
 ### 🎵 6. Procedural Web Audio Soundscapes
 - Built-in sound synthesizer generates tactile click feedback, soothing completion chimes, and timer alarms without external audio files.
+
+---
+
+## 🏗️ System Architecture & Database Schema (Preview)
+
+> Full documentation, interactive graphs, and SQL DDL schemas are available in [**ARCHITECTURE.md**](./ARCHITECTURE.md).
+
+```mermaid
+graph TD
+    App[App.tsx - Root Orchestrator] --> EdgeHandle[EdgeHandle - Spring Dock Control]
+    App --> CommandRail[CommandRail - Morphing Navigation]
+    App --> MacTitleBar[MacTitleBar - Unified Title & Search]
+    App --> ViewRouter{Active Section Router}
+    
+    ViewRouter --> TodayView[TodayView - Daily Objectives]
+    ViewRouter --> CalendarView[CalendarView - Monthly Agenda]
+    ViewRouter --> ListsView[ListsView - Project Collections]
+    ViewRouter --> FocusTimerView[FocusTimerView - Pomodoro Dial]
+    ViewRouter --> SettingsView[SettingsView - Preferences & Palettes]
+
+    TodayView --> TaskInput[TaskInput - NLP Quick Capture]
+    TodayView --> TaskItem[TaskItem - Liquid Glass Cards]
+
+    App --> useTasks[useTasks Hook - State Engine]
+    App --> useSettings[useSettings Hook - Preferences Engine]
+    App --> useReminders[useReminders Hook - Timer Daemon]
+
+    useTasks --> StorageService[storage.ts - Debounced LocalStorage]
+    useTasks --> AudioEngine[audio.ts - Web Audio Synthesizer]
+```
 
 ---
 
@@ -108,12 +138,6 @@ The application will launch on `http://localhost:5173`.
 npm run build
 ```
 Optimized static bundles will be compiled to the `dist/` directory.
-
----
-
-## 🏛️ Architecture Documentation
-
-For complete technical documentation on the component hierarchy, state flow, storage engine, and Web Audio synthesis, read [**ARCHITECTURE.md**](./ARCHITECTURE.md).
 
 ---
 
