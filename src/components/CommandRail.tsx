@@ -3,7 +3,10 @@ import { SectionView, DockEdge } from '../types'
 import { LiquidGlassIcon, LiquidIconType } from './LiquidGlassIcon'
 import { sounds } from '../services/audio'
 
-// ─── MobileDock: Pixel-perfect liquid glass bottom nav ───────────────────────
+// ─── MobileDock: Authentic Liquid Glass morphing nav ─────────────────────────
+// Uses the same SVG feGaussianBlur + feColorMatrix gooey primitive that
+// Apple's GlassEffectContainer uses internally in iOS 26 / SwiftUI.
+// The pill physically merges with icon blobs as it travels — not just slides.
 interface MobileDockProps {
   navItems: { id: SectionView; label: string; iconType: LiquidIconType; badge?: number; shortcut: string }[]
   activeView: SectionView
@@ -13,142 +16,167 @@ interface MobileDockProps {
 const MobileDock: React.FC<MobileDockProps> = ({ navItems, activeView, handleNav }) => {
   const navRef = useRef<HTMLDivElement>(null)
   const btnRefs = useRef<(HTMLButtonElement | null)[]>([])
-  const [pillStyle, setPillStyle] = useState<{ left: number; width: number }>({ left: 0, width: 0 })
+  const [pillStyle, setPillStyle] = useState<{ left: number; width: number; height: number }>({
+    left: 0, width: 0, height: 0,
+  })
   const [mounted, setMounted] = useState(false)
-
   const activeIndex = navItems.findIndex(item => item.id === activeView)
 
-  // Measure real button positions → move pill to exactly cover the active tab
+  // Pixel-perfect pill position from actual button rects
   useLayoutEffect(() => {
     const btn = btnRefs.current[activeIndex]
     const nav = navRef.current
     if (!btn || !nav) return
-
     const navRect = nav.getBoundingClientRect()
     const btnRect = btn.getBoundingClientRect()
-
     setPillStyle({
       left: btnRect.left - navRect.left,
       width: btnRect.width,
+      height: btnRect.height,
     })
     if (!mounted) setMounted(true)
   }, [activeIndex, activeView])
 
   return (
-    <div className="fixed bottom-3 inset-x-0 px-4 pb-[max(env(safe-area-inset-bottom),4px)] z-30 pointer-events-none flex justify-center select-none">
-      {/* Outer dock capsule */}
+    <div
+      className="fixed bottom-3 inset-x-0 px-4 pb-[max(env(safe-area-inset-bottom),4px)] z-30 pointer-events-none flex justify-center select-none"
+    >
+      {/* Hidden SVG filter definition — the core of the liquid gooey effect */}
+      <svg style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden' }} aria-hidden>
+        <defs>
+          {/* Gooey filter: blur shapes → threshold alpha → merge like liquid */}
+          <filter id="liquid-goo" x="-20%" y="-20%" width="140%" height="140%" colorInterpolationFilters="sRGB">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur" />
+            {/* The alpha-matrix threshold — the "magic numbers" that make blobs merge */}
+            <feColorMatrix
+              in="blur"
+              mode="matrix"
+              values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -9"
+              result="goo"
+            />
+            {/* Composite original sharp content back on top so icons stay crisp */}
+            <feComposite in="SourceGraphic" in2="goo" operator="atop" />
+          </filter>
+        </defs>
+      </svg>
+
+      {/* Outer frosted glass dock capsule */}
       <div
-        ref={navRef}
-        className="relative w-full max-w-[360px] rounded-[32px] pointer-events-auto shadow-2xl"
+        className="relative w-full max-w-[360px] rounded-[32px] pointer-events-auto"
         style={{
-          background: 'rgba(14, 10, 36, 0.60)',
-          backdropFilter: 'blur(40px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(40px) saturate(180%)',
-          border: '1px solid rgba(255,255,255,0.16)',
-          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.28), 0 20px 60px rgba(0,0,0,0.65)',
-          padding: '6px',
+          background: 'rgba(12, 8, 32, 0.62)',
+          backdropFilter: 'blur(40px) saturate(200%)',
+          WebkitBackdropFilter: 'blur(40px) saturate(200%)',
+          border: '1px solid rgba(255,255,255,0.18)',
+          boxShadow: [
+            'inset 0 1.5px 0 rgba(255,255,255,0.32)',  // top specular edge
+            'inset 0 -1px 0 rgba(0,0,0,0.20)',          // bottom inner depth
+            '0 24px 64px rgba(0,0,0,0.70)',              // outer shadow
+            '0 0 0 0.5px rgba(255,255,255,0.06)',        // hair-line outer ring
+          ].join(', '),
+          padding: '5px',
         }}
       >
-        {/* ── Liquid glass morphing pill ── */}
-        {mounted && (
-          <div
-            aria-hidden
-            className="absolute pointer-events-none"
-            style={{
-              top: '6px',
-              bottom: '6px',
-              left: `${pillStyle.left}px`,
-              width: `${pillStyle.width}px`,
-              // Apple spring: slight overshoot on position change
-              transition: 'left 420ms cubic-bezier(0.34, 1.56, 0.64, 1), width 380ms cubic-bezier(0.34, 1.4, 0.64, 1)',
-              borderRadius: '24px',
-              // Layered liquid glass pill — matches WWDC25 bubble aesthetic
-              background: 'rgba(255,255,255,0.14)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255,255,255,0.30)',
-              boxShadow: [
-                // Top specular highlight (the "glass edge" shine)
-                'inset 0 1.5px 0 rgba(255,255,255,0.55)',
-                // Bottom inner shadow for depth
-                'inset 0 -1px 0 rgba(0,0,0,0.18)',
-                // Soft outer glow
-                '0 4px 20px rgba(255,255,255,0.08)',
-                '0 2px 8px rgba(0,0,0,0.4)',
-              ].join(', '),
-            }}
-          >
-            {/* Inner bright core — mimics the lozenge bubble from WWDC25 */}
+        {/* Gooey layer: pill + icon containers share the SVG filter so they MERGE */}
+        <div
+          ref={navRef}
+          style={{ filter: 'url(#liquid-goo)', position: 'relative' }}
+        >
+          {/* The morphing liquid pill — rendered INSIDE the filtered container */}
+          {mounted && (
             <div
+              aria-hidden
               style={{
                 position: 'absolute',
-                top: '2px',
-                left: '20%',
-                right: '20%',
-                height: '40%',
-                borderRadius: '50%',
-                background: 'radial-gradient(ellipse, rgba(255,255,255,0.22) 0%, transparent 80%)',
-                filter: 'blur(3px)',
+                top: 0,
+                left: `${pillStyle.left}px`,
+                width: `${pillStyle.width}px`,
+                height: `${pillStyle.height}px`,
+                // Apple spring with overshoot: the blob "stretches" toward dest
+                transition: [
+                  'left 480ms cubic-bezier(0.34, 1.56, 0.64, 1)',
+                  'width 400ms cubic-bezier(0.34, 1.4, 0.64, 1)',
+                ].join(', '),
+                borderRadius: '26px',
+                background: 'rgba(255,255,255,0.20)',
+                // Slightly increase during transition — JS could animate this
+                // but CSS alone gives a good enough morph with the gooey filter
               }}
             />
-          </div>
-        )}
+          )}
 
-        {/* Nav buttons row */}
-        <div className="relative flex items-center justify-between z-10">
-          {navItems.map((item, idx) => {
-            const isActive = activeView === item.id
-            return (
-              <button
-                key={item.id}
-                ref={el => { btnRefs.current[idx] = el }}
-                role="tab"
-                aria-selected={isActive}
-                aria-label={item.label}
-                onClick={() => handleNav(item.id)}
-                className="flex-1 flex flex-col items-center justify-center gap-0.5 cursor-pointer relative py-1.5 transition-transform duration-150 active:scale-90"
-                style={{ WebkitTapHighlightColor: 'transparent' }}
-              >
-                {/* Icon wrapper */}
-                <div className="relative flex items-center justify-center">
-                  <div
-                    className="transition-all duration-300"
-                    style={{
-                      transform: isActive ? 'scale(1.08)' : 'scale(1)',
-                    }}
-                  >
-                    <LiquidGlassIcon
-                      type={item.iconType}
-                      size="sm"
-                      isActive={isActive}
-                    />
+          {/* Nav buttons — same layer as pill so gooey filter merges them */}
+          <div className="relative flex items-center justify-between">
+            {navItems.map((item, idx) => {
+              const isActive = activeView === item.id
+              return (
+                <button
+                  key={item.id}
+                  ref={el => { btnRefs.current[idx] = el }}
+                  role="tab"
+                  aria-selected={isActive}
+                  aria-label={item.label}
+                  onClick={() => handleNav(item.id)}
+                  className="flex-1 flex flex-col items-center justify-center gap-0.5 cursor-pointer relative py-2 transition-transform duration-150 active:scale-90 rounded-[26px]"
+                  style={{ WebkitTapHighlightColor: 'transparent' }}
+                >
+                  {/* Icon — scaled up when active for visual "snap into" feel */}
+                  <div className="relative flex items-center justify-center">
+                    <div
+                      style={{
+                        transition: 'transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1)',
+                        transform: isActive ? 'scale(1.12)' : 'scale(1)',
+                      }}
+                    >
+                      <LiquidGlassIcon
+                        type={item.iconType}
+                        size="sm"
+                        isActive={isActive}
+                      />
+                    </div>
+
+                    {/* Badge */}
+                    {item.badge !== undefined && (
+                      <span
+                        aria-label={`${item.badge} open tasks`}
+                        className="absolute -top-1 -right-1 text-[9px] min-w-[15px] h-3.5 px-0.5 rounded-full flex items-center justify-center font-bold font-mono text-white shadow-sm z-20 border border-white/30 bg-gradient-to-r from-sky-500 to-indigo-500"
+                      >
+                        {item.badge > 99 ? '99+' : item.badge}
+                      </span>
+                    )}
                   </div>
 
-                  {/* Badge */}
-                  {item.badge !== undefined && (
-                    <span
-                      aria-label={`${item.badge} open tasks`}
-                      className="absolute -top-1 -right-1 text-[9px] min-w-[15px] h-3.5 px-0.5 rounded-full flex items-center justify-center font-bold font-mono text-white shadow-sm z-20 border border-white/30 bg-gradient-to-r from-sky-500 to-indigo-500"
-                    >
-                      {item.badge > 99 ? '99+' : item.badge}
-                    </span>
-                  )}
-                </div>
-
-                {/* Label */}
-                <span
-                  className="text-[10px] font-medium tracking-tight transition-all duration-200"
-                  style={{
-                    color: isActive ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.42)',
-                    fontWeight: isActive ? 600 : 400,
-                  }}
-                >
-                  {item.label}
-                </span>
-              </button>
-            )
-          })}
+                  {/* Label */}
+                  <span
+                    style={{
+                      fontSize: '10px',
+                      fontWeight: isActive ? 600 : 400,
+                      color: isActive ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.40)',
+                      transition: 'color 250ms ease, font-weight 250ms ease',
+                    }}
+                  >
+                    {item.label}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
         </div>
+
+        {/* Top specular highlight bar — the "glass edge" shine from WWDC25 ref */}
+        <div
+          aria-hidden
+          style={{
+            position: 'absolute',
+            top: '5px',
+            left: '18%',
+            right: '18%',
+            height: '1.5px',
+            borderRadius: '99px',
+            background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent)',
+            pointerEvents: 'none',
+          }}
+        />
       </div>
     </div>
   )
