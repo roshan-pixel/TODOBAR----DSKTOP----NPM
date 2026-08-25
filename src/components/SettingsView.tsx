@@ -170,23 +170,64 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           </h2>
         </div>
 
-        {/* Dock Edge Segmented Picker */}
-        <div className="flex items-center p-1 rounded-2xl liquid-glass-control text-xs">
-          {(['right', 'left', 'top', 'floating'] as DockEdge[]).map((edge) => (
-            <button
-              key={edge}
-              type="button"
-              onClick={() => onUpdateSettings({ dockEdge: edge })}
-              className={`flex-1 py-1.5 rounded-xl capitalize font-extrabold transition-all cursor-pointer text-center ${
-                settings.dockEdge === edge
-                  ? 'bg-accent text-white shadow-lg shadow-accent/40 border border-white/30 scale-[1.02]'
-                  : 'text-text-secondary hover:text-text-primary'
-              }`}
+        {/* Dock Edge Liquid Morphing Segmented Picker */}
+        {(() => {
+          const dockEdges: DockEdge[] = ['right', 'left', 'top', 'floating']
+          const activeEdgeIdx = Math.max(0, dockEdges.indexOf(settings.dockEdge))
+
+          return (
+            <div
+              role="tablist"
+              aria-label="Dock edge placement"
+              className="relative grid grid-cols-4 p-1 rounded-2xl liquid-segmented-bar text-xs select-none"
             >
-              {edge}
-            </button>
-          ))}
-        </div>
+              {/* Dynamic Morphing Liquid Pill with Apple Spring Easing */}
+              <div
+                className="absolute top-1 bottom-1 rounded-xl pointer-events-none transition-all duration-380 ease-[cubic-bezier(0.34,1.45,0.64,1)] liquid-morph-capsule"
+                style={{
+                  left: `calc(${activeEdgeIdx * 25}% + 2px)`,
+                  width: 'calc(25% - 4px)',
+                }}
+              >
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '2px',
+                    left: '15%',
+                    right: '15%',
+                    height: '40%',
+                    borderRadius: '50%',
+                    background: 'radial-gradient(ellipse, rgba(255, 255, 255, 0.35) 0%, transparent 75%)',
+                    filter: 'blur(1.5px)',
+                  }}
+                />
+              </div>
+
+              {dockEdges.map((edge) => {
+                const isSelected = settings.dockEdge === edge
+                return (
+                  <button
+                    key={edge}
+                    type="button"
+                    role="tab"
+                    aria-selected={isSelected}
+                    onClick={() => {
+                      sounds.playClick(settings.playSounds)
+                      onUpdateSettings({ dockEdge: edge })
+                    }}
+                    className={`py-2 z-10 capitalize font-medium transition-all cursor-pointer text-center active:scale-95 text-xs ${
+                      isSelected
+                        ? 'text-white font-bold drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]'
+                        : 'text-white/50 hover:text-white/80'
+                    }`}
+                  >
+                    {edge}
+                  </button>
+                )
+              })}
+            </div>
+          )
+        })()}
 
         {/* Panel Width Slider */}
         <div className="flex flex-col gap-1">

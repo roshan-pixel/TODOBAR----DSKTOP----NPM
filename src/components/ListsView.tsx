@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import {
   Plus,
   Trash2,
@@ -75,8 +75,77 @@ export const ListsView: React.FC<ListsViewProps> = ({
   const selectedList = lists.find(l => l.id === selectedListId)
   const activeListTasks = selectedListId ? tasks.filter(t => t.listId === selectedListId) : []
 
+  const [listFilter, setListFilter] = useState<'all' | 'pinned' | 'active'>('all')
+  const listFilterTabs = [
+    { id: 'all' as const, label: 'All Collections' },
+    { id: 'pinned' as const, label: 'Pinned (Today)' },
+    { id: 'active' as const, label: 'Active Tasks' },
+  ]
+  const activeListFilterIdx = listFilterTabs.findIndex(t => t.id === listFilter)
+
+  const filteredLists = useMemo(() => {
+    if (listFilter === 'pinned') return lists.filter(l => l.isPinnedToToday)
+    if (listFilter === 'active') {
+      return lists.filter(l => tasks.some(t => t.listId === l.id && !t.done))
+    }
+    return lists
+  }, [lists, tasks, listFilter])
+
   return (
     <div className="flex flex-col h-full overflow-y-auto px-4 py-1 gap-3.5 scrollbar-thin pb-28 md:pb-6">
+      {/* Liquid Glass Segmented Filter Bar */}
+      {!selectedListId && (
+        <div
+          role="tablist"
+          aria-label="Filter project collections"
+          className="relative grid grid-cols-3 p-1 rounded-2xl liquid-segmented-bar text-xs w-full select-none shadow-md"
+        >
+          {/* Dynamic Morphing Liquid Pill with Apple Spring Easing */}
+          <div
+            className="absolute top-1 bottom-1 rounded-xl pointer-events-none transition-all duration-380 ease-[cubic-bezier(0.34,1.45,0.64,1)] liquid-morph-capsule"
+            style={{
+              left: `calc(${activeListFilterIdx * 33.333}% + 2px)`,
+              width: 'calc(33.333% - 4px)',
+            }}
+          >
+            <div
+              style={{
+                position: 'absolute',
+                top: '2px',
+                left: '15%',
+                right: '15%',
+                height: '40%',
+                borderRadius: '50%',
+                background: 'radial-gradient(ellipse, rgba(255, 255, 255, 0.35) 0%, transparent 75%)',
+                filter: 'blur(1.5px)',
+              }}
+            />
+          </div>
+
+          {listFilterTabs.map((tab) => {
+            const isActive = listFilter === tab.id
+            return (
+              <button
+                key={tab.id}
+                role="tab"
+                aria-selected={isActive}
+                onClick={() => {
+                  sounds.playClick(playSounds)
+                  setListFilter(tab.id)
+                }}
+                className={`py-2 z-10 font-medium text-center transition-all cursor-pointer truncate active:scale-95 text-xs ${
+                  isActive
+                    ? 'text-white font-bold drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]'
+                    : 'text-white/50 hover:text-white/80'
+                }`}
+              >
+                {tab.label}
+              </button>
+            )
+          })}
+        </div>
+      )}
+
       {/* Header Row */}
       <div className="flex items-center justify-between px-1">
         <div className="flex items-center gap-2">
@@ -89,7 +158,7 @@ export const ListsView: React.FC<ListsViewProps> = ({
             </button>
           ) : (
             <span className="text-xs font-semibold text-white/90">
-              {lists.length} Project Lists
+              {filteredLists.length} Project Collections
             </span>
           )}
         </div>
@@ -254,7 +323,7 @@ export const ListsView: React.FC<ListsViewProps> = ({
       ) : (
         /* List Cards Grid with 3D Liquid Glass Folder Icons */
         <div className="flex flex-col gap-2.5 pb-8">
-          {lists.map((list) => {
+          {filteredLists.map((list: CustomList) => {
             const listTasks = tasks.filter(t => t.listId === list.id)
             const completed = listTasks.filter(t => t.done).length
             const total = listTasks.length

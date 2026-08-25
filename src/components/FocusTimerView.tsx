@@ -108,39 +108,69 @@ export const FocusTimerView: React.FC<FocusTimerViewProps> = ({
         </div>
       </div>
 
-      {/* Preset Mode Segmented Control */}
-      <div className="flex items-center p-1 rounded-2xl bg-white/[0.04] border border-white/10 backdrop-blur-xl text-xs w-full max-w-sm shadow-sm">
-        <button
-          onClick={() => setMode('focus', 25)}
-          className={`flex-1 py-1.5 rounded-xl font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-            mode === 'focus' && durationMinutes === 25
-              ? 'bg-white/20 text-white font-semibold shadow-sm border border-white/25'
-              : 'text-white/50 hover:text-white'
-          }`}
-        >
-          25m Focus
-        </button>
-        <button
-          onClick={() => setMode('focus', 50)}
-          className={`flex-1 py-1.5 rounded-xl font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-            mode === 'focus' && durationMinutes === 50
-              ? 'bg-white/20 text-white font-semibold shadow-sm border border-white/25'
-              : 'text-white/50 hover:text-white'
-          }`}
-        >
-          50m Deep
-        </button>
-        <button
-          onClick={() => setMode('shortBreak', 5)}
-          className={`flex-1 py-1.5 rounded-xl font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-            mode === 'shortBreak'
-              ? 'bg-white/20 text-white font-semibold shadow-sm border border-white/25'
-              : 'text-white/50 hover:text-white'
-          }`}
-        >
-          5m Break
-        </button>
-      </div>
+      {/* Liquid Glass Morphing Mode Segmented Bar */}
+      {(() => {
+        const timerModes = [
+          { id: 'focus25', label: '25m Focus', mode: 'focus' as FocusTimerMode, mins: 25, icon: '🔥' },
+          { id: 'focus50', label: '50m Deep', mode: 'focus' as FocusTimerMode, mins: 50, icon: '⚡' },
+          { id: 'shortBreak', label: '5m Break', mode: 'shortBreak' as FocusTimerMode, mins: 5, icon: '☕' },
+          { id: 'longBreak', label: '15m Reset', mode: 'longBreak' as FocusTimerMode, mins: 15, icon: '🌴' },
+        ]
+        const activeModeIdx = Math.max(
+          0,
+          timerModes.findIndex(m => m.mode === mode && (m.mode !== 'focus' || m.mins === durationMinutes))
+        )
+
+        return (
+          <div
+            role="tablist"
+            aria-label="Focus mode selection"
+            className="relative grid grid-cols-4 p-1 rounded-2xl liquid-segmented-bar text-xs w-full max-w-md select-none shadow-md"
+          >
+            {/* Dynamic Morphing Liquid Pill with Apple Spring Easing */}
+            <div
+              className="absolute top-1 bottom-1 rounded-xl pointer-events-none transition-all duration-380 ease-[cubic-bezier(0.34,1.45,0.64,1)] liquid-morph-capsule"
+              style={{
+                left: `calc(${activeModeIdx * 25}% + 2px)`,
+                width: 'calc(25% - 4px)',
+              }}
+            >
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '2px',
+                  left: '15%',
+                  right: '15%',
+                  height: '40%',
+                  borderRadius: '50%',
+                  background: 'radial-gradient(ellipse, rgba(255, 255, 255, 0.35) 0%, transparent 75%)',
+                  filter: 'blur(1.5px)',
+                }}
+              />
+            </div>
+
+            {timerModes.map((tm, idx) => {
+              const isActive = activeModeIdx === idx
+              return (
+                <button
+                  key={tm.id}
+                  role="tab"
+                  aria-selected={isActive}
+                  onClick={() => setMode(tm.mode, tm.mins)}
+                  className={`py-2 z-10 font-medium flex items-center justify-center gap-1 transition-all cursor-pointer truncate active:scale-95 text-[11.5px] ${
+                    isActive
+                      ? 'text-white font-bold drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]'
+                      : 'text-white/50 hover:text-white/80'
+                  }`}
+                >
+                  <span className="text-xs">{tm.icon}</span>
+                  <span className="truncate">{tm.label}</span>
+                </button>
+              )
+            })}
+          </div>
+        )
+      })()}
 
       {/* Liquid Glass Apple Watch Circular Timer Gauge */}
       <div className="relative w-56 h-56 flex items-center justify-center my-2">

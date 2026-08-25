@@ -271,13 +271,26 @@ export const CommandRail: React.FC<CommandRailProps> = ({
 
         {/* Navigation Items (Liquid Glass Capsule Rail) */}
         <div className="relative flex flex-col gap-2 w-full items-center" role="tablist">
-          {/* Sliding Liquid Glass Capsule Highlight */}
+          {/* Sliding Liquid Glass Capsule Highlight with Apple Spring Easing */}
           <div
-            className="absolute left-1/2 -translate-x-1/2 w-11 h-11 rounded-[16px] pointer-events-none transition-all duration-400 ease-[cubic-bezier(0.32,0.72,0,1)] liquid-morph-capsule"
+            className="absolute left-1/2 -translate-x-1/2 w-11 h-11 rounded-[16px] pointer-events-none transition-all duration-380 ease-[cubic-bezier(0.34,1.45,0.64,1)] liquid-morph-capsule"
             style={{
               top: `${activeIndex * 52}px`,
             }}
-          />
+          >
+            <div
+              style={{
+                position: 'absolute',
+                top: '2px',
+                left: '15%',
+                right: '15%',
+                height: '40%',
+                borderRadius: '50%',
+                background: 'radial-gradient(ellipse, rgba(255, 255, 255, 0.4) 0%, transparent 75%)',
+                filter: 'blur(1.5px)',
+              }}
+            />
+          </div>
 
           {navItems.map((item) => {
             const isActive = activeView === item.id

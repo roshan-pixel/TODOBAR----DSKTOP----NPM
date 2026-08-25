@@ -108,8 +108,67 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
 
   const todayStr = new Date().toISOString().split('T')[0]
 
+  const [calendarTab, setCalendarTab] = useState<'month' | 'day' | 'all'>('month')
+  const calTabs = [
+    { id: 'month' as const, label: 'Month View' },
+    { id: 'day' as const, label: 'Day Agenda' },
+    { id: 'all' as const, label: 'Upcoming' },
+  ]
+  const activeCalTabIdx = calTabs.findIndex(t => t.id === calendarTab)
+
   return (
     <div className="flex flex-col h-full overflow-y-auto px-4 py-1 gap-3.5 scrollbar-thin pb-28 md:pb-6">
+      {/* Liquid Glass Segmented Mode Switcher */}
+      <div
+        role="tablist"
+        aria-label="Calendar view modes"
+        className="relative grid grid-cols-3 p-1 rounded-2xl liquid-segmented-bar text-xs w-full select-none shadow-md"
+      >
+        {/* Dynamic Morphing Liquid Pill with Apple Spring Easing */}
+        <div
+          className="absolute top-1 bottom-1 rounded-xl pointer-events-none transition-all duration-380 ease-[cubic-bezier(0.34,1.45,0.64,1)] liquid-morph-capsule"
+          style={{
+            left: `calc(${activeCalTabIdx * 33.333}% + 2px)`,
+            width: 'calc(33.333% - 4px)',
+          }}
+        >
+          <div
+            style={{
+              position: 'absolute',
+              top: '2px',
+              left: '15%',
+              right: '15%',
+              height: '40%',
+              borderRadius: '50%',
+              background: 'radial-gradient(ellipse, rgba(255, 255, 255, 0.35) 0%, transparent 75%)',
+              filter: 'blur(1.5px)',
+            }}
+          />
+        </div>
+
+        {calTabs.map((tab) => {
+          const isActive = calendarTab === tab.id
+          return (
+            <button
+              key={tab.id}
+              role="tab"
+              aria-selected={isActive}
+              onClick={() => {
+                sounds.playClick(playSounds)
+                setCalendarTab(tab.id)
+              }}
+              className={`py-2 z-10 font-medium text-center transition-all cursor-pointer truncate active:scale-95 text-xs ${
+                isActive
+                  ? 'text-white font-bold drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]'
+                  : 'text-white/50 hover:text-white/80'
+              }`}
+            >
+              {tab.label}
+            </button>
+          )
+        })}
+      </div>
+
       {/* Month Header & Quick Actions */}
       <div className="flex items-center justify-between px-1">
         <span className="text-xs font-semibold text-white/90 tracking-wide">
@@ -125,6 +184,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
       </div>
 
       {/* Liquid Glass Month Calendar Grid Card */}
+      {(calendarTab === 'month' || calendarTab === 'day') && (
       <div className="flex flex-col p-3.5 rounded-2xl liquid-glass-card shadow-lg gap-2.5">
         <div className="flex items-center justify-between">
           <span className="text-sm font-extrabold text-text-primary drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]">
@@ -213,8 +273,10 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
           })}
         </div>
       </div>
+      )}
 
       {/* Selected Day Agenda */}
+      {(calendarTab === 'month' || calendarTab === 'day') && (
       <div className="flex flex-col gap-2.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-xs font-extrabold text-text-primary drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]">
@@ -280,6 +342,48 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
           )}
         </div>
       </div>
+      )}
+
+      {/* Upcoming All Scheduled Tasks View */}
+      {calendarTab === 'all' && (
+        <div className="flex flex-col gap-2.5 pb-8">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-extrabold text-text-primary">All Scheduled Deadlines</span>
+            <span className="text-xs text-text-muted font-mono font-bold">
+              {tasks.filter(t => t.dueDate).length} scheduled
+            </span>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            {tasks
+              .filter(t => t.dueDate)
+              .sort((a, b) => (a.dueDate || '').localeCompare(b.dueDate || ''))
+              .map(task => (
+                <TaskItem
+                  key={task.id}
+                  task={task}
+                  lists={lists}
+                  density={density}
+                  onToggle={onToggleTask}
+                  onUpdate={onUpdateTask}
+                  onDelete={onDeleteTask}
+                  onAddSubtask={onAddSubtask}
+                  onToggleSubtask={onToggleSubtask}
+                  onDeleteSubtask={onDeleteSubtask}
+                  onStartFocus={onStartFocus}
+                  playSounds={playSounds}
+                />
+              ))}
+
+            {tasks.filter(t => t.dueDate).length === 0 && (
+              <div className="text-center text-xs font-semibold text-text-muted py-8 liquid-glass-card rounded-3xl">
+                No upcoming scheduled tasks.
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
+
