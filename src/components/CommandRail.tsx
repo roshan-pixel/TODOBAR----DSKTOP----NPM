@@ -1,7 +1,159 @@
-import React from 'react'
+import React, { useRef, useLayoutEffect, useState } from 'react'
 import { SectionView, DockEdge } from '../types'
 import { LiquidGlassIcon, LiquidIconType } from './LiquidGlassIcon'
 import { sounds } from '../services/audio'
+
+// ─── MobileDock: Pixel-perfect liquid glass bottom nav ───────────────────────
+interface MobileDockProps {
+  navItems: { id: SectionView; label: string; iconType: LiquidIconType; badge?: number; shortcut: string }[]
+  activeView: SectionView
+  handleNav: (view: SectionView) => void
+}
+
+const MobileDock: React.FC<MobileDockProps> = ({ navItems, activeView, handleNav }) => {
+  const navRef = useRef<HTMLDivElement>(null)
+  const btnRefs = useRef<(HTMLButtonElement | null)[]>([])
+  const [pillStyle, setPillStyle] = useState<{ left: number; width: number }>({ left: 0, width: 0 })
+  const [mounted, setMounted] = useState(false)
+
+  const activeIndex = navItems.findIndex(item => item.id === activeView)
+
+  // Measure real button positions → move pill to exactly cover the active tab
+  useLayoutEffect(() => {
+    const btn = btnRefs.current[activeIndex]
+    const nav = navRef.current
+    if (!btn || !nav) return
+
+    const navRect = nav.getBoundingClientRect()
+    const btnRect = btn.getBoundingClientRect()
+
+    setPillStyle({
+      left: btnRect.left - navRect.left,
+      width: btnRect.width,
+    })
+    if (!mounted) setMounted(true)
+  }, [activeIndex, activeView])
+
+  return (
+    <div className="fixed bottom-3 inset-x-0 px-4 pb-[max(env(safe-area-inset-bottom),4px)] z-30 pointer-events-none flex justify-center select-none">
+      {/* Outer dock capsule */}
+      <div
+        ref={navRef}
+        className="relative w-full max-w-[360px] rounded-[32px] pointer-events-auto shadow-2xl"
+        style={{
+          background: 'rgba(14, 10, 36, 0.60)',
+          backdropFilter: 'blur(40px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+          border: '1px solid rgba(255,255,255,0.16)',
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.28), 0 20px 60px rgba(0,0,0,0.65)',
+          padding: '6px',
+        }}
+      >
+        {/* ── Liquid glass morphing pill ── */}
+        {mounted && (
+          <div
+            aria-hidden
+            className="absolute pointer-events-none"
+            style={{
+              top: '6px',
+              bottom: '6px',
+              left: `${pillStyle.left}px`,
+              width: `${pillStyle.width}px`,
+              // Apple spring: slight overshoot on position change
+              transition: 'left 420ms cubic-bezier(0.34, 1.56, 0.64, 1), width 380ms cubic-bezier(0.34, 1.4, 0.64, 1)',
+              borderRadius: '24px',
+              // Layered liquid glass pill — matches WWDC25 bubble aesthetic
+              background: 'rgba(255,255,255,0.14)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255,255,255,0.30)',
+              boxShadow: [
+                // Top specular highlight (the "glass edge" shine)
+                'inset 0 1.5px 0 rgba(255,255,255,0.55)',
+                // Bottom inner shadow for depth
+                'inset 0 -1px 0 rgba(0,0,0,0.18)',
+                // Soft outer glow
+                '0 4px 20px rgba(255,255,255,0.08)',
+                '0 2px 8px rgba(0,0,0,0.4)',
+              ].join(', '),
+            }}
+          >
+            {/* Inner bright core — mimics the lozenge bubble from WWDC25 */}
+            <div
+              style={{
+                position: 'absolute',
+                top: '2px',
+                left: '20%',
+                right: '20%',
+                height: '40%',
+                borderRadius: '50%',
+                background: 'radial-gradient(ellipse, rgba(255,255,255,0.22) 0%, transparent 80%)',
+                filter: 'blur(3px)',
+              }}
+            />
+          </div>
+        )}
+
+        {/* Nav buttons row */}
+        <div className="relative flex items-center justify-between z-10">
+          {navItems.map((item, idx) => {
+            const isActive = activeView === item.id
+            return (
+              <button
+                key={item.id}
+                ref={el => { btnRefs.current[idx] = el }}
+                role="tab"
+                aria-selected={isActive}
+                aria-label={item.label}
+                onClick={() => handleNav(item.id)}
+                className="flex-1 flex flex-col items-center justify-center gap-0.5 cursor-pointer relative py-1.5 transition-transform duration-150 active:scale-90"
+                style={{ WebkitTapHighlightColor: 'transparent' }}
+              >
+                {/* Icon wrapper */}
+                <div className="relative flex items-center justify-center">
+                  <div
+                    className="transition-all duration-300"
+                    style={{
+                      transform: isActive ? 'scale(1.08)' : 'scale(1)',
+                    }}
+                  >
+                    <LiquidGlassIcon
+                      type={item.iconType}
+                      size="sm"
+                      isActive={isActive}
+                    />
+                  </div>
+
+                  {/* Badge */}
+                  {item.badge !== undefined && (
+                    <span
+                      aria-label={`${item.badge} open tasks`}
+                      className="absolute -top-1 -right-1 text-[9px] min-w-[15px] h-3.5 px-0.5 rounded-full flex items-center justify-center font-bold font-mono text-white shadow-sm z-20 border border-white/30 bg-gradient-to-r from-sky-500 to-indigo-500"
+                    >
+                      {item.badge > 99 ? '99+' : item.badge}
+                    </span>
+                  )}
+                </div>
+
+                {/* Label */}
+                <span
+                  className="text-[10px] font-medium tracking-tight transition-all duration-200"
+                  style={{
+                    color: isActive ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.42)',
+                    fontWeight: isActive ? 600 : 400,
+                  }}
+                >
+                  {item.label}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  )
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 interface CommandRailProps {
   activeView: SectionView
@@ -47,59 +199,11 @@ export const CommandRail: React.FC<CommandRailProps> = ({
   // Mobile Bottom Navigation Bar Layout (Floating iOS 26 Liquid Glass Dock)
   if (isMobile) {
     return (
-      <div className="fixed bottom-3 inset-x-0 px-5 pb-[max(env(safe-area-inset-bottom),6px)] z-30 pointer-events-none flex justify-center select-none">
-        <nav
-          aria-label="Floating Liquid Glass Bottom Dock"
-          className="relative w-full max-w-[350px] p-1.5 rounded-[28px] liquid-glass-dock pointer-events-auto flex items-center justify-between shadow-2xl"
-        >
-          {/* Fluid Liquid Glass Morphing Selection Pill */}
-          <div
-            className="absolute top-1.5 bottom-1.5 rounded-[22px] pointer-events-none transition-all duration-380 ease-[cubic-bezier(0.32,0.72,0,1)] liquid-morph-capsule"
-            style={{
-              left: `${activeIndex * 20}%`,
-              width: '20%',
-            }}
-          />
-
-          {navItems.map((item) => {
-            const isActive = activeView === item.id
-            return (
-              <button
-                key={item.id}
-                role="tab"
-                aria-selected={isActive}
-                aria-label={item.label}
-                onClick={() => handleNav(item.id)}
-                className="flex-1 py-1 flex flex-col items-center justify-center relative group cursor-pointer z-10 transition-transform active:scale-90"
-              >
-                <div className="relative flex items-center justify-center">
-                  <LiquidGlassIcon
-                    type={item.iconType}
-                    size="sm"
-                    isActive={isActive}
-                  />
-
-                  {/* iOS Style Floating Badge Orb */}
-                  {item.badge !== undefined && (
-                    <span
-                      aria-label={`${item.badge} open tasks`}
-                      className="absolute -top-1 -right-1 text-[9px] min-w-[15px] h-3.5 px-0.5 rounded-full flex items-center justify-center font-bold font-mono text-white shadow-sm z-20 border border-white/30 bg-gradient-to-r from-sky-500 to-indigo-500"
-                    >
-                      {item.badge > 99 ? '99+' : item.badge}
-                    </span>
-                  )}
-                </div>
-
-                <span className={`text-[10px] font-medium tracking-tight transition-all duration-200 ${
-                  isActive ? 'text-white/95 font-semibold' : 'text-white/45'
-                }`}>
-                  {item.label}
-                </span>
-              </button>
-            )
-          })}
-        </nav>
-      </div>
+      <MobileDock
+        navItems={navItems}
+        activeView={activeView}
+        handleNav={handleNav}
+      />
     )
   }
 
