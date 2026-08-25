@@ -59,13 +59,20 @@ export const TodayView: React.FC<TodayViewProps> = ({
     }).format(new Date())
   }, [])
 
-  // Filter tasks belonging to Today or Pinned lists
+  const todayDateStr = useMemo(() => new Date().toISOString().split('T')[0], [])
+
+  // Filter tasks belonging to Today:
+  // 1. listId is 'today'
+  // 2. dueDate is today or earlier (scheduled / overdue)
+  // 3. task's list is pinned to today
   const todayTasks = useMemo(() => {
     return tasks.filter(t => {
+      if (t.listId === 'today') return true
+      if (t.dueDate && t.dueDate <= todayDateStr) return true
       const list = lists.find(l => l.id === t.listId)
-      return t.listId === 'today' || (list && list.isPinnedToToday)
+      return list && list.isPinnedToToday
     })
-  }, [tasks, lists])
+  }, [tasks, lists, todayDateStr])
 
   // Sort logic
   const sortFn = (a: Task, b: Task) => {
@@ -137,8 +144,8 @@ export const TodayView: React.FC<TodayViewProps> = ({
             <h2 className="text-sm font-semibold text-white tracking-tight">
               Today's Objectives
             </h2>
-            <span className="text-[12px] text-white/60 font-medium">
-              {completedCount}/{totalCount}
+            <span className="text-[12px] text-white/50 font-medium">
+              {completionPercentage}% complete
             </span>
           </div>
 

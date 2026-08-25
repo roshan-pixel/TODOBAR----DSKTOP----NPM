@@ -50,20 +50,22 @@ export const MacTitleBar: React.FC<MacTitleBarProps> = ({
   // iOS 26 Liquid Glass Header with Generous Top Safe Area and Airy Hierarchy
   return (
     <header className="flex flex-col px-5 pt-[max(env(safe-area-inset-top),48px)] pb-3 bg-transparent select-none shrink-0 z-20">
-      <div className="flex items-center justify-between w-full">
+      <div className="relative flex items-center justify-between w-full min-h-[44px]">
         {/* Left: Floating Circular Glass Menu Orb */}
-        <button
-          type="button"
-          onClick={handleMenuPress}
-          title={isMobile ? 'Settings' : 'Toggle Navigation Menu'}
-          aria-label={isMobile ? 'Open Settings' : 'Navigation Menu'}
-          className="w-10 h-10 rounded-full liquid-glass-orb flex items-center justify-center cursor-pointer text-white/80 active:scale-95"
-        >
-          <LiquidGlassIcon type="menu" size="sm" />
-        </button>
+        <div className="flex items-center z-10">
+          <button
+            type="button"
+            onClick={handleMenuPress}
+            title={isMobile ? 'Settings' : 'Toggle Navigation Menu'}
+            aria-label={isMobile ? 'Open Settings' : 'Navigation Menu'}
+            className="w-10 h-10 rounded-full liquid-glass-orb flex items-center justify-center cursor-pointer text-white/80 active:scale-95"
+          >
+            <LiquidGlassIcon type="menu" size="sm" />
+          </button>
+        </div>
 
-        {/* Center: Title & Subtitle */}
-        <div className="flex flex-col items-center justify-center text-center">
+        {/* Center: Title & Subtitle (Absolute Centering Across Whole Screen) */}
+        <div className="absolute inset-x-0 flex flex-col items-center justify-center text-center pointer-events-none z-0">
           <h1 className="text-2xl font-bold tracking-tight text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
             {activeView === 'today' ? 'Today' : title}
           </h1>
@@ -73,7 +75,7 @@ export const MacTitleBar: React.FC<MacTitleBarProps> = ({
         </div>
 
         {/* Right: Floating Circular Glass Search & Add Orbs */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 z-10">
           <button
             type="button"
             onClick={() => {
@@ -105,3 +107,4 @@ export const MacTitleBar: React.FC<MacTitleBarProps> = ({
     </header>
   )
 }
+
