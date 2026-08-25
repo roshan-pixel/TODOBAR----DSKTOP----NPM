@@ -387,6 +387,7 @@ export function App() {
               handleSelectView('today')
               setTimeout(() => quickInputRef.current?.focus(), 50)
             }}
+            onOpenSettings={() => handleSelectView('settings')}
             playSounds={settings.playSounds}
             totalTasks={totalTasksCount}
             completedTasks={completedTasksCount}

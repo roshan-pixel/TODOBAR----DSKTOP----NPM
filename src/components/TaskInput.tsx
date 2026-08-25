@@ -104,18 +104,24 @@ export const TaskInput: React.FC<TaskInputProps> = ({
     <div className="flex flex-col gap-2 p-1.5 rounded-2xl liquid-glass-card focus-within:border-white/25 focus-within:bg-white/[0.07] transition-all overflow-hidden">
       {/* Primary Input Row */}
       <div className="flex items-center gap-2.5 px-2 py-1">
-        {/* Sleek Translucent Glass Orb with Lightning */}
+        {/* Priority Toggle Orb — changes icon & color based on current priority */}
         <button
           type="button"
           onClick={() => {
             sounds.playClick(playSounds)
             setPriority(prev => (prev === 'normal' ? 'focus' : prev === 'focus' ? 'later' : 'normal'))
           }}
-          title={`Priority: ${priorityMeta[priority].label} (Click to toggle)`}
-          aria-label={`Current priority: ${priorityMeta[priority].label}`}
-          className="w-7 h-7 rounded-full liquid-glass-orb flex items-center justify-center text-cyan-400 shrink-0 active:scale-90 transition-transform cursor-pointer"
+          title={`Priority: ${priorityMeta[priority].label} (tap to change)`}
+          aria-label={`Current priority: ${priorityMeta[priority].label}. Tap to change.`}
+          className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 active:scale-90 transition-all cursor-pointer border ${
+            priority === 'focus'
+              ? 'bg-amber-500/25 border-amber-400/40 shadow-[0_0_10px_rgba(251,191,36,0.3)]'
+              : priority === 'later'
+              ? 'bg-white/8 border-white/15 text-slate-400'
+              : 'bg-sky-500/20 border-sky-400/35 shadow-[0_0_8px_rgba(56,189,248,0.25)]'
+          }`}
         >
-          <Zap className="w-3.5 h-3.5 fill-cyan-400/80 stroke-none" />
+          {priorityMeta[priority].icon}
         </button>
 
         <input
@@ -128,6 +134,13 @@ export const TaskInput: React.FC<TaskInputProps> = ({
           placeholder="Capture task... (e.g. !focus #work Submit report)"
           className="flex-1 bg-transparent text-xs font-normal text-white/90 placeholder:text-white/35 focus:outline-none min-w-0"
         />
+
+        {/* Priority label badge (visible when input is focused) */}
+        {isExpanded && (
+          <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full shrink-0 border ${priorityMeta[priority].bg}`}>
+            {priorityMeta[priority].label}
+          </span>
+        )}
 
         <button
           type="button"

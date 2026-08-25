@@ -119,7 +119,7 @@ export const TodayView: React.FC<TodayViewProps> = ({
   const activeTabIdx = filterTabs.findIndex(t => t.id === filterMode)
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto px-4 py-1 gap-3 scrollbar-thin pb-28 md:pb-6">
+    <div className="flex flex-col h-full overflow-y-auto px-3 py-1 gap-3 scrollbar-thin pb-28 md:pb-6">
       {/* 1. Today's Objectives Floating Glass Card */}
       <section
         aria-label="Today's Objectives Progress Card"
@@ -179,14 +179,14 @@ export const TodayView: React.FC<TodayViewProps> = ({
       <div
         role="tablist"
         aria-label="Filter tasks by category"
-        className="relative grid grid-cols-4 p-1 rounded-2xl bg-white/[0.04] border border-white/10 backdrop-blur-xl overflow-hidden select-none"
+        className="relative grid grid-cols-4 p-1 rounded-2xl bg-white/[0.06] border border-white/12 backdrop-blur-xl overflow-hidden select-none"
       >
         {/* Physical Liquid Morphing Highlight Pill with Spring Physics */}
         <div
           className="absolute top-1 bottom-1 rounded-xl pointer-events-none transition-all duration-380 ease-[cubic-bezier(0.32,0.72,0,1)] liquid-morph-capsule"
           style={{
-            left: `${activeTabIdx * 25}%`,
-            width: '25%',
+            left: `calc(${activeTabIdx * 25}% + 2px)`,
+            width: 'calc(25% - 4px)',
           }}
         />
 
@@ -201,10 +201,10 @@ export const TodayView: React.FC<TodayViewProps> = ({
                 sounds.playClick(playSounds)
                 setFilterMode(tab.id)
               }}
-              className={`py-1.5 z-10 font-medium text-center text-xs truncate transition-all duration-200 cursor-pointer active:scale-95 ${
+              className={`py-2 z-10 font-medium text-center text-[13px] truncate transition-all duration-200 cursor-pointer active:scale-95 ${
                 isActive
                   ? 'text-white font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]'
-                  : 'text-white/45 hover:text-white/70'
+                  : 'text-white/50 hover:text-white/75'
               }`}
             >
               {tab.label} {tab.count > 0 ? `(${tab.count})` : ''}

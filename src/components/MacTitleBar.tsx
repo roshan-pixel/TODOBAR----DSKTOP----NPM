@@ -11,6 +11,7 @@ interface MacTitleBarProps {
   onToggleSidebar: () => void
   onOpenSearch: () => void
   onOpenAdd?: () => void
+  onOpenSettings?: () => void
   playSounds: boolean
   totalTasks: number
   completedTasks: number
@@ -23,6 +24,7 @@ export const MacTitleBar: React.FC<MacTitleBarProps> = ({
   onToggleSidebar,
   onOpenSearch,
   onOpenAdd,
+  onOpenSettings,
   playSounds,
   isMobile = false,
 }) => {
@@ -33,6 +35,18 @@ export const MacTitleBar: React.FC<MacTitleBarProps> = ({
     day: 'numeric',
   })
 
+  // On mobile: hamburger opens settings (not toggle/collapse)
+  // On desktop: hamburger toggles sidebar as usual
+  const handleMenuPress = () => {
+    sounds.playClick(playSounds)
+    if (isMobile) {
+      // On mobile, the hamburger navigates to settings instead of hiding the entire app
+      if (onOpenSettings) onOpenSettings()
+    } else {
+      onToggleSidebar()
+    }
+  }
+
   // iOS 26 Liquid Glass Header with Generous Top Safe Area and Airy Hierarchy
   return (
     <header className="flex flex-col px-5 pt-[max(env(safe-area-inset-top),48px)] pb-3 bg-transparent select-none shrink-0 z-20">
@@ -40,12 +54,9 @@ export const MacTitleBar: React.FC<MacTitleBarProps> = ({
         {/* Left: Floating Circular Glass Menu Orb */}
         <button
           type="button"
-          onClick={() => {
-            sounds.playClick(playSounds)
-            onToggleSidebar()
-          }}
-          title="Toggle Navigation Menu"
-          aria-label="Navigation Menu"
+          onClick={handleMenuPress}
+          title={isMobile ? 'Settings' : 'Toggle Navigation Menu'}
+          aria-label={isMobile ? 'Open Settings' : 'Navigation Menu'}
           className="w-10 h-10 rounded-full liquid-glass-orb flex items-center justify-center cursor-pointer text-white/80 active:scale-95"
         >
           <LiquidGlassIcon type="menu" size="sm" />
