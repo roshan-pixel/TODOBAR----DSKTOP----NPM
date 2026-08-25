@@ -119,55 +119,47 @@ export const TodayView: React.FC<TodayViewProps> = ({
   const activeTabIdx = filterTabs.findIndex(t => t.id === filterMode)
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto px-4 py-2 gap-4 scrollbar-thin pb-28 md:pb-6">
-      {/* 1. Today's Objectives Floating Glass Card (Matching Reference Image) */}
+    <div className="flex flex-col h-full overflow-y-auto px-4 py-1 gap-3 scrollbar-thin pb-28 md:pb-6">
+      {/* 1. Today's Objectives Floating Glass Card */}
       <section
         aria-label="Today's Objectives Progress Card"
-        className="rounded-[26px] liquid-glass-card p-4 flex items-center justify-between gap-3.5 shadow-xl select-none"
+        className="rounded-2xl liquid-glass-card px-3.5 py-3 flex items-center justify-between gap-3 select-none"
       >
-        {/* Left: Luminous Sun Glass Orb */}
-        <div className="w-11 h-11 rounded-full liquid-glass-orb flex items-center justify-center text-white shrink-0 shadow-inner">
-          <Sun className="w-5 h-5 stroke-[1.8] text-white" />
+        {/* Left: Subtle Sun Glass Orb */}
+        <div className="w-8 h-8 rounded-full liquid-glass-orb flex items-center justify-center text-amber-300/90 shrink-0">
+          <Sun className="w-4 h-4 stroke-[1.8]" />
         </div>
 
-        {/* Center: Title & Glowing Liquid Progress Bar */}
+        {/* Center: Title & Single Clean Progress Bar */}
         <div className="flex flex-col flex-1 min-w-0 gap-1.5">
-          <div className="flex items-center gap-2">
-            <h2 className="text-sm font-semibold text-white tracking-tight">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xs font-semibold text-white/95 tracking-tight">
               Today's Objectives
             </h2>
-            <span className="text-xs text-white/50 font-mono font-medium">
-              {totalCount > 0 ? `${completedCount}/${totalCount}` : '0/0'}
+            <span className="text-[11px] text-white/50 font-mono font-medium">
+              {completedCount}/{totalCount}
             </span>
           </div>
 
-          {/* Luminous Glowing Liquid Progress Bar */}
+          {/* Single Clean Luminous Liquid Progress Bar */}
           <div
             role="progressbar"
             aria-valuenow={completionPercentage}
             aria-valuemin={0}
             aria-valuemax={100}
-            className="w-full bg-white/[0.08] border border-white/10 h-2 rounded-full overflow-hidden backdrop-blur-md relative"
+            className="w-full bg-white/[0.06] border border-white/10 h-1.5 rounded-full overflow-hidden relative"
           >
             <div
-              className="h-full liquid-progress-bar transition-all duration-500 rounded-full"
-              style={{ width: `${Math.max(completionPercentage, 0)}%` }}
+              className="h-full liquid-progress-bar transition-all duration-400 rounded-full"
+              style={{ width: `${Math.max(completionPercentage, totalCount > 0 ? 0 : 0)}%` }}
             />
           </div>
         </div>
 
-        {/* Right: Glass Capsule Badge */}
-        <button
-          type="button"
-          onClick={() => {
-            sounds.playClick(playSounds)
-            setFilterMode(prev => prev === 'focus' ? 'all' : 'focus')
-          }}
-          className="px-3.5 py-1.5 rounded-full liquid-glass-orb flex items-center gap-1.5 text-xs font-semibold text-white/90 hover:text-white cursor-pointer shrink-0 shadow-sm"
-        >
-          <span>{completedCount}/{totalCount}</span>
-          <ChevronRight className="w-3.5 h-3.5 opacity-60 stroke-[2.2]" />
-        </button>
+        {/* Right: Subtle Chevron Indicator */}
+        <div className="w-6 h-6 rounded-full flex items-center justify-center text-white/40 shrink-0">
+          <ChevronRight className="w-3.5 h-3.5 stroke-[2]" />
+        </div>
       </section>
 
       {/* 2. Quick Floating Task Capture Bar */}
@@ -183,11 +175,11 @@ export const TodayView: React.FC<TodayViewProps> = ({
       <div
         role="tablist"
         aria-label="Filter tasks by category"
-        className="relative grid grid-cols-4 p-1 rounded-[22px] bg-white/[0.06] border border-white/16 shadow-lg backdrop-blur-2xl overflow-hidden select-none"
+        className="relative grid grid-cols-4 p-1 rounded-2xl bg-white/[0.04] border border-white/10 backdrop-blur-xl overflow-hidden select-none"
       >
         {/* Physical Liquid Morphing Highlight Pill with Spring Physics */}
         <div
-          className="absolute top-1 bottom-1 rounded-[18px] pointer-events-none transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] liquid-morph-capsule"
+          className="absolute top-1 bottom-1 rounded-xl pointer-events-none transition-all duration-380 ease-[cubic-bezier(0.32,0.72,0,1)] liquid-morph-capsule"
           style={{
             left: `${activeTabIdx * 25}%`,
             width: '25%',
@@ -205,10 +197,10 @@ export const TodayView: React.FC<TodayViewProps> = ({
                 sounds.playClick(playSounds)
                 setFilterMode(tab.id)
               }}
-              className={`py-2 z-10 font-semibold text-center text-xs truncate transition-all duration-300 cursor-pointer active:scale-95 ${
+              className={`py-1.5 z-10 font-medium text-center text-xs truncate transition-all duration-200 cursor-pointer active:scale-95 ${
                 isActive
-                  ? 'text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] font-bold'
-                  : 'text-white/55 hover:text-white/80'
+                  ? 'text-white font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]'
+                  : 'text-white/45 hover:text-white/70'
               }`}
             >
               {tab.label} {tab.count > 0 ? `(${tab.count})` : ''}
@@ -218,24 +210,24 @@ export const TodayView: React.FC<TodayViewProps> = ({
       </div>
 
       {/* 4. Priority Task Groups (Focus, Standard, Later) */}
-      <div className="flex flex-col gap-4 pb-6">
+      <div className="flex flex-col gap-3 pb-4">
         {/* Tier 1: Focus Priority Tasks */}
         {(filterMode === 'all' || filterMode === 'focus') && focusTasks.length > 0 && (
-          <section aria-label="Focus priority tasks" className="flex flex-col gap-2.5">
+          <section aria-label="Focus priority tasks" className="flex flex-col gap-2">
             <button
               type="button"
               onClick={() => toggleSectionCollapse('focus')}
-              className="flex items-center justify-between text-xs font-bold text-amber-400 uppercase tracking-wider py-1 px-1 cursor-pointer select-none"
+              className="flex items-center justify-between text-[11px] font-semibold text-white/60 uppercase tracking-wider py-0.5 px-1 cursor-pointer select-none"
             >
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.8)]" />
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.6)]" />
                 <span>FOCUS PRIORITY ({focusTasks.filter(t => !t.done).length})</span>
               </div>
-              {collapsedSections['focus'] ? <ChevronRight className="w-3.5 h-3.5 text-white/50" /> : <ChevronDown className="w-3.5 h-3.5 text-white/50" />}
+              {collapsedSections['focus'] ? <ChevronRight className="w-3 h-3 text-white/40" /> : <ChevronDown className="w-3 h-3 text-white/40" />}
             </button>
 
             {!collapsedSections['focus'] && (
-              <div className="flex flex-col gap-2.5">
+              <div className="flex flex-col gap-2">
                 {focusTasks.map(task => (
                   <TaskItem
                     key={task.id}
@@ -259,21 +251,21 @@ export const TodayView: React.FC<TodayViewProps> = ({
 
         {/* Tier 2: Standard Tasks */}
         {(filterMode === 'all' || filterMode === 'normal') && normalTasks.length > 0 && (
-          <section aria-label="Standard tasks" className="flex flex-col gap-2.5">
+          <section aria-label="Standard tasks" className="flex flex-col gap-2">
             <button
               type="button"
               onClick={() => toggleSectionCollapse('normal')}
-              className="flex items-center justify-between text-xs font-bold text-cyan-400 uppercase tracking-wider py-1 px-1 cursor-pointer select-none"
+              className="flex items-center justify-between text-[11px] font-semibold text-white/60 uppercase tracking-wider py-0.5 px-1 cursor-pointer select-none"
             >
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_rgba(34,211,238,0.6)]" />
                 <span>STANDARD TASKS ({normalTasks.filter(t => !t.done).length})</span>
               </div>
-              {collapsedSections['normal'] ? <ChevronRight className="w-3.5 h-3.5 text-white/50" /> : <ChevronDown className="w-3.5 h-3.5 text-white/50" />}
+              {collapsedSections['normal'] ? <ChevronRight className="w-3 h-3 text-white/40" /> : <ChevronDown className="w-3 h-3 text-white/40" />}
             </button>
 
             {!collapsedSections['normal'] && (
-              <div className="flex flex-col gap-2.5">
+              <div className="flex flex-col gap-2">
                 {normalTasks.map(task => (
                   <TaskItem
                     key={task.id}
@@ -297,21 +289,21 @@ export const TodayView: React.FC<TodayViewProps> = ({
 
         {/* Tier 3: Later Tasks */}
         {(filterMode === 'all' || filterMode === 'later') && laterTasks.length > 0 && (
-          <section aria-label="Later tasks" className="flex flex-col gap-2.5">
+          <section aria-label="Later tasks" className="flex flex-col gap-2">
             <button
               type="button"
               onClick={() => toggleSectionCollapse('later')}
-              className="flex items-center justify-between text-xs font-bold text-purple-300 uppercase tracking-wider py-1 px-1 cursor-pointer select-none"
+              className="flex items-center justify-between text-[11px] font-semibold text-white/50 uppercase tracking-wider py-0.5 px-1 cursor-pointer select-none"
             >
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-purple-400 shadow-[0_0_8px_rgba(192,132,252,0.8)]" />
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-purple-400 shadow-[0_0_6px_rgba(192,132,252,0.6)]" />
                 <span>LATER ({laterTasks.filter(t => !t.done).length})</span>
               </div>
-              {collapsedSections['later'] ? <ChevronRight className="w-3.5 h-3.5 text-white/50" /> : <ChevronDown className="w-3.5 h-3.5 text-white/50" />}
+              {collapsedSections['later'] ? <ChevronRight className="w-3 h-3 text-white/40" /> : <ChevronDown className="w-3 h-3 text-white/40" />}
             </button>
 
             {!collapsedSections['later'] && (
-              <div className="flex flex-col gap-2.5">
+              <div className="flex flex-col gap-2">
                 {laterTasks.map(task => (
                   <TaskItem
                     key={task.id}

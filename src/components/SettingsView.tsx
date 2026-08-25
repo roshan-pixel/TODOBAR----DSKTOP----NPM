@@ -75,22 +75,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   }
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto px-4 py-3.5 gap-4 scrollbar-thin pb-28 md:pb-12">
-      {/* Header */}
-      <div className="flex items-center justify-between pt-1">
-        <div className="flex items-center gap-3">
-          <LiquidGlassIcon type="settings" size="md" />
-          <div>
-            <h1 className="text-base font-extrabold text-text-primary tracking-tight drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
-              Preferences & Themes
-            </h1>
-            <p className="text-xs text-text-muted font-semibold mt-0.5">macOS 27 Liquid Glass System</p>
-          </div>
-        </div>
-      </div>
-
+    <div className="flex flex-col h-full overflow-y-auto px-4 py-1 gap-3.5 scrollbar-thin pb-28 md:pb-6">
       {/* 1. Liquid Glass Theme Selector */}
-      <div className="flex flex-col gap-2.5 p-4 rounded-3xl liquid-glass-card shadow-xl">
+      <div className="flex flex-col gap-2.5 p-3.5 rounded-2xl liquid-glass-card shadow-lg">
         <div className="flex items-center gap-2">
           <LiquidGlassIcon type="sparkles" size="xs" />
           <h2 className="text-xs font-extrabold text-text-primary drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]">

@@ -63,13 +63,13 @@ export const TaskItem: React.FC<TaskItemProps> = ({
 
   return (
     <div
-      className={`group relative flex flex-col rounded-[22px] liquid-glass-card transition-all overflow-hidden ${
-        task.done ? 'opacity-55' : ''
+      className={`group relative flex flex-col rounded-2xl liquid-glass-card transition-all overflow-hidden ${
+        task.done ? 'opacity-50' : ''
       }`}
     >
-      {/* Main Task Card Row (Matching Reference Layout) */}
-      <div className="flex items-center justify-between gap-3.5 w-full p-4">
-        {/* Left: Circular Glass Ring Checkbox */}
+      {/* Main Task Card Row */}
+      <div className="flex items-center justify-between gap-3 w-full px-3.5 py-2.5">
+        {/* Left: Elegant Small Glass Checkbox Ring */}
         <button
           type="button"
           onClick={() => {
@@ -78,17 +78,17 @@ export const TaskItem: React.FC<TaskItemProps> = ({
           }}
           title={task.done ? 'Mark pending' : 'Mark complete'}
           aria-label={task.done ? `Mark "${task.title}" incomplete` : `Mark "${task.title}" complete`}
-          className={`w-7 h-7 rounded-full shrink-0 flex items-center justify-center cursor-pointer liquid-checkbox-ring ${
+          className={`w-5 h-5 rounded-full shrink-0 flex items-center justify-center cursor-pointer liquid-checkbox-ring ${
             task.done ? 'checked' : ''
           }`}
         >
           {task.done && (
-            <Check className="w-4 h-4 text-white stroke-[2.8] animate-in zoom-in-50 duration-200" />
+            <Check className="w-3 h-3 text-white stroke-[2.8] animate-in zoom-in-50 duration-150" />
           )}
         </button>
 
-        {/* Center: Title, Subtitle, and Metadata Pills */}
-        <div className="flex flex-col min-w-0 flex-1 gap-1">
+        {/* Center: Title, Description, and Metadata */}
+        <div className="flex flex-col min-w-0 flex-1">
           {/* Title */}
           {isEditing ? (
             <input
@@ -101,63 +101,66 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                 if (e.key === 'Enter') handleSaveEdit()
                 if (e.key === 'Escape') setIsEditing(false)
               }}
-              className="w-full text-sm font-semibold bg-white/15 px-2.5 py-1 rounded-xl border border-white/30 text-white focus:outline-none backdrop-blur-xl"
+              className="w-full text-xs font-semibold bg-white/10 px-2 py-0.5 rounded-lg border border-white/25 text-white focus:outline-none"
             />
           ) : (
             <div className="flex items-center gap-1.5 min-w-0">
               <span
                 onDoubleClick={() => setIsEditing(true)}
-                className={`text-sm font-semibold tracking-tight select-text cursor-pointer truncate ${
-                  task.done ? 'line-through text-white/50' : 'text-white'
+                className={`text-[13px] font-medium tracking-tight select-text cursor-pointer truncate ${
+                  task.done ? 'line-through text-white/40 font-normal' : 'text-white/95'
                 }`}
               >
                 {task.title}
               </span>
-              {task.priority === 'focus' && <span className="text-sm">🔥</span>}
-              {task.priority === 'normal' && <span className="text-xs text-sky-400">⚡</span>}
+              {task.priority === 'focus' && <span className="text-xs shrink-0">🔥</span>}
+              {task.priority === 'normal' && <span className="text-[11px] text-sky-400 shrink-0">⚡</span>}
             </div>
           )}
 
-          {/* Subtitle & Metadata Row */}
-          <div className="flex items-center gap-2.5 text-xs text-white/50 flex-wrap">
-            {task.description && (
-              <span className="truncate max-w-[190px] text-white/60 font-normal">
-                {task.description}
-              </span>
-            )}
+          {/* Description line */}
+          {task.description && (
+            <p className="text-[11px] text-white/50 truncate font-normal leading-tight mt-0.5">
+              {task.description}
+            </p>
+          )}
 
-            {/* Subtasks Count Pill */}
-            {subtasks.length > 0 && (
-              <button
-                type="button"
-                onClick={() => setShowSubtasks(prev => !prev)}
-                className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white/80 hover:text-white border border-white/12 font-mono font-medium backdrop-blur-md transition-colors cursor-pointer shrink-0"
-              >
-                <span>{completedSubtasks}/{subtasks.length}</span>
-                {showSubtasks ? <ChevronDown className="w-2.5 h-2.5" /> : <ChevronRight className="w-2.5 h-2.5" />}
-              </button>
-            )}
+          {/* Metadata Row */}
+          {(subtasks.length > 0 || task.estimatedMinutes || task.reminderAt) && (
+            <div className="flex items-center gap-2 mt-1 text-[10px] text-white/45 flex-wrap">
+              {/* Subtasks Count Pill */}
+              {subtasks.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setShowSubtasks(prev => !prev)}
+                  className="flex items-center gap-0.5 px-1.5 py-0.2 rounded-full bg-white/[0.06] text-white/70 hover:text-white border border-white/10 font-mono font-medium transition-colors cursor-pointer shrink-0"
+                >
+                  <span>{completedSubtasks}/{subtasks.length}</span>
+                  {showSubtasks ? <ChevronDown className="w-2.5 h-2.5" /> : <ChevronRight className="w-2.5 h-2.5" />}
+                </button>
+              )}
 
-            {/* Estimated Duration */}
-            {task.estimatedMinutes && (
-              <span className="text-[10px] font-mono font-normal text-white/60 flex items-center gap-1 shrink-0">
-                <Clock className="w-2.5 h-2.5 text-white/40" />
-                {task.estimatedMinutes}m
-              </span>
-            )}
+              {/* Estimated Duration */}
+              {task.estimatedMinutes && (
+                <span className="font-mono text-white/50 flex items-center gap-0.5 shrink-0">
+                  <Clock className="w-2.5 h-2.5 text-white/35" />
+                  {task.estimatedMinutes}m
+                </span>
+              )}
 
-            {/* Reminder Badge */}
-            {task.reminderAt && !task.done && (
-              <span className="text-[10px] font-mono font-medium text-amber-300 flex items-center gap-1 shrink-0">
-                <Bell className="w-2.5 h-2.5" />
-                {new Date(task.reminderAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </span>
-            )}
-          </div>
+              {/* Reminder Badge */}
+              {task.reminderAt && !task.done && (
+                <span className="font-mono text-amber-300/90 flex items-center gap-0.5 shrink-0">
+                  <Bell className="w-2.5 h-2.5" />
+                  {new Date(task.reminderAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* Right: Floating Circular Glass Action Orbs */}
-        <div className="flex items-center gap-1.5 shrink-0">
+        {/* Right: Subtle Small Circular Glass Action Buttons */}
+        <div className="flex items-center gap-1 shrink-0">
           {onStartFocus && !task.done && (
             <button
               type="button"
@@ -168,9 +171,9 @@ export const TaskItem: React.FC<TaskItemProps> = ({
               }}
               title="Start Focus Timer"
               aria-label="Start Focus Timer"
-              className="w-8 h-8 rounded-full liquid-glass-orb flex items-center justify-center cursor-pointer text-white/90 hover:text-white"
+              className="w-6.5 h-6.5 rounded-full liquid-glass-orb flex items-center justify-center cursor-pointer text-white/80 hover:text-white active:scale-90"
             >
-              <Play className="w-3 h-3 fill-current ml-0.5" />
+              <Play className="w-2.5 h-2.5 fill-current ml-0.5" />
             </button>
           )}
 
@@ -179,9 +182,9 @@ export const TaskItem: React.FC<TaskItemProps> = ({
             onClick={() => setIsEditing(true)}
             title="Edit Task"
             aria-label="Edit Task"
-            className="w-8 h-8 rounded-full liquid-glass-orb flex items-center justify-center cursor-pointer text-white/70 hover:text-white"
+            className="w-6.5 h-6.5 rounded-full liquid-glass-orb flex items-center justify-center cursor-pointer text-white/50 hover:text-white/90 active:scale-90"
           >
-            <Pencil className="w-3 h-3" />
+            <Pencil className="w-2.5 h-2.5" />
           </button>
 
           <button
@@ -192,9 +195,9 @@ export const TaskItem: React.FC<TaskItemProps> = ({
             }}
             title="Delete Task"
             aria-label="Delete Task"
-            className="w-8 h-8 rounded-full liquid-glass-orb flex items-center justify-center cursor-pointer text-white/60 hover:text-rose-300 hover:border-rose-400/40"
+            className="w-6.5 h-6.5 rounded-full liquid-glass-orb flex items-center justify-center cursor-pointer text-white/40 hover:text-rose-300 active:scale-90"
           >
-            <Trash2 className="w-3 h-3" />
+            <Trash2 className="w-2.5 h-2.5" />
           </button>
         </div>
       </div>

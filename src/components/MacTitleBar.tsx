@@ -33,10 +33,10 @@ export const MacTitleBar: React.FC<MacTitleBarProps> = ({
     day: 'numeric',
   })
 
-  // iOS 26 Liquid Glass Header
+  // iOS 26 Liquid Glass Header with Generous Top Safe Area and Airy Hierarchy
   return (
-    <header className="flex flex-col px-5 pt-safe pb-2 bg-transparent select-none shrink-0 z-20">
-      <div className="flex items-center justify-between w-full pt-2">
+    <header className="flex flex-col px-5 pt-[max(env(safe-area-inset-top),48px)] pb-3 bg-transparent select-none shrink-0 z-20">
+      <div className="flex items-center justify-between w-full">
         {/* Left: Floating Circular Glass Menu Orb */}
         <button
           type="button"
@@ -46,23 +46,23 @@ export const MacTitleBar: React.FC<MacTitleBarProps> = ({
           }}
           title="Toggle Navigation Menu"
           aria-label="Navigation Menu"
-          className="w-11 h-11 rounded-full liquid-glass-orb flex items-center justify-center cursor-pointer text-white/90"
+          className="w-10 h-10 rounded-full liquid-glass-orb flex items-center justify-center cursor-pointer text-white/80 active:scale-95"
         >
           <LiquidGlassIcon type="menu" size="sm" />
         </button>
 
         {/* Center: Title & Subtitle */}
         <div className="flex flex-col items-center justify-center text-center">
-          <h1 className="text-2xl font-bold tracking-tight text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]">
+          <h1 className="text-xl font-semibold tracking-tight text-white/95 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
             {activeView === 'today' ? 'Today' : title}
           </h1>
-          <p className="text-xs text-white/60 font-medium tracking-wide mt-0.5">
+          <p className="text-[11.5px] text-white/50 font-normal tracking-wide mt-0.5">
             {formattedDate}
           </p>
         </div>
 
         {/* Right: Floating Circular Glass Search & Add Orbs */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => {
@@ -71,7 +71,7 @@ export const MacTitleBar: React.FC<MacTitleBarProps> = ({
             }}
             title="Spotlight Search"
             aria-label="Search tasks"
-            className="w-11 h-11 rounded-full liquid-glass-orb flex items-center justify-center cursor-pointer text-white/90"
+            className="w-10 h-10 rounded-full liquid-glass-orb flex items-center justify-center cursor-pointer text-white/80 active:scale-95"
           >
             <LiquidGlassIcon type="search" size="sm" />
           </button>
@@ -85,7 +85,7 @@ export const MacTitleBar: React.FC<MacTitleBarProps> = ({
             }}
             title="Add New Objective"
             aria-label="Add new objective"
-            className="w-11 h-11 rounded-full liquid-glass-orb flex items-center justify-center cursor-pointer text-white/90"
+            className="w-10 h-10 rounded-full liquid-glass-orb flex items-center justify-center cursor-pointer text-white/80 active:scale-95"
           >
             <LiquidGlassIcon type="plus" size="sm" />
           </button>

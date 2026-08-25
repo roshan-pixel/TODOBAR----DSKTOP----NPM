@@ -76,27 +76,21 @@ export const ListsView: React.FC<ListsViewProps> = ({
   const activeListTasks = selectedListId ? tasks.filter(t => t.listId === selectedListId) : []
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto px-4 py-3.5 gap-4 scrollbar-thin pb-24 md:pb-4">
-      {/* Header */}
-      <div className="flex items-center justify-between pt-1">
-        <div className="flex items-center gap-3">
+    <div className="flex flex-col h-full overflow-y-auto px-4 py-1 gap-3.5 scrollbar-thin pb-28 md:pb-6">
+      {/* Header Row */}
+      <div className="flex items-center justify-between px-1">
+        <div className="flex items-center gap-2">
           {selectedListId ? (
             <button
               onClick={() => setSelectedListId(null)}
-              className="flex items-center gap-1 text-xs font-extrabold text-accent hover:underline cursor-pointer"
+              className="flex items-center gap-1 text-xs font-semibold text-sky-400 hover:text-sky-300 cursor-pointer"
             >
-              ← Collections
+              ← Back to Lists
             </button>
           ) : (
-            <>
-              <LiquidGlassIcon type="lists" size="md" />
-              <div>
-                <h1 className="text-base font-extrabold text-text-primary tracking-tight drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
-                  Project Collections
-                </h1>
-                <p className="text-xs text-text-muted font-semibold mt-0.5">{lists.length} custom projects</p>
-              </div>
-            </>
+            <span className="text-xs font-semibold text-white/90">
+              {lists.length} Project Lists
+            </span>
           )}
         </div>
 
@@ -106,9 +100,9 @@ export const ListsView: React.FC<ListsViewProps> = ({
               sounds.playClick(playSounds)
               setIsCreatingList(prev => !prev)
             }}
-            className="flex items-center gap-2 px-3.5 py-1.5 rounded-2xl liquid-glass-pill text-xs font-extrabold text-text-primary hover:border-accent transition-all cursor-pointer shadow-lg hover:scale-105"
+            className="flex items-center gap-1.5 px-3 py-1 rounded-full liquid-glass-orb text-[11px] font-medium text-white/90 hover:text-white transition-all cursor-pointer shadow-sm"
           >
-            <Plus className="w-3.5 h-3.5 text-accent stroke-[3]" />
+            <LiquidGlassIcon type="plus" size="xs" />
             <span>New List</span>
           </button>
         )}

@@ -101,10 +101,10 @@ export const TaskInput: React.FC<TaskInputProps> = ({
   const currentList = lists.find(l => l.id === listId) || { id: 'today', title: 'Today', color: '#38bdf8' }
 
   return (
-    <div className="flex flex-col gap-2 p-2 rounded-[24px] liquid-glass-card shadow-xl focus-within:border-white/35 focus-within:shadow-[0_0_24px_rgba(56,189,248,0.3)] transition-all overflow-hidden">
-      {/* Primary Input Row (Matching Reference Capsule Layout) */}
-      <div className="flex items-center gap-3 px-1 py-0.5">
-        {/* Luminous Electric Blue Glass Orb with Lightning */}
+    <div className="flex flex-col gap-2 p-1.5 rounded-2xl liquid-glass-card focus-within:border-white/25 focus-within:bg-white/[0.07] transition-all overflow-hidden">
+      {/* Primary Input Row */}
+      <div className="flex items-center gap-2.5 px-2 py-1">
+        {/* Sleek Translucent Glass Orb with Lightning */}
         <button
           type="button"
           onClick={() => {
@@ -113,9 +113,9 @@ export const TaskInput: React.FC<TaskInputProps> = ({
           }}
           title={`Priority: ${priorityMeta[priority].label} (Click to toggle)`}
           aria-label={`Current priority: ${priorityMeta[priority].label}`}
-          className="w-9 h-9 rounded-full bg-gradient-to-tr from-cyan-500 via-sky-500 to-blue-600 flex items-center justify-center text-white shadow-[0_0_16px_rgba(56,189,248,0.6)] shrink-0 active:scale-90 transition-transform cursor-pointer border border-white/40"
+          className="w-7 h-7 rounded-full liquid-glass-orb flex items-center justify-center text-cyan-400 shrink-0 active:scale-90 transition-transform cursor-pointer"
         >
-          <Zap className="w-4 h-4 fill-white stroke-none" />
+          <Zap className="w-3.5 h-3.5 fill-cyan-400/80 stroke-none" />
         </button>
 
         <input
@@ -126,7 +126,7 @@ export const TaskInput: React.FC<TaskInputProps> = ({
           onFocus={() => setIsExpanded(true)}
           onKeyDown={handleKeyDown}
           placeholder="Capture task... (e.g. !focus #work Submit report)"
-          className="flex-1 bg-transparent text-xs font-normal text-white placeholder:text-white/40 focus:outline-none min-w-0"
+          className="flex-1 bg-transparent text-xs font-normal text-white/90 placeholder:text-white/35 focus:outline-none min-w-0"
         />
 
         <button
@@ -135,13 +135,13 @@ export const TaskInput: React.FC<TaskInputProps> = ({
           disabled={!title.trim()}
           title="Submit task (Enter)"
           aria-label="Submit task"
-          className={`w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer shrink-0 ${
+          className={`w-6 h-6 rounded-full flex items-center justify-center transition-all cursor-pointer shrink-0 ${
             title.trim()
-              ? 'bg-white/20 hover:bg-white/30 text-white font-bold shadow-md border border-white/30 active:scale-90'
-              : 'text-white/30 bg-transparent opacity-60'
+              ? 'bg-white/15 hover:bg-white/25 text-white font-bold border border-white/20 active:scale-90'
+              : 'text-white/25 bg-transparent'
           }`}
         >
-          <ChevronRight className="w-4 h-4" />
+          <ChevronRight className="w-3.5 h-3.5" />
         </button>
       </div>
 

@@ -109,29 +109,23 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   const todayStr = new Date().toISOString().split('T')[0]
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto px-4 py-3.5 gap-4 scrollbar-thin pb-24 md:pb-4">
-      {/* Header */}
-      <div className="flex items-center justify-between pt-1">
-        <div className="flex items-center gap-3">
-          <LiquidGlassIcon type="calendar" size="md" />
-          <div>
-            <h1 className="text-base font-extrabold text-text-primary tracking-tight drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
-              Calendar Agenda
-            </h1>
-            <p className="text-xs text-text-muted font-semibold mt-0.5">{monthName}</p>
-          </div>
-        </div>
+    <div className="flex flex-col h-full overflow-y-auto px-4 py-1 gap-3.5 scrollbar-thin pb-28 md:pb-6">
+      {/* Month Header & Quick Actions */}
+      <div className="flex items-center justify-between px-1">
+        <span className="text-xs font-semibold text-white/90 tracking-wide">
+          {monthName}
+        </span>
 
         <button
           onClick={goToToday}
-          className="px-3.5 py-1.5 text-xs font-extrabold rounded-2xl liquid-glass-pill text-text-primary hover:border-accent transition-all cursor-pointer shadow-lg hover:scale-105"
+          className="px-3 py-1 text-[11px] font-medium rounded-full liquid-glass-orb text-white/90 hover:text-white transition-all cursor-pointer shadow-sm"
         >
-          Today
+          Jump to Today
         </button>
       </div>
 
-      {/* Liquid Glass Month Navigation Card */}
-      <div className="flex flex-col p-4 rounded-3xl liquid-glass-card shadow-xl gap-3">
+      {/* Liquid Glass Month Calendar Grid Card */}
+      <div className="flex flex-col p-3.5 rounded-2xl liquid-glass-card shadow-lg gap-2.5">
         <div className="flex items-center justify-between">
           <span className="text-sm font-extrabold text-text-primary drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]">
             {monthName}

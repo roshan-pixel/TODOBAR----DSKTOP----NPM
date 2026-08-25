@@ -44,17 +44,17 @@ export const CommandRail: React.FC<CommandRailProps> = ({
   // Active item index for sliding capsule physics
   const activeIndex = navItems.findIndex(item => item.id === activeView)
 
-  // Mobile Bottom Navigation Bar Layout (iPhone iOS 26 Liquid Glass Floating Dock)
+  // Mobile Bottom Navigation Bar Layout (Floating iOS 26 Liquid Glass Dock)
   if (isMobile) {
     return (
-      <div className="w-full px-4 pb-safe pt-1 shrink-0 z-30 select-none pointer-events-none">
+      <div className="fixed bottom-3 inset-x-0 px-5 pb-[max(env(safe-area-inset-bottom),6px)] z-30 pointer-events-none flex justify-center select-none">
         <nav
           aria-label="Floating Liquid Glass Bottom Dock"
-          className="relative max-w-sm mx-auto p-1.5 rounded-[30px] liquid-glass-dock pointer-events-auto flex items-center justify-between shadow-2xl"
+          className="relative w-full max-w-[350px] p-1.5 rounded-[28px] liquid-glass-dock pointer-events-auto flex items-center justify-between shadow-2xl"
         >
-          {/* True Fluid Liquid Glass Morphing Selection Pill */}
+          {/* Fluid Liquid Glass Morphing Selection Pill */}
           <div
-            className="absolute top-1.5 bottom-1.5 rounded-[24px] pointer-events-none transition-all duration-450 ease-[cubic-bezier(0.32,0.72,0,1)] liquid-morph-capsule"
+            className="absolute top-1.5 bottom-1.5 rounded-[22px] pointer-events-none transition-all duration-380 ease-[cubic-bezier(0.32,0.72,0,1)] liquid-morph-capsule"
             style={{
               left: `${activeIndex * 20}%`,
               width: '20%',
@@ -70,7 +70,7 @@ export const CommandRail: React.FC<CommandRailProps> = ({
                 aria-selected={isActive}
                 aria-label={item.label}
                 onClick={() => handleNav(item.id)}
-                className="flex-1 py-1.5 flex flex-col items-center justify-center relative group cursor-pointer z-10 transition-transform active:scale-90"
+                className="flex-1 py-1 flex flex-col items-center justify-center relative group cursor-pointer z-10 transition-transform active:scale-90"
               >
                 <div className="relative flex items-center justify-center">
                   <LiquidGlassIcon
@@ -83,15 +83,15 @@ export const CommandRail: React.FC<CommandRailProps> = ({
                   {item.badge !== undefined && (
                     <span
                       aria-label={`${item.badge} open tasks`}
-                      className="absolute -top-1 -right-1 text-[9.5px] min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center font-bold font-mono text-white shadow-md z-20 border border-white/40 bg-gradient-to-r from-indigo-500 to-pink-500"
+                      className="absolute -top-1 -right-1 text-[9px] min-w-[15px] h-3.5 px-0.5 rounded-full flex items-center justify-center font-bold font-mono text-white shadow-sm z-20 border border-white/30 bg-gradient-to-r from-sky-500 to-indigo-500"
                     >
                       {item.badge > 99 ? '99+' : item.badge}
                     </span>
                   )}
                 </div>
 
-                <span className={`text-[10px] font-medium mt-0.5 tracking-tight transition-all duration-200 ${
-                  isActive ? 'text-white font-bold drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] scale-105' : 'text-white/50'
+                <span className={`text-[10px] font-medium tracking-tight transition-all duration-200 ${
+                  isActive ? 'text-white/95 font-semibold' : 'text-white/45'
                 }`}>
                   {item.label}
                 </span>

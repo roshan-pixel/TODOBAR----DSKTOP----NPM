@@ -224,14 +224,12 @@ export function App() {
       return {
         width: '100%',
         maxWidth: '100%',
-        height: '100%',
+        height: '100dvh',
         left: 0,
         right: 0,
         top: 0,
         bottom: 0,
         transform: settings.isExpanded ? 'translateY(0%)' : 'translateY(100%)',
-        borderTopLeftRadius: settings.isExpanded ? '20px' : '0px',
-        borderTopRightRadius: settings.isExpanded ? '20px' : '0px',
         transition: springCurve,
       }
     }
@@ -301,7 +299,7 @@ export function App() {
   return (
     <div
       style={themeCssVariables}
-      className={`relative w-screen h-screen overflow-hidden select-none font-sans text-text-primary ${
+      className={`relative w-full min-h-[100dvh] h-[100dvh] overflow-hidden select-none font-sans text-text-primary ${
         settings.themeMode === 'dark' ? 'dark' : ''
       }`}
     >

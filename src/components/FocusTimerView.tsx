@@ -99,59 +99,45 @@ export const FocusTimerView: React.FC<FocusTimerViewProps> = ({
   const activeTask = tasks.find(t => t.id === activeTaskId)
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto px-4 py-3.5 gap-4 items-center scrollbar-thin pb-24 md:pb-6">
-      {/* Header */}
-      <div className="w-full flex items-center justify-between pt-1">
-        <div className="flex items-center gap-3">
-          <LiquidGlassIcon type="pomodoro" size="md" />
-          <div>
-            <h1 className="text-base font-extrabold text-text-primary tracking-tight drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
-              Focus Chamber
-            </h1>
-            <p className="text-xs text-text-muted font-semibold mt-0.5">Deep Work Session</p>
-          </div>
-        </div>
-
-        {/* Completed streaks */}
-        <div className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-2xl liquid-glass-pill text-xs font-bold text-amber-300 shadow-lg">
-          <LiquidGlassIcon type="focus" size="xs" />
-          <span>{completedSessions} Pomodoros</span>
+    <div className="flex flex-col h-full overflow-y-auto px-4 py-1 gap-3.5 items-center scrollbar-thin pb-28 md:pb-6">
+      {/* Session Progress Badge */}
+      <div className="w-full flex items-center justify-between px-1">
+        <span className="text-xs font-semibold text-white/90">Deep Work Session</span>
+        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full liquid-glass-orb text-[11px] font-medium text-amber-300 shadow-sm">
+          <span>🔥 {completedSessions} Pomodoros</span>
         </div>
       </div>
 
       {/* Preset Mode Segmented Control */}
-      <div className="flex items-center p-1 rounded-2xl liquid-glass-control text-xs w-full max-w-sm shadow-lg">
+      <div className="flex items-center p-1 rounded-2xl bg-white/[0.04] border border-white/10 backdrop-blur-xl text-xs w-full max-w-sm shadow-sm">
         <button
           onClick={() => setMode('focus', 25)}
-          className={`flex-1 py-1.5 rounded-xl font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+          className={`flex-1 py-1.5 rounded-xl font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
             mode === 'focus' && durationMinutes === 25
-              ? 'bg-accent text-white shadow-lg shadow-accent/40 border border-white/30 backdrop-blur-lg scale-[1.02]'
-              : 'text-text-secondary hover:text-text-primary hover:bg-white/[0.08]'
+              ? 'bg-white/20 text-white font-semibold shadow-sm border border-white/25'
+              : 'text-white/50 hover:text-white'
           }`}
         >
-          <LiquidGlassIcon type="focus" size="xs" />
           25m Focus
         </button>
         <button
           onClick={() => setMode('focus', 50)}
-          className={`flex-1 py-1.5 rounded-xl font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+          className={`flex-1 py-1.5 rounded-xl font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
             mode === 'focus' && durationMinutes === 50
-              ? 'bg-accent text-white shadow-lg shadow-accent/40 border border-white/30 backdrop-blur-lg scale-[1.02]'
-              : 'text-text-secondary hover:text-text-primary hover:bg-white/[0.08]'
+              ? 'bg-white/20 text-white font-semibold shadow-sm border border-white/25'
+              : 'text-white/50 hover:text-white'
           }`}
         >
-          <LiquidGlassIcon type="sparkles" size="xs" />
           50m Deep
         </button>
         <button
           onClick={() => setMode('shortBreak', 5)}
-          className={`flex-1 py-1.5 rounded-xl font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+          className={`flex-1 py-1.5 rounded-xl font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
             mode === 'shortBreak'
-              ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/40 border border-white/30 backdrop-blur-lg scale-[1.02]'
-              : 'text-text-secondary hover:text-text-primary hover:bg-white/[0.08]'
+              ? 'bg-white/20 text-white font-semibold shadow-sm border border-white/25'
+              : 'text-white/50 hover:text-white'
           }`}
         >
-          <LiquidGlassIcon type="coffee" size="xs" />
           5m Break
         </button>
       </div>
