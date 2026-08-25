@@ -24,10 +24,10 @@
   --accent-soft: rgba(56, 189, 248, 0.22);
   --accent-text: #7dd3fc;
   --bg-workspace: #090a0f;
-  --bg-sidebar: rgba(15, 23, 42, 0.65);
-  --bg-rail: rgba(10, 15, 29, 0.55);
-  --bg-card: rgba(30, 41, 59, 0.5);
-  --bg-card-hover: rgba(51, 65, 85, 0.65);
+  --bg-sidebar: rgba(15, 23, 42, 0.75);
+  --bg-rail: rgba(10, 15, 29, 0.65);
+  --bg-card: rgba(30, 41, 59, 0.55);
+  --bg-card-hover: rgba(51, 65, 85, 0.72);
   --border-subtle: rgba(255, 255, 255, 0.16);
   --border-strong: rgba(255, 255, 255, 0.32);
   --text-primary: #ffffff;
@@ -42,12 +42,16 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  -webkit-tap-highlight-color: transparent;
 }
 
 html, body, #root {
   width: 100%;
   height: 100%;
+  height: 100dvh;
   overflow: hidden;
+  position: fixed;
+  touch-action: manipulation;
 }
 
 body {
@@ -57,6 +61,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  overscroll-behavior: none;
 }
 
 /* WCAG 2.2 Level AA / AAA Compliant Focus Rings */
@@ -92,8 +97,14 @@ body {
 .stroke-accent { stroke: var(--accent); }
 .stroke-subtle { stroke: var(--border-subtle); }
 
+/* iOS Safe Area Padding Utilities */
+.pt-safe { padding-top: max(env(safe-area-inset-top, 0px), 12px); }
+.pb-safe { padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px); }
+.pl-safe { padding-left: max(env(safe-area-inset-left, 0px), 12px); }
+.pr-safe { padding-right: max(env(safe-area-inset-right, 0px), 12px); }
+
 /* ==========================================================================
-   2026 APPLE LIQUID GLASS SPECULAR MATERIAL SYSTEM (macOS 26+ / VisionOS)
+   2026 APPLE LIQUID GLASS SPECULAR MATERIAL SYSTEM (macOS 26+ / iOS 26 HIG)
    ========================================================================== */
 
 /* Main Liquid Glass Sidebar Container */
@@ -119,6 +130,17 @@ body {
   box-shadow: inset -1px 0 0 0 rgba(255, 255, 255, 0.08) !important;
 }
 
+/* Liquid Glass Mobile Bottom Bar */
+.liquid-glass-bottom-bar {
+  background: var(--bg-rail) !important;
+  backdrop-filter: blur(40px) saturate(220%) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(220%) !important;
+  border-top: 1px solid var(--border-subtle) !important;
+  box-shadow: 
+    inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.25),
+    0 -10px 30px rgba(0, 0, 0, 0.4) !important;
+}
+
 /* Liquid Glass Cards (Tasks, Metrics, Popovers) */
 .liquid-glass-card {
   background: var(--bg-card) !important;
@@ -129,7 +151,7 @@ body {
     inset 0 1px 1px 0 rgba(255, 255, 255, 0.25),
     inset 0 0 0 1px rgba(255, 255, 255, 0.04),
     0 8px 24px -4px rgba(0, 0, 0, 0.35) !important;
-  transition: all 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 240ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .liquid-glass-card:hover {
@@ -142,7 +164,7 @@ body {
   transform: translateY(-1.5px);
 }
 
-/* Liquid Glass Drag Handle */
+/* Liquid Glass Drag Handle / Mobile Pull Pill */
 .liquid-glass-handle {
   background: var(--bg-sidebar) !important;
   backdrop-filter: blur(36px) saturate(220%) !important;
@@ -174,7 +196,7 @@ body {
     0 4px 12px rgba(0, 0, 0, 0.2) !important;
 }
 
-/* Custom Sleek macOS Native Scrollbars */
+/* Custom Sleek macOS / iOS Native Scrollbars */
 .scrollbar-thin::-webkit-scrollbar {
   width: 5px;
   height: 5px;
@@ -210,4 +232,60 @@ body {
 
 .animate-liquid-pulse {
   animation: liquidPulse 7s ease-in-out infinite;
+}
+
+/* ==========================================================================
+   iPhone / iOS FLUID LIQUID SLIDE TRANSITIONS & SPRING PHYSICS
+   ========================================================================== */
+
+@keyframes iosSlideFromRight {
+  0% {
+    opacity: 0;
+    transform: translateX(36px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes iosSlideFromLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(-36px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes iosFadeSpring {
+  0% {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-ios-slide-right {
+  animation: iosSlideFromRight 320ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+.animate-ios-slide-left {
+  animation: iosSlideFromLeft 320ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+.animate-ios-fade-spring {
+  animation: iosFadeSpring 280ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+/* Smooth Touch Scrolling with Elastic Bouncing */
+.touch-scroll-ios {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  scroll-behavior: smooth;
 }

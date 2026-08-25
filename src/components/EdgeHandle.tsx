@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react'
-import { GripVertical, GripHorizontal } from 'lucide-react'
+import { GripVertical, GripHorizontal, Sparkles } from 'lucide-react'
 import { DockEdge } from '../types'
 import { sounds } from '../services/audio'
 
@@ -12,6 +12,7 @@ interface EdgeHandleProps {
   onUpdatePosition: (newPos: number) => void
   playSounds: boolean
   openTasksCount: number
+  isMobile?: boolean
 }
 
 export const EdgeHandle: React.FC<EdgeHandleProps> = ({
@@ -23,6 +24,7 @@ export const EdgeHandle: React.FC<EdgeHandleProps> = ({
   onUpdatePosition,
   playSounds,
   openTasksCount,
+  isMobile = false,
 }) => {
   const [isDragging, setIsDragging] = useState(false)
   const dragStartRef = useRef<{ startY: number; startX: number; startPos: number }>({
@@ -76,6 +78,34 @@ export const EdgeHandle: React.FC<EdgeHandleProps> = ({
       sounds.playClick(playSounds)
       onToggle()
     }
+  }
+
+  // Mobile Edge / Floating Capsule Pill
+  if (isMobile) {
+    if (isExpanded) return null // Handled by top sheet grabber when open
+
+    return (
+      <div
+        onClick={() => {
+          sounds.playClick(playSounds)
+          onToggle()
+        }}
+        role="button"
+        aria-label="Open Todobar Pro"
+        className="fixed z-50 bottom-6 right-6 flex items-center gap-2 px-4 py-2.5 rounded-full liquid-glass-handle shadow-2xl active:scale-95 transition-all cursor-pointer border border-white/30 backdrop-blur-2xl"
+        style={{
+          boxShadow: '0 12px 36px rgba(0, 0, 0, 0.6), 0 0 24px var(--glow-color)',
+        }}
+      >
+        <Sparkles className="w-4 h-4 text-accent animate-pulse" />
+        <span className="text-xs font-bold text-white tracking-tight">Todobar</span>
+        {openTasksCount > 0 && (
+          <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-500 text-white leading-tight shadow-md border border-white/30">
+            {openTasksCount}
+          </span>
+        )}
+      </div>
+    )
   }
 
   const isVertical = dockEdge === 'right' || dockEdge === 'left' || dockEdge === 'floating'

@@ -13,6 +13,7 @@ interface CommandRailProps {
   playSounds: boolean
   totalOpenTasks: number
   totalCompletedTasks: number
+  isMobile?: boolean
 }
 
 export const CommandRail: React.FC<CommandRailProps> = ({
@@ -22,16 +23,17 @@ export const CommandRail: React.FC<CommandRailProps> = ({
   playSounds,
   totalOpenTasks,
   totalCompletedTasks,
+  isMobile = false,
 }) => {
   const total = totalOpenTasks + totalCompletedTasks
   const percent = total > 0 ? Math.round((totalCompletedTasks / total) * 100) : 0
 
   const navItems: { id: SectionView; label: string; iconType: LiquidIconType; badge?: number; shortcut: string }[] = [
-    { id: 'today', label: "Today's Focus", iconType: 'today', badge: totalOpenTasks > 0 ? totalOpenTasks : undefined, shortcut: '⌘1' },
-    { id: 'calendar', label: 'Calendar Plan', iconType: 'calendar', shortcut: '⌘2' },
-    { id: 'lists', label: 'Project Lists', iconType: 'lists', shortcut: '⌘3' },
-    { id: 'pomodoro', label: 'Focus Chamber', iconType: 'pomodoro', shortcut: '⌘4' },
-    { id: 'settings', label: 'Preferences', iconType: 'settings', shortcut: '⌘,' },
+    { id: 'today', label: 'Today', iconType: 'today', badge: totalOpenTasks > 0 ? totalOpenTasks : undefined, shortcut: '⌘1' },
+    { id: 'calendar', label: 'Calendar', iconType: 'calendar', shortcut: '⌘2' },
+    { id: 'lists', label: 'Lists', iconType: 'lists', shortcut: '⌘3' },
+    { id: 'pomodoro', label: 'Focus', iconType: 'pomodoro', shortcut: '⌘4' },
+    { id: 'settings', label: 'Settings', iconType: 'settings', shortcut: '⌘,' },
   ]
 
   const handleNav = (view: SectionView) => {
@@ -42,6 +44,74 @@ export const CommandRail: React.FC<CommandRailProps> = ({
   // Active item index for sliding capsule physics
   const activeIndex = navItems.findIndex(item => item.id === activeView)
 
+  // Mobile Bottom Navigation Bar Layout (iPhone Style)
+  if (isMobile) {
+    return (
+      <nav
+        aria-label="Liquid Glass Mobile Tab Bar"
+        className="w-full flex items-center justify-around px-3 pt-2 pb-safe select-none liquid-glass-bottom-bar relative z-30 shrink-0 border-t border-white/15"
+      >
+        <div className="relative flex items-center justify-between w-full max-w-md mx-auto" role="tablist">
+          {/* Fluid Liquid Sliding Capsule for Mobile */}
+          <div
+            className="absolute top-0 bottom-0 rounded-2xl pointer-events-none transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]"
+            style={{
+              left: `${activeIndex * 20}%`,
+              width: '20%',
+              background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.08) 100%)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              boxShadow: 'inset 0 1px 1px 0 rgba(255, 255, 255, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3)',
+            }}
+          />
+
+          {navItems.map((item) => {
+            const isActive = activeView === item.id
+            return (
+              <button
+                key={item.id}
+                role="tab"
+                aria-selected={isActive}
+                aria-label={item.label}
+                onClick={() => handleNav(item.id)}
+                className="flex-1 py-1.5 flex flex-col items-center justify-center relative group cursor-pointer z-10 transition-transform active:scale-90"
+              >
+                <div className="relative flex items-center justify-center">
+                  <LiquidGlassIcon
+                    type={item.iconType}
+                    size="sm"
+                    isActive={isActive}
+                  />
+
+                  {/* Badge */}
+                  {item.badge !== undefined && (
+                    <span
+                      aria-label={`${item.badge} open tasks`}
+                      className="absolute -top-1 -right-1.5 text-[9px] min-w-[15px] h-3.5 px-0.5 rounded-full flex items-center justify-center font-black font-mono text-white shadow-md z-20 border border-white/30"
+                      style={{
+                        background: 'rgba(239, 68, 68, 0.95)',
+                        boxShadow: '0 2px 5px rgba(0, 0, 0, 0.4)',
+                      }}
+                    >
+                      {item.badge > 99 ? '99+' : item.badge}
+                    </span>
+                  )}
+                </div>
+
+                <span className={`text-[10px] font-bold mt-0.5 tracking-tight transition-colors ${
+                  isActive ? 'text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]' : 'text-white/50'
+                }`}>
+                  {item.label}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </nav>
+    )
+  }
+
+  // Desktop Vertical Command Rail
   return (
     <nav
       aria-label="Liquid Glass Navigation Rail"

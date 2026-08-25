@@ -13,6 +13,7 @@ interface MacTitleBarProps {
   playSounds: boolean
   totalTasks: number
   completedTasks: number
+  isMobile?: boolean
 }
 
 export const MacTitleBar: React.FC<MacTitleBarProps> = ({
@@ -25,7 +26,65 @@ export const MacTitleBar: React.FC<MacTitleBarProps> = ({
   playSounds,
   totalTasks,
   completedTasks,
+  isMobile = false,
 }) => {
+  if (isMobile) {
+    return (
+      <header className="flex flex-col items-center px-4 pt-safe pb-2 bg-transparent select-none shrink-0 border-b border-white/[0.08] backdrop-blur-md">
+        {/* Apple iOS Sheet Grabber Bar */}
+        <div
+          onClick={() => {
+            sounds.playClick(playSounds)
+            onToggleSidebar()
+          }}
+          className="w-10 h-1.5 rounded-full bg-white/30 hover:bg-white/60 mb-2 cursor-pointer active:scale-95 transition-all shadow-sm"
+          title="Swipe or Tap to dock"
+        />
+
+        <div className="w-full flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-bold text-white tracking-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+              {title}
+            </span>
+            {totalTasks > 0 && (
+              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-white/[0.1] border border-white/15 text-white/90 shadow-sm backdrop-blur-md">
+                {completedTasks}/{totalTasks}
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                sounds.playClick(playSounds)
+                onOpenSearch()
+              }}
+              title="Search"
+              aria-label="Search"
+              className="p-2 rounded-xl bg-white/[0.1] hover:bg-white/[0.18] border border-white/15 text-white active:scale-90 transition-transform cursor-pointer backdrop-blur-xl"
+            >
+              <Search className="w-4 h-4 stroke-[2.4]" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                sounds.playClick(playSounds)
+                onToggleSidebar()
+              }}
+              title="Close Sidebar"
+              aria-label="Close Sidebar"
+              className="p-2 rounded-xl bg-white/[0.1] hover:bg-white/[0.18] border border-white/15 text-white/80 active:scale-90 transition-transform cursor-pointer backdrop-blur-xl"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </header>
+    )
+  }
+
   return (
     <header className="flex items-center justify-between px-4 py-2 bg-transparent border-b border-white/[0.08] select-none shrink-0 h-11 backdrop-blur-md">
       {/* Left: macOS Traffic Lights & Title */}

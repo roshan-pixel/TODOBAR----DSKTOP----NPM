@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react'
+import React, { useState, useMemo, useRef, useEffect } from 'react'
 import {
   useTasks,
 } from './hooks/useTasks'
@@ -28,6 +28,9 @@ import { SettingsView } from './components/SettingsView'
 import { SearchModal } from './components/SearchModal'
 import { ReminderToastContainer } from './components/ReminderToastContainer'
 import { DesktopSimulator } from './components/DesktopSimulator'
+import { sounds } from './services/audio'
+
+const VIEW_ORDER: SectionView[] = ['today', 'calendar', 'lists', 'pomodoro', 'settings']
 
 export function App() {
   const {
@@ -68,8 +71,62 @@ export function App() {
   )
 
   const [activeView, setActiveView] = useState<SectionView>('today')
+  const [slideDirection, setSlideDirection] = useState<'right' | 'left' | 'pop'>('pop')
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth <= 768 : false)
   const quickInputRef = useRef<HTMLInputElement>(null)
+
+  // Listen for mobile viewport resize
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768)
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  // Handle Liquid Slide View Navigation (like iPhone apps)
+  const handleSelectView = (nextView: SectionView) => {
+    if (nextView === activeView) return
+    const currentIdx = VIEW_ORDER.indexOf(activeView)
+    const nextIdx = VIEW_ORDER.indexOf(nextView)
+    setSlideDirection(nextIdx > currentIdx ? 'right' : 'left')
+    setActiveView(nextView)
+  }
+
+  // Touch Swipe Gesture Navigation (Swipe left/right to change view)
+  const touchStartRef = useRef<{ x: number; y: number; time: number }>({ x: 0, y: 0, time: 0 })
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      touchStartRef.current = {
+        x: e.touches[0].clientX,
+        y: e.touches[0].clientY,
+        time: Date.now(),
+      }
+    }
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (e.changedTouches.length === 1) {
+      const deltaX = e.changedTouches[0].clientX - touchStartRef.current.x
+      const deltaY = e.changedTouches[0].clientY - touchStartRef.current.y
+      const elapsedTime = Date.now() - touchStartRef.current.time
+
+      // Check for horizontal swipe gesture (quick and mostly horizontal)
+      if (elapsedTime < 500 && Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
+        const currentIdx = VIEW_ORDER.indexOf(activeView)
+        if (deltaX < 0 && currentIdx < VIEW_ORDER.length - 1) {
+          // Swipe Left -> Next Tab
+          sounds.playClick(settings.playSounds)
+          handleSelectView(VIEW_ORDER[currentIdx + 1])
+        } else if (deltaX > 0 && currentIdx > 0) {
+          // Swipe Right -> Prev Tab
+          sounds.playClick(settings.playSounds)
+          handleSelectView(VIEW_ORDER[currentIdx - 1])
+        }
+      }
+    }
+  }
 
   // Focus Timer State
   const [timerState, setTimerState] = useState<FocusTimerState>({
@@ -90,7 +147,7 @@ export function App() {
       isRunning: true,
       secondsRemaining: prev.durationMinutes * 60,
     }))
-    setActiveView('pomodoro')
+    handleSelectView('pomodoro')
   }
 
   // Keyboard navigation with macOS HIG shortcuts
@@ -104,16 +161,16 @@ export function App() {
       }
     },
     onSelectView: (view) => {
-      setActiveView(view)
+      handleSelectView(view)
       if (!settings.isExpanded) {
         updateSettings({ isExpanded: true })
       }
     },
     onOpenSearch: () => setIsSearchOpen(true),
-    onOpenHelp: () => setActiveView('settings'),
+    onOpenHelp: () => handleSelectView('settings'),
     onFocusInput: () => {
       if (!settings.isExpanded) updateSettings({ isExpanded: true })
-      setActiveView('today')
+      handleSelectView('today')
       setTimeout(() => quickInputRef.current?.focus(), 50)
     },
   })
@@ -160,10 +217,28 @@ export function App() {
 
   // Panel transform based on dockEdge and isExpanded with Apple spring curve
   const getPanelStyle = (): React.CSSProperties => {
+    const springCurve = 'transform 380ms cubic-bezier(0.32, 0.72, 0, 1), opacity 380ms cubic-bezier(0.32, 0.72, 0, 1)'
+
+    // Mobile Full-Sheet Presentation
+    if (isMobile) {
+      return {
+        width: '100%',
+        maxWidth: '100%',
+        height: '100%',
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+        transform: settings.isExpanded ? 'translateY(0%)' : 'translateY(100%)',
+        borderTopLeftRadius: settings.isExpanded ? '20px' : '0px',
+        borderTopRightRadius: settings.isExpanded ? '20px' : '0px',
+        transition: springCurve,
+      }
+    }
+
     const isRight = settings.dockEdge === 'right'
     const isLeft = settings.dockEdge === 'left'
     const isTop = settings.dockEdge === 'top'
-    const springCurve = 'transform 360ms cubic-bezier(0.16, 1, 0.3, 1), opacity 360ms cubic-bezier(0.16, 1, 0.3, 1)'
 
     if (isRight) {
       return {
@@ -216,6 +291,13 @@ export function App() {
     }
   }
 
+  const activeAnimationClass =
+    slideDirection === 'right'
+      ? 'animate-ios-slide-right'
+      : slideDirection === 'left'
+      ? 'animate-ios-slide-left'
+      : 'animate-ios-fade-spring'
+
   return (
     <div
       style={themeCssVariables}
@@ -224,7 +306,7 @@ export function App() {
       }`}
     >
       {/* Desktop Workspace Wallpaper Backdrop */}
-      {settings.desktopSimulatorMode && (
+      {settings.desktopSimulatorMode && !isMobile && (
         <DesktopSimulator
           backdropImage={settings.backdropImage}
           backdropBlur={settings.backdropBlur}
@@ -232,7 +314,7 @@ export function App() {
         />
       )}
 
-      {/* Draggable Liquid Glass Edge Handle */}
+      {/* Draggable Liquid Glass Edge Handle / Mobile Floating Quick Pill */}
       <EdgeHandle
         dockEdge={settings.dockEdge}
         handlePosition={settings.handlePosition}
@@ -242,10 +324,11 @@ export function App() {
         onUpdatePosition={(pos) => updateSettings({ handlePosition: pos })}
         playSounds={settings.playSounds}
         openTasksCount={openTasksCount}
+        isMobile={isMobile}
       />
 
       {/* Ambient Liquid Backlight Glow */}
-      {settings.isExpanded && (
+      {settings.isExpanded && !isMobile && (
         <div
           className="fixed pointer-events-none z-30 transition-all duration-500 animate-liquid-pulse"
           style={{
@@ -264,24 +347,29 @@ export function App() {
       <aside
         style={getPanelStyle()}
         aria-label="Todobar liquid glass application window"
-        className="fixed z-40 flex liquid-glass-sidebar overflow-hidden"
+        className={`fixed z-40 flex overflow-hidden liquid-glass-sidebar ${
+          isMobile ? 'flex-col' : 'flex-row'
+        }`}
       >
-        {/* Left Liquid Glass Command Rail */}
-        <CommandRail
-          activeView={activeView}
-          onSelectView={setActiveView}
-          onOpenSearch={() => setIsSearchOpen(true)}
-          onToggleSidebar={toggleSidebar}
-          isExpanded={settings.isExpanded}
-          dockEdge={settings.dockEdge}
-          playSounds={settings.playSounds}
-          totalOpenTasks={openTasksCount}
-          totalCompletedTasks={completedTasksCount}
-        />
+        {/* Desktop Vertical Command Rail */}
+        {!isMobile && (
+          <CommandRail
+            activeView={activeView}
+            onSelectView={handleSelectView}
+            onOpenSearch={() => setIsSearchOpen(true)}
+            onToggleSidebar={toggleSidebar}
+            isExpanded={settings.isExpanded}
+            dockEdge={settings.dockEdge}
+            playSounds={settings.playSounds}
+            totalOpenTasks={openTasksCount}
+            totalCompletedTasks={completedTasksCount}
+            isMobile={false}
+          />
+        )}
 
         {/* Liquid Glass View Content Area */}
         <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
-          {/* Native macOS Liquid Unified Title Bar */}
+          {/* Native macOS / iOS Liquid Unified Title Bar */}
           <MacTitleBar
             title={viewTitles[activeView]}
             activeView={activeView}
@@ -292,90 +380,113 @@ export function App() {
             playSounds={settings.playSounds}
             totalTasks={totalTasksCount}
             completedTasks={completedTasksCount}
+            isMobile={isMobile}
           />
 
-          {/* Active Liquid Content View */}
-          <main className="flex-1 overflow-hidden">
-            {activeView === 'today' && (
-              <TodayView
-                tasks={tasks}
-                lists={lists}
-                density={settings.density}
-                taskSortMode={settings.taskSortMode}
-                showCompleted={settings.showCompleted}
-                playSounds={settings.playSounds}
-                onAddTask={addTask}
-                onToggleTask={toggleTask}
-                onUpdateTask={updateTask}
-                onDeleteTask={deleteTask}
-                onAddSubtask={addSubtask}
-                onToggleSubtask={toggleSubtask}
-                onDeleteSubtask={deleteSubtask}
-                onStartFocus={handleStartFocusOnTask}
-                onClearCompleted={clearCompleted}
-                inputRef={quickInputRef}
-              />
-            )}
+          {/* Active Liquid Content View with iOS Slide Transition & Touch Gestures */}
+          <main
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+            className="flex-1 overflow-hidden relative touch-scroll-ios"
+          >
+            <div key={activeView} className={`h-full w-full ${activeAnimationClass}`}>
+              {activeView === 'today' && (
+                <TodayView
+                  tasks={tasks}
+                  lists={lists}
+                  density={settings.density}
+                  taskSortMode={settings.taskSortMode}
+                  showCompleted={settings.showCompleted}
+                  playSounds={settings.playSounds}
+                  onAddTask={addTask}
+                  onToggleTask={toggleTask}
+                  onUpdateTask={updateTask}
+                  onDeleteTask={deleteTask}
+                  onAddSubtask={addSubtask}
+                  onToggleSubtask={toggleSubtask}
+                  onDeleteSubtask={deleteSubtask}
+                  onStartFocus={handleStartFocusOnTask}
+                  onClearCompleted={clearCompleted}
+                  inputRef={quickInputRef}
+                />
+              )}
 
-            {activeView === 'calendar' && (
-              <CalendarView
-                tasks={tasks}
-                lists={lists}
-                density={settings.density}
-                playSounds={settings.playSounds}
-                onAddTask={addTask}
-                onToggleTask={toggleTask}
-                onUpdateTask={updateTask}
-                onDeleteTask={deleteTask}
-                onAddSubtask={addSubtask}
-                onToggleSubtask={toggleSubtask}
-                onDeleteSubtask={deleteSubtask}
-                onStartFocus={handleStartFocusOnTask}
-              />
-            )}
+              {activeView === 'calendar' && (
+                <CalendarView
+                  tasks={tasks}
+                  lists={lists}
+                  density={settings.density}
+                  playSounds={settings.playSounds}
+                  onAddTask={addTask}
+                  onToggleTask={toggleTask}
+                  onUpdateTask={updateTask}
+                  onDeleteTask={deleteTask}
+                  onAddSubtask={addSubtask}
+                  onToggleSubtask={toggleSubtask}
+                  onDeleteSubtask={deleteSubtask}
+                  onStartFocus={handleStartFocusOnTask}
+                />
+              )}
 
-            {activeView === 'lists' && (
-              <ListsView
-                tasks={tasks}
-                lists={lists}
-                density={settings.density}
-                playSounds={settings.playSounds}
-                onAddList={addList}
-                onUpdateList={updateList}
-                onDeleteList={deleteList}
-                onAddTask={addTask}
-                onToggleTask={toggleTask}
-                onUpdateTask={updateTask}
-                onDeleteTask={deleteTask}
-                onAddSubtask={addSubtask}
-                onToggleSubtask={toggleSubtask}
-                onDeleteSubtask={deleteSubtask}
-                onStartFocus={handleStartFocusOnTask}
-              />
-            )}
+              {activeView === 'lists' && (
+                <ListsView
+                  tasks={tasks}
+                  lists={lists}
+                  density={settings.density}
+                  playSounds={settings.playSounds}
+                  onAddList={addList}
+                  onUpdateList={updateList}
+                  onDeleteList={deleteList}
+                  onAddTask={addTask}
+                  onToggleTask={toggleTask}
+                  onUpdateTask={updateTask}
+                  onDeleteTask={deleteTask}
+                  onAddSubtask={addSubtask}
+                  onToggleSubtask={toggleSubtask}
+                  onDeleteSubtask={deleteSubtask}
+                  onStartFocus={handleStartFocusOnTask}
+                />
+              )}
 
-            {activeView === 'pomodoro' && (
-              <FocusTimerView
-                tasks={tasks}
-                timerState={timerState}
-                onUpdateTimer={(patch) => setTimerState(prev => ({ ...prev, ...patch }))}
-                onCompleteTask={toggleTask}
-                playSounds={settings.playSounds}
-              />
-            )}
+              {activeView === 'pomodoro' && (
+                <FocusTimerView
+                  tasks={tasks}
+                  timerState={timerState}
+                  onUpdateTimer={(patch) => setTimerState(prev => ({ ...prev, ...patch }))}
+                  onCompleteTask={toggleTask}
+                  playSounds={settings.playSounds}
+                />
+              )}
 
-            {activeView === 'settings' && (
-              <SettingsView
-                settings={settings}
-                onUpdateSettings={updateSettings}
-                onResetSettings={resetSettings}
-                tasks={tasks}
-                lists={lists}
-                onImportData={importAllData}
-                onRestoreSampleData={restoreSampleData}
-              />
-            )}
+              {activeView === 'settings' && (
+                <SettingsView
+                  settings={settings}
+                  onUpdateSettings={updateSettings}
+                  onResetSettings={resetSettings}
+                  tasks={tasks}
+                  lists={lists}
+                  onImportData={importAllData}
+                  onRestoreSampleData={restoreSampleData}
+                />
+              )}
+            </div>
           </main>
+
+          {/* Mobile Liquid Bottom Navigation Bar */}
+          {isMobile && (
+            <CommandRail
+              activeView={activeView}
+              onSelectView={handleSelectView}
+              onOpenSearch={() => setIsSearchOpen(true)}
+              onToggleSidebar={toggleSidebar}
+              isExpanded={settings.isExpanded}
+              dockEdge={settings.dockEdge}
+              playSounds={settings.playSounds}
+              totalOpenTasks={openTasksCount}
+              totalCompletedTasks={completedTasksCount}
+              isMobile={true}
+            />
+          )}
         </div>
       </aside>
 
