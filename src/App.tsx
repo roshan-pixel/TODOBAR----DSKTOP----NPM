@@ -308,6 +308,7 @@ export function App() {
         <div className="living-liquid-mesh-1" />
         <div className="living-liquid-mesh-2" />
         <div className="living-liquid-mesh-3" />
+        <div className="living-liquid-mesh-4" />
       </div>
 
       {/* Desktop Workspace Wallpaper Backdrop */}

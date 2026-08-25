@@ -56,12 +56,17 @@ html, body, #root {
 
 body {
   font-family: var(--font-sans);
-  background: var(--bg-workspace);
+  background: #08061a;
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   overscroll-behavior: none;
+}
+
+/* The main panel — fully transparent so the animated background shows through */
+.liquid-glass-sidebar {
+  background: transparent !important;
 }
 
 /* WCAG 2.2 Level AA Focus Rings */
@@ -112,178 +117,207 @@ body {
    2026 APPLE LIQUID GLASS SPECULAR MATERIAL SYSTEM (iOS 26 HIG)
    ========================================================================== */
 
-/* Living Atmospheric Dark Fluid Mesh (Neutral & Deep Navy) */
+/* === VIVID iOS 26 LIQUID GLASS ANIMATED BACKGROUND SYSTEM === */
+
+/* Primary animated fluid mesh — rich purple/blue/orange like the target reference */
 .living-liquid-bg {
   position: absolute;
   inset: 0;
   overflow: hidden;
-  background: radial-gradient(circle at 50% -10%, #0c1122 0%, #070913 55%, #030408 100%);
+  /* Deep dark base so the vivid color orbs pop */
+  background: #08061a;
   pointer-events: none;
   z-index: 0;
 }
 
+/* Large violet/indigo blob — top-left */
 .living-liquid-mesh-1 {
   position: absolute;
-  top: -20%;
-  left: -20%;
+  top: -10%;
+  left: -15%;
+  width: 100vw;
+  height: 100vw;
+  max-width: 700px;
+  max-height: 700px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(120, 60, 220, 0.75) 0%, rgba(80, 40, 180, 0.45) 40%, transparent 70%);
+  filter: blur(70px);
+  animation: fluidOrbit1 44s ease-in-out infinite alternate;
+}
+
+/* Deep blue blob — right side */
+.living-liquid-mesh-2 {
+  position: absolute;
+  top: 20%;
+  right: -20%;
   width: 90vw;
   height: 90vw;
   max-width: 600px;
   max-height: 600px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(14, 165, 233, 0.14) 0%, rgba(99, 102, 241, 0.1) 50%, transparent 70%);
+  background: radial-gradient(circle, rgba(40, 80, 210, 0.65) 0%, rgba(60, 100, 200, 0.35) 40%, transparent 70%);
   filter: blur(80px);
-  animation: fluidOrbit1 42s ease-in-out infinite alternate;
+  animation: fluidOrbit2 52s ease-in-out infinite alternate;
 }
 
-.living-liquid-mesh-2 {
-  position: absolute;
-  top: 40%;
-  right: -20%;
-  width: 80vw;
-  height: 80vw;
-  max-width: 500px;
-  max-height: 500px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(168, 85, 247, 0.12) 0%, rgba(59, 130, 246, 0.08) 50%, transparent 70%);
-  filter: blur(80px);
-  animation: fluidOrbit2 48s ease-in-out infinite alternate;
-}
-
+/* Warm orange/red accent blob — bottom */
 .living-liquid-mesh-3 {
   position: absolute;
-  bottom: -15%;
-  left: 15%;
+  bottom: -10%;
+  left: 10%;
   width: 90vw;
+  height: 70vw;
+  max-width: 600px;
+  max-height: 450px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(220, 80, 40, 0.55) 0%, rgba(200, 60, 80, 0.3) 40%, transparent 70%);
+  filter: blur(75px);
+  animation: fluidOrbit3 40s ease-in-out infinite alternate;
+}
+
+/* Additional smaller accent blob — mid-center for purple richness */
+.living-liquid-mesh-4 {
+  position: absolute;
+  top: 35%;
+  left: 5%;
+  width: 60vw;
   height: 60vw;
-  max-width: 550px;
+  max-width: 380px;
   max-height: 380px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(244, 63, 94, 0.08) 0%, rgba(14, 165, 233, 0.08) 60%, transparent 75%);
-  filter: blur(75px);
-  animation: fluidOrbit3 38s ease-in-out infinite alternate;
+  background: radial-gradient(circle, rgba(160, 40, 200, 0.4) 0%, rgba(100, 20, 160, 0.2) 50%, transparent 70%);
+  filter: blur(65px);
+  animation: fluidOrbit4 36s ease-in-out infinite alternate;
 }
 
 @keyframes fluidOrbit1 {
-  0% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(50px, 30px) scale(1.08); }
-  100% { transform: translate(-20px, 60px) scale(0.96); }
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(40px, 50px) scale(1.1); }
+  100% { transform: translate(-30px, 80px) scale(0.93); }
 }
 
 @keyframes fluidOrbit2 {
-  0% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(-40px, -40px) scale(1.1); }
-  100% { transform: translate(25px, 35px) scale(0.95); }
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(-50px, -50px) scale(1.12); }
+  100% { transform: translate(30px, 40px) scale(0.92); }
 }
 
 @keyframes fluidOrbit3 {
-  0% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(-30px, -20px) scale(1.06); }
-  100% { transform: translate(40px, 15px) scale(1); }
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(-25px, -30px) scale(1.08); }
+  100% { transform: translate(50px, 20px) scale(0.96); }
 }
 
-/* Translucent Neutral Liquid Glass Surface */
+@keyframes fluidOrbit4 {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(30px, -40px) scale(1.15); }
+  100% { transform: translate(-20px, 30px) scale(0.9); }
+}
+
+/* === LIQUID GLASS MATERIAL SYSTEM === */
+
+/* Standard glass surface (sidebar, modals) */
 .liquid-glass-surface {
-  background: rgba(255, 255, 255, 0.05) !important;
-  backdrop-filter: blur(28px) saturate(140%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(140%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  backdrop-filter: blur(32px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(160%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
   box-shadow: 
-    inset 0 1px 0 rgba(255, 255, 255, 0.25),
-    0 12px 32px rgba(0, 0, 0, 0.4) !important;
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 12px 40px rgba(0, 0, 0, 0.5) !important;
 }
 
-/* Translucent Neutral Liquid Glass Cards (Tasks, Objectives, Sections) */
+/* Task/Objectives/Input glass cards — translucent so background gradient shows through */
 .liquid-glass-card {
-  background: rgba(255, 255, 255, 0.045) !important;
-  backdrop-filter: blur(24px) saturate(130%) !important;
-  -webkit-backdrop-filter: blur(24px) saturate(130%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(28px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(150%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
   box-shadow: 
-    inset 0 1px 0 rgba(255, 255, 255, 0.18),
-    0 6px 20px rgba(0, 0, 0, 0.28) !important;
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 6px 24px rgba(0, 0, 0, 0.35) !important;
   transition: all 220ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .liquid-glass-card:hover {
-  background: rgba(255, 255, 255, 0.075) !important;
-  border-color: rgba(255, 255, 255, 0.18) !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(255, 255, 255, 0.22) !important;
   box-shadow: 
-    inset 0 1px 0 rgba(255, 255, 255, 0.3),
-    0 10px 28px rgba(0, 0, 0, 0.36) !important;
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 10px 32px rgba(0, 0, 0, 0.42) !important;
 }
 
 /* Floating Circular Glass Orb Buttons */
 .liquid-glass-orb {
-  background: rgba(255, 255, 255, 0.06) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
   backdrop-filter: blur(20px) !important;
   -webkit-backdrop-filter: blur(20px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
   box-shadow: 
-    inset 0 1px 0 rgba(255, 255, 255, 0.3),
-    0 3px 10px rgba(0, 0, 0, 0.25) !important;
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 3px 10px rgba(0, 0, 0, 0.3) !important;
   transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .liquid-glass-orb:hover {
-  background: rgba(255, 255, 255, 0.12) !important;
-  border-color: rgba(255, 255, 255, 0.24) !important;
+  background: rgba(255, 255, 255, 0.18) !important;
+  border-color: rgba(255, 255, 255, 0.28) !important;
   box-shadow: 
-    inset 0 1px 0 rgba(255, 255, 255, 0.45),
-    0 5px 14px rgba(0, 0, 0, 0.3) !important;
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 5px 14px rgba(0, 0, 0, 0.35) !important;
   transform: scale(1.05);
 }
 
 .liquid-glass-orb:active {
   transform: scale(0.94);
-  background: rgba(255, 255, 255, 0.18) !important;
+  background: rgba(255, 255, 255, 0.22) !important;
 }
 
 /* Floating Liquid Glass Bottom Navigation Dock */
 .liquid-glass-dock {
-  background: rgba(12, 16, 28, 0.65) !important;
-  backdrop-filter: blur(36px) saturate(160%) !important;
-  -webkit-backdrop-filter: blur(36px) saturate(160%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  background: rgba(20, 14, 45, 0.55) !important;
+  backdrop-filter: blur(40px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
   box-shadow: 
-    inset 0 1px 0 rgba(255, 255, 255, 0.32),
-    0 16px 44px rgba(0, 0, 0, 0.6) !important;
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 20px 50px rgba(0, 0, 0, 0.6) !important;
 }
 
-/* Dynamic Morphing Liquid Capsule */
+/* Dynamic Morphing Liquid Capsule for active tab highlight */
 .liquid-morph-capsule {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
+  background: rgba(255, 255, 255, 0.18) !important;
   backdrop-filter: blur(20px) !important;
   -webkit-backdrop-filter: blur(20px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  border: 1px solid rgba(255, 255, 255, 0.28) !important;
   box-shadow: 
-    inset 0 1px 0 rgba(255, 255, 255, 0.45),
-    0 4px 14px rgba(0, 0, 0, 0.25) !important;
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    0 4px 16px rgba(0, 0, 0, 0.3) !important;
 }
 
 /* Luminous Glowing Liquid Progress Bar */
 .liquid-progress-bar {
   background: linear-gradient(90deg, #38bdf8 0%, #60a5fa 50%, #818cf8 100%);
-  box-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.7);
 }
 
 /* Liquid Glowing Checkbox Ring */
 .liquid-checkbox-ring {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1.5px solid rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid rgba(255, 255, 255, 0.32);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
   transition: all 220ms cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 .liquid-checkbox-ring:hover {
-  border-color: rgba(56, 189, 248, 0.7);
-  box-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
+  border-color: rgba(56, 189, 248, 0.8);
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.45);
 }
 
 .liquid-checkbox-ring.checked {
   background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
-  border-color: rgba(255, 255, 255, 0.5);
-  box-shadow: 0 0 10px rgba(14, 165, 233, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  border-color: rgba(255, 255, 255, 0.55);
+  box-shadow: 0 0 12px rgba(14, 165, 233, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.55);
 }
 
 /* Custom Sleek Scrollbars */

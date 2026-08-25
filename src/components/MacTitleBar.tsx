@@ -53,10 +53,10 @@ export const MacTitleBar: React.FC<MacTitleBarProps> = ({
 
         {/* Center: Title & Subtitle */}
         <div className="flex flex-col items-center justify-center text-center">
-          <h1 className="text-xl font-semibold tracking-tight text-white/95 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
+          <h1 className="text-2xl font-bold tracking-tight text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
             {activeView === 'today' ? 'Today' : title}
           </h1>
-          <p className="text-[11.5px] text-white/50 font-normal tracking-wide mt-0.5">
+          <p className="text-[12.5px] text-white/60 font-normal tracking-wide mt-0.5">
             {formattedDate}
           </p>
         </div>

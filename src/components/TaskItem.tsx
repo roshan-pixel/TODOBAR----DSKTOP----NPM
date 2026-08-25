@@ -68,8 +68,8 @@ export const TaskItem: React.FC<TaskItemProps> = ({
       }`}
     >
       {/* Main Task Card Row */}
-      <div className="flex items-center justify-between gap-3 w-full px-3.5 py-2.5">
-        {/* Left: Elegant Small Glass Checkbox Ring */}
+      <div className="flex items-center justify-between gap-3 w-full px-4 py-3">
+        {/* Left: Elegant Glass Checkbox Ring */}
         <button
           type="button"
           onClick={() => {
@@ -78,12 +78,12 @@ export const TaskItem: React.FC<TaskItemProps> = ({
           }}
           title={task.done ? 'Mark pending' : 'Mark complete'}
           aria-label={task.done ? `Mark "${task.title}" incomplete` : `Mark "${task.title}" complete`}
-          className={`w-5 h-5 rounded-full shrink-0 flex items-center justify-center cursor-pointer liquid-checkbox-ring ${
+          className={`w-6 h-6 rounded-full shrink-0 flex items-center justify-center cursor-pointer liquid-checkbox-ring ${
             task.done ? 'checked' : ''
           }`}
         >
           {task.done && (
-            <Check className="w-3 h-3 text-white stroke-[2.8] animate-in zoom-in-50 duration-150" />
+            <Check className="w-3.5 h-3.5 text-white stroke-[2.8] animate-in zoom-in-50 duration-150" />
           )}
         </button>
 
@@ -101,20 +101,20 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                 if (e.key === 'Enter') handleSaveEdit()
                 if (e.key === 'Escape') setIsEditing(false)
               }}
-              className="w-full text-xs font-semibold bg-white/10 px-2 py-0.5 rounded-lg border border-white/25 text-white focus:outline-none"
+              className="w-full text-sm font-semibold bg-white/10 px-2 py-0.5 rounded-lg border border-white/25 text-white focus:outline-none"
             />
           ) : (
             <div className="flex items-center gap-1.5 min-w-0">
               <span
                 onDoubleClick={() => setIsEditing(true)}
-                className={`text-[13px] font-medium tracking-tight select-text cursor-pointer truncate ${
-                  task.done ? 'line-through text-white/40 font-normal' : 'text-white/95'
+                className={`text-[14px] font-medium tracking-tight select-text cursor-pointer truncate ${
+                  task.done ? 'line-through text-white/40 font-normal' : 'text-white'
                 }`}
               >
                 {task.title}
               </span>
-              {task.priority === 'focus' && <span className="text-xs shrink-0">🔥</span>}
-              {task.priority === 'normal' && <span className="text-[11px] text-sky-400 shrink-0">⚡</span>}
+              {task.priority === 'focus' && <span className="text-sm shrink-0">🔥</span>}
+              {task.priority === 'normal' && <span className="text-[13px] text-sky-400 shrink-0">⚡</span>}
             </div>
           )}
 
@@ -159,8 +159,8 @@ export const TaskItem: React.FC<TaskItemProps> = ({
           )}
         </div>
 
-        {/* Right: Subtle Small Circular Glass Action Buttons */}
-        <div className="flex items-center gap-1 shrink-0">
+        {/* Right: Circular Glass Action Buttons */}
+        <div className="flex items-center gap-1.5 shrink-0">
           {onStartFocus && !task.done && (
             <button
               type="button"
@@ -171,9 +171,9 @@ export const TaskItem: React.FC<TaskItemProps> = ({
               }}
               title="Start Focus Timer"
               aria-label="Start Focus Timer"
-              className="w-6.5 h-6.5 rounded-full liquid-glass-orb flex items-center justify-center cursor-pointer text-white/80 hover:text-white active:scale-90"
+              className="w-8 h-8 rounded-full liquid-glass-orb flex items-center justify-center cursor-pointer text-white/80 hover:text-white active:scale-90"
             >
-              <Play className="w-2.5 h-2.5 fill-current ml-0.5" />
+              <Play className="w-3 h-3 fill-current ml-0.5" />
             </button>
           )}
 
@@ -182,9 +182,9 @@ export const TaskItem: React.FC<TaskItemProps> = ({
             onClick={() => setIsEditing(true)}
             title="Edit Task"
             aria-label="Edit Task"
-            className="w-6.5 h-6.5 rounded-full liquid-glass-orb flex items-center justify-center cursor-pointer text-white/50 hover:text-white/90 active:scale-90"
+            className="w-8 h-8 rounded-full liquid-glass-orb flex items-center justify-center cursor-pointer text-white/50 hover:text-white/90 active:scale-90"
           >
-            <Pencil className="w-2.5 h-2.5" />
+            <Pencil className="w-3 h-3" />
           </button>
 
           <button
@@ -195,9 +195,9 @@ export const TaskItem: React.FC<TaskItemProps> = ({
             }}
             title="Delete Task"
             aria-label="Delete Task"
-            className="w-6.5 h-6.5 rounded-full liquid-glass-orb flex items-center justify-center cursor-pointer text-white/40 hover:text-rose-300 active:scale-90"
+            className="w-8 h-8 rounded-full liquid-glass-orb flex items-center justify-center cursor-pointer text-white/40 hover:text-rose-300 active:scale-90"
           >
-            <Trash2 className="w-2.5 h-2.5" />
+            <Trash2 className="w-3 h-3" />
           </button>
         </div>
       </div>
