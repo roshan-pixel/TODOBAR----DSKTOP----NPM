@@ -99,7 +99,7 @@ export const FocusTimerView: React.FC<FocusTimerViewProps> = ({
   const activeTask = tasks.find(t => t.id === activeTaskId)
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto px-4 py-3.5 gap-4 items-center justify-between scrollbar-thin">
+    <div className="flex flex-col h-full overflow-y-auto px-4 py-3.5 gap-4 items-center scrollbar-thin pb-24 md:pb-6">
       {/* Header */}
       <div className="w-full flex items-center justify-between pt-1">
         <div className="flex items-center gap-3">

@@ -75,7 +75,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   }
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto px-4 py-3.5 gap-4 scrollbar-thin pb-12">
+    <div className="flex flex-col h-full overflow-y-auto px-4 py-3.5 gap-4 scrollbar-thin pb-28 md:pb-12">
       {/* Header */}
       <div className="flex items-center justify-between pt-1">
         <div className="flex items-center gap-3">

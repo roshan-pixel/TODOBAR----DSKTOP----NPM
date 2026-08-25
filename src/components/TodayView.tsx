@@ -116,7 +116,7 @@ export const TodayView: React.FC<TodayViewProps> = ({
   const activeTabIdx = filterTabs.findIndex(t => t.id === filterMode)
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto px-3.5 py-3 gap-3.5 scrollbar-thin">
+    <div className="flex flex-col h-full overflow-y-auto px-3.5 py-3 gap-3.5 scrollbar-thin pb-24 md:pb-4">
       {/* Header Banner */}
       <section aria-labelledby="today-heading" className="flex flex-col gap-2 pt-0.5">
         <div className="flex items-center justify-between">

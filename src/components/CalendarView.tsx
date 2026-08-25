@@ -109,7 +109,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   const todayStr = new Date().toISOString().split('T')[0]
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto px-4 py-3.5 gap-4 scrollbar-thin">
+    <div className="flex flex-col h-full overflow-y-auto px-4 py-3.5 gap-4 scrollbar-thin pb-24 md:pb-4">
       {/* Header */}
       <div className="flex items-center justify-between pt-1">
         <div className="flex items-center gap-3">
