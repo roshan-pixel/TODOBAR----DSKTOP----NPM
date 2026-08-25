@@ -1,21 +1,17 @@
 import React, { useState } from 'react'
 import {
   Check,
-  Flame,
-  Zap,
-  Moon,
-  Clock,
-  Bell,
+  Play,
+  Pencil,
   Trash2,
   ChevronDown,
   ChevronRight,
   Plus,
-  Play,
-  Pencil,
   X,
+  Clock,
+  Bell,
 } from 'lucide-react'
-import { Task, TaskPriority, TaskDensity, CustomList } from '../types'
-import { LiquidGlassIcon } from './LiquidGlassIcon'
+import { Task, TaskDensity, CustomList } from '../types'
 import { sounds } from '../services/audio'
 
 interface TaskItemProps {
@@ -34,8 +30,6 @@ interface TaskItemProps {
 
 export const TaskItem: React.FC<TaskItemProps> = ({
   task,
-  lists,
-  density,
   onToggle,
   onUpdate,
   onDelete,
@@ -49,33 +43,6 @@ export const TaskItem: React.FC<TaskItemProps> = ({
   const [editTitle, setEditTitle] = useState(task.title)
   const [showSubtasks, setShowSubtasks] = useState(false)
   const [newSubtaskTitle, setNewSubtaskTitle] = useState('')
-  const [isHovered, setIsHovered] = useState(false)
-
-  const priorityMeta: Record<TaskPriority, { icon: React.ReactNode; label: string; badgeColor: string }> = {
-    focus: {
-      icon: <Flame className="w-3 h-3 text-amber-400 fill-amber-400" />,
-      label: 'Focus',
-      badgeColor: 'bg-amber-500/20 border-amber-500/40 text-amber-300',
-    },
-    normal: {
-      icon: <Zap className="w-3 h-3 text-sky-400 fill-sky-400" />,
-      label: 'Standard',
-      badgeColor: 'bg-sky-500/20 border-sky-500/40 text-sky-300',
-    },
-    later: {
-      icon: <Moon className="w-3 h-3 text-slate-400" />,
-      label: 'Later',
-      badgeColor: 'bg-white/10 border-white/15 text-slate-300',
-    },
-  }
-
-  const handlePriorityCycle = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    sounds.playClick(playSounds)
-    const nextPriority: TaskPriority =
-      task.priority === 'normal' ? 'focus' : task.priority === 'focus' ? 'later' : 'normal'
-    onUpdate(task.id, { priority: nextPriority })
-  }
 
   const handleSaveEdit = () => {
     if (editTitle.trim()) {
@@ -94,140 +61,103 @@ export const TaskItem: React.FC<TaskItemProps> = ({
   const subtasks = task.subtasks || []
   const completedSubtasks = subtasks.filter(s => s.done).length
 
-  // Density padding classes
-  const densityPadding =
-    density === 'compact' ? 'p-2.5' : density === 'spacious' ? 'p-4' : 'p-3'
-
   return (
     <div
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      className={`group relative flex flex-col rounded-3xl liquid-glass-card shadow-lg transition-all overflow-hidden ${
-        task.done ? 'opacity-65' : ''
+      className={`group relative flex flex-col rounded-[22px] liquid-glass-card transition-all overflow-hidden ${
+        task.done ? 'opacity-55' : ''
       }`}
     >
-      {/* Main Task Card Row (Matching List View Box Pattern) */}
-      <div className={`flex items-center justify-between gap-3 w-full ${densityPadding}`}>
-        {/* Left: 3D Liquid Glass Checkbox Tile + Content */}
-        <div className="flex items-center gap-3 min-w-0 flex-1">
-          {/* 3D Liquid Glass Checkbox Tile */}
-          <button
-            type="button"
-            onClick={() => onToggle(task.id)}
-            title={task.done ? 'Mark pending' : 'Mark complete'}
-            aria-label={task.done ? `Mark "${task.title}" as incomplete` : `Mark "${task.title}" as complete`}
-            className="cursor-pointer shrink-0 transition-transform active:scale-95"
-          >
-            {task.done ? (
-              <LiquidGlassIcon type="check" size="xs" isActive={true} />
-            ) : (
-              <div
-                className="w-6 h-6 rounded-[8px] flex items-center justify-center bg-white/[0.08] hover:bg-white/[0.16] border border-white/20 hover:border-white/35 transition-all shadow-sm backdrop-blur-xl relative overflow-hidden"
-                style={{
-                  boxShadow: 'inset 0 1px 0.5px 0 rgba(255, 255, 255, 0.25), 0 2px 8px rgba(0, 0, 0, 0.15)',
-                }}
+      {/* Main Task Card Row (Matching Reference Layout) */}
+      <div className="flex items-center justify-between gap-3.5 w-full p-4">
+        {/* Left: Circular Glass Ring Checkbox */}
+        <button
+          type="button"
+          onClick={() => {
+            sounds.playComplete(playSounds)
+            onToggle(task.id)
+          }}
+          title={task.done ? 'Mark pending' : 'Mark complete'}
+          aria-label={task.done ? `Mark "${task.title}" incomplete` : `Mark "${task.title}" complete`}
+          className={`w-7 h-7 rounded-full shrink-0 flex items-center justify-center cursor-pointer liquid-checkbox-ring ${
+            task.done ? 'checked' : ''
+          }`}
+        >
+          {task.done && (
+            <Check className="w-4 h-4 text-white stroke-[2.8] animate-in zoom-in-50 duration-200" />
+          )}
+        </button>
+
+        {/* Center: Title, Subtitle, and Metadata Pills */}
+        <div className="flex flex-col min-w-0 flex-1 gap-1">
+          {/* Title */}
+          {isEditing ? (
+            <input
+              type="text"
+              autoFocus
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+              onBlur={handleSaveEdit}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSaveEdit()
+                if (e.key === 'Escape') setIsEditing(false)
+              }}
+              className="w-full text-sm font-semibold bg-white/15 px-2.5 py-1 rounded-xl border border-white/30 text-white focus:outline-none backdrop-blur-xl"
+            />
+          ) : (
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span
+                onDoubleClick={() => setIsEditing(true)}
+                className={`text-sm font-semibold tracking-tight select-text cursor-pointer truncate ${
+                  task.done ? 'line-through text-white/50' : 'text-white'
+                }`}
               >
-                <div
-                  className="absolute inset-x-0 top-0 h-[45%] rounded-[8px] pointer-events-none rounded-b-none"
-                  style={{
-                    background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.04) 70%, transparent 100%)',
-                  }}
-                />
-              </div>
-            )}
-          </button>
-
-          {/* Center Details */}
-          <div className="flex flex-col min-w-0 flex-1 gap-0.5">
-            {/* Title Line */}
-            {isEditing ? (
-              <input
-                type="text"
-                autoFocus
-                value={editTitle}
-                onChange={(e) => setEditTitle(e.target.value)}
-                onBlur={handleSaveEdit}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleSaveEdit()
-                  if (e.key === 'Escape') setIsEditing(false)
-                }}
-                className="w-full text-xs font-bold bg-white/15 px-2 py-0.5 rounded-lg border border-accent text-white focus:outline-none backdrop-blur-xl"
-              />
-            ) : (
-              <div className="flex items-center gap-2 min-w-0">
-                <span
-                  onDoubleClick={() => setIsEditing(true)}
-                  className={`text-xs font-bold select-text cursor-pointer truncate ${
-                    task.done ? 'line-through text-white/50' : 'text-white'
-                  }`}
-                >
-                  {task.title}
-                </span>
-
-                {/* Priority Pill */}
-                <button
-                  type="button"
-                  onClick={handlePriorityCycle}
-                  title={`Priority: ${priorityMeta[task.priority].label} (Click to cycle)`}
-                  aria-label={`Current priority: ${priorityMeta[task.priority].label}`}
-                  className={`px-2 py-0.5 rounded-md border text-[10px] font-semibold flex items-center gap-1 shrink-0 cursor-pointer transition-transform active:scale-95 backdrop-blur-md ${priorityMeta[task.priority].badgeColor}`}
-                >
-                  {priorityMeta[task.priority].icon}
-                  <span className="hidden sm:inline">{priorityMeta[task.priority].label}</span>
-                </button>
-              </div>
-            )}
-
-            {/* Sub-Details Line: Description or Tags / Subtasks / Time */}
-            <div className="flex items-center gap-2 text-[11px] text-white/60 truncate">
-              {task.description ? (
-                <span className="truncate text-white/70">{task.description}</span>
-              ) : task.tags && task.tags.length > 0 ? (
-                <div className="flex items-center gap-1">
-                  {task.tags.map((t) => (
-                    <span
-                      key={t}
-                      className="text-[9.5px] px-1.5 py-0.2 rounded-md bg-white/[0.08] text-white/80 border border-white/10 font-mono font-medium backdrop-blur-sm"
-                    >
-                      #{t}
-                    </span>
-                  ))}
-                </div>
-              ) : null}
-
-              {/* Subtask count */}
-              {subtasks.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setShowSubtasks(prev => !prev)}
-                  className="flex items-center gap-1 text-[10px] px-1.5 py-0.2 rounded-md bg-white/[0.08] text-white/80 hover:text-white border border-white/12 font-mono font-semibold backdrop-blur-sm transition-colors cursor-pointer shrink-0"
-                >
-                  <span>{completedSubtasks}/{subtasks.length}</span>
-                  {showSubtasks ? <ChevronDown className="w-2.5 h-2.5" /> : <ChevronRight className="w-2.5 h-2.5" />}
-                </button>
-              )}
-
-              {/* Estimated minutes */}
-              {task.estimatedMinutes && (
-                <span className="text-[10px] font-mono font-medium text-white/70 flex items-center gap-1 shrink-0">
-                  <Clock className="w-2.5 h-2.5 text-white/50" />
-                  {task.estimatedMinutes}m
-                </span>
-              )}
-
-              {/* Reminder badge */}
-              {task.reminderAt && !task.done && (
-                <span className="text-[10px] font-mono font-medium text-amber-300 flex items-center gap-1 shrink-0">
-                  <Bell className="w-2.5 h-2.5" />
-                  {new Date(task.reminderAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </span>
-              )}
+                {task.title}
+              </span>
+              {task.priority === 'focus' && <span className="text-sm">🔥</span>}
+              {task.priority === 'normal' && <span className="text-xs text-sky-400">⚡</span>}
             </div>
+          )}
+
+          {/* Subtitle & Metadata Row */}
+          <div className="flex items-center gap-2.5 text-xs text-white/50 flex-wrap">
+            {task.description && (
+              <span className="truncate max-w-[190px] text-white/60 font-normal">
+                {task.description}
+              </span>
+            )}
+
+            {/* Subtasks Count Pill */}
+            {subtasks.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setShowSubtasks(prev => !prev)}
+                className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white/80 hover:text-white border border-white/12 font-mono font-medium backdrop-blur-md transition-colors cursor-pointer shrink-0"
+              >
+                <span>{completedSubtasks}/{subtasks.length}</span>
+                {showSubtasks ? <ChevronDown className="w-2.5 h-2.5" /> : <ChevronRight className="w-2.5 h-2.5" />}
+              </button>
+            )}
+
+            {/* Estimated Duration */}
+            {task.estimatedMinutes && (
+              <span className="text-[10px] font-mono font-normal text-white/60 flex items-center gap-1 shrink-0">
+                <Clock className="w-2.5 h-2.5 text-white/40" />
+                {task.estimatedMinutes}m
+              </span>
+            )}
+
+            {/* Reminder Badge */}
+            {task.reminderAt && !task.done && (
+              <span className="text-[10px] font-mono font-medium text-amber-300 flex items-center gap-1 shrink-0">
+                <Bell className="w-2.5 h-2.5" />
+                {new Date(task.reminderAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            )}
           </div>
         </div>
 
-        {/* Right: Quick Action Controls */}
-        <div className="flex items-center gap-1 shrink-0">
+        {/* Right: Floating Circular Glass Action Orbs */}
+        <div className="flex items-center gap-1.5 shrink-0">
           {onStartFocus && !task.done && (
             <button
               type="button"
@@ -237,26 +167,32 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                 onStartFocus(task)
               }}
               title="Start Focus Timer"
-              className="w-7 h-7 rounded-xl flex items-center justify-center bg-white/10 hover:bg-accent hover:text-white text-white/80 transition-colors cursor-pointer"
+              aria-label="Start Focus Timer"
+              className="w-8 h-8 rounded-full liquid-glass-orb flex items-center justify-center cursor-pointer text-white/90 hover:text-white"
             >
-              <Play className="w-3 h-3 fill-current" />
+              <Play className="w-3 h-3 fill-current ml-0.5" />
             </button>
           )}
 
           <button
             type="button"
             onClick={() => setIsEditing(true)}
-            title="Edit"
-            className="w-7 h-7 rounded-xl flex items-center justify-center bg-white/10 hover:text-white text-white/80 transition-colors cursor-pointer"
+            title="Edit Task"
+            aria-label="Edit Task"
+            className="w-8 h-8 rounded-full liquid-glass-orb flex items-center justify-center cursor-pointer text-white/70 hover:text-white"
           >
             <Pencil className="w-3 h-3" />
           </button>
 
           <button
             type="button"
-            onClick={() => onDelete(task.id)}
-            title="Delete"
-            className="w-7 h-7 rounded-xl flex items-center justify-center bg-white/10 hover:bg-rose-500/30 hover:text-rose-300 text-white/80 transition-colors cursor-pointer"
+            onClick={() => {
+              sounds.playClick(playSounds)
+              onDelete(task.id)
+            }}
+            title="Delete Task"
+            aria-label="Delete Task"
+            className="w-8 h-8 rounded-full liquid-glass-orb flex items-center justify-center cursor-pointer text-white/60 hover:text-rose-300 hover:border-rose-400/40"
           >
             <Trash2 className="w-3 h-3" />
           </button>
@@ -265,20 +201,20 @@ export const TaskItem: React.FC<TaskItemProps> = ({
 
       {/* Subtasks Collapsible Checklist */}
       {showSubtasks && (
-        <div className="flex flex-col gap-1.5 px-4 pb-3 pt-2 border-t border-white/[0.08] bg-black/15 backdrop-blur-md">
+        <div className="flex flex-col gap-2 px-5 pb-3.5 pt-2 border-t border-white/[0.08] bg-black/10 backdrop-blur-md">
           {subtasks.map((sub) => (
-            <div key={sub.id} className="flex items-center justify-between gap-2 group/sub">
+            <div key={sub.id} className="flex items-center justify-between gap-2.5 group/sub">
               <button
                 type="button"
                 onClick={() => onToggleSubtask(task.id, sub.id)}
-                className="flex items-center gap-2 text-left flex-1 min-w-0 cursor-pointer"
+                className="flex items-center gap-2.5 text-left flex-1 min-w-0 cursor-pointer"
               >
-                <div className={`w-4 h-4 rounded-md border flex items-center justify-center transition-colors ${
-                  sub.done ? 'bg-emerald-500 border-emerald-400 text-white' : 'border-white/30 bg-white/[0.05]'
+                <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${
+                  sub.done ? 'bg-cyan-500 border-cyan-400 text-white' : 'border-white/30 bg-white/[0.05]'
                 }`}>
                   {sub.done && <Check className="w-2.5 h-2.5 stroke-[3]" />}
                 </div>
-                <span className={`text-[11px] font-medium truncate ${sub.done ? 'line-through text-white/40' : 'text-white/90'}`}>
+                <span className={`text-xs font-normal truncate ${sub.done ? 'line-through text-white/40' : 'text-white/85'}`}>
                   {sub.title}
                 </span>
               </button>
@@ -294,14 +230,14 @@ export const TaskItem: React.FC<TaskItemProps> = ({
           ))}
 
           {/* Add Subtask Input */}
-          <form onSubmit={handleAddSub} className="flex items-center gap-1.5 mt-1">
-            <Plus className="w-3 h-3 text-white/60" />
+          <form onSubmit={handleAddSub} className="flex items-center gap-2 mt-1">
+            <Plus className="w-3.5 h-3.5 text-white/50" />
             <input
               type="text"
               value={newSubtaskTitle}
               onChange={(e) => setNewSubtaskTitle(e.target.value)}
               placeholder="Add subtask step..."
-              className="flex-1 bg-transparent text-[11px] text-white placeholder:text-white/40 font-medium focus:outline-none"
+              className="flex-1 bg-transparent text-xs text-white placeholder:text-white/40 font-normal focus:outline-none"
             />
           </form>
         </div>

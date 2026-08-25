@@ -32,7 +32,7 @@ export const CommandRail: React.FC<CommandRailProps> = ({
     { id: 'today', label: 'Today', iconType: 'today', badge: totalOpenTasks > 0 ? totalOpenTasks : undefined, shortcut: '⌘1' },
     { id: 'calendar', label: 'Calendar', iconType: 'calendar', shortcut: '⌘2' },
     { id: 'lists', label: 'Lists', iconType: 'lists', shortcut: '⌘3' },
-    { id: 'pomodoro', label: 'Focus', iconType: 'pomodoro', shortcut: '⌘4' },
+    { id: 'pomodoro', label: 'Focus', iconType: 'focus', shortcut: '⌘4' },
     { id: 'settings', label: 'Settings', iconType: 'settings', shortcut: '⌘,' },
   ]
 
@@ -44,24 +44,20 @@ export const CommandRail: React.FC<CommandRailProps> = ({
   // Active item index for sliding capsule physics
   const activeIndex = navItems.findIndex(item => item.id === activeView)
 
-  // Mobile Bottom Navigation Bar Layout (iPhone Style)
+  // Mobile Bottom Navigation Bar Layout (iPhone iOS 26 Liquid Glass Floating Dock)
   if (isMobile) {
     return (
-      <nav
-        aria-label="Liquid Glass Mobile Tab Bar"
-        className="w-full flex items-center justify-around px-3 pt-2 pb-safe select-none liquid-glass-bottom-bar relative z-30 shrink-0 border-t border-white/15"
-      >
-        <div className="relative flex items-center justify-between w-full max-w-md mx-auto" role="tablist">
-          {/* Fluid Liquid Sliding Capsule for Mobile */}
+      <div className="w-full px-4 pb-safe pt-1 shrink-0 z-30 select-none pointer-events-none">
+        <nav
+          aria-label="Floating Liquid Glass Bottom Dock"
+          className="relative max-w-sm mx-auto p-1.5 rounded-[30px] liquid-glass-dock pointer-events-auto flex items-center justify-between shadow-2xl"
+        >
+          {/* True Fluid Liquid Glass Morphing Selection Pill */}
           <div
-            className="absolute top-0 bottom-0 rounded-2xl pointer-events-none transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]"
+            className="absolute top-1.5 bottom-1.5 rounded-[24px] pointer-events-none transition-all duration-450 ease-[cubic-bezier(0.32,0.72,0,1)] liquid-morph-capsule"
             style={{
               left: `${activeIndex * 20}%`,
               width: '20%',
-              background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.08) 100%)',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 255, 255, 0.3)',
-              boxShadow: 'inset 0 1px 1px 0 rgba(255, 255, 255, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3)',
             }}
           />
 
@@ -83,31 +79,27 @@ export const CommandRail: React.FC<CommandRailProps> = ({
                     isActive={isActive}
                   />
 
-                  {/* Badge */}
+                  {/* iOS Style Floating Badge Orb */}
                   {item.badge !== undefined && (
                     <span
                       aria-label={`${item.badge} open tasks`}
-                      className="absolute -top-1 -right-1.5 text-[9px] min-w-[15px] h-3.5 px-0.5 rounded-full flex items-center justify-center font-black font-mono text-white shadow-md z-20 border border-white/30"
-                      style={{
-                        background: 'rgba(239, 68, 68, 0.95)',
-                        boxShadow: '0 2px 5px rgba(0, 0, 0, 0.4)',
-                      }}
+                      className="absolute -top-1 -right-1 text-[9.5px] min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center font-bold font-mono text-white shadow-md z-20 border border-white/40 bg-gradient-to-r from-indigo-500 to-pink-500"
                     >
                       {item.badge > 99 ? '99+' : item.badge}
                     </span>
                   )}
                 </div>
 
-                <span className={`text-[10px] font-bold mt-0.5 tracking-tight transition-colors ${
-                  isActive ? 'text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]' : 'text-white/50'
+                <span className={`text-[10px] font-medium mt-0.5 tracking-tight transition-all duration-200 ${
+                  isActive ? 'text-white font-bold drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] scale-105' : 'text-white/50'
                 }`}>
                   {item.label}
                 </span>
               </button>
             )
           })}
-        </div>
-      </nav>
+        </nav>
+      </div>
     )
   }
 
@@ -115,19 +107,19 @@ export const CommandRail: React.FC<CommandRailProps> = ({
   return (
     <nav
       aria-label="Liquid Glass Navigation Rail"
-      className="flex flex-col items-center justify-between py-3.5 px-2 select-none w-15 shrink-0 transition-colors duration-200 liquid-glass-rail relative z-20"
+      className="flex flex-col items-center justify-between py-4 px-2 select-none w-16 shrink-0 transition-colors duration-200 liquid-glass-dock relative z-20 border-r border-white/15"
     >
       {/* Top: Liquid Glass App Logo & Spotlight Search */}
-      <div className="flex flex-col items-center gap-2.5 w-full">
+      <div className="flex flex-col items-center gap-3 w-full">
         {/* App Logo */}
         <button
           type="button"
           onClick={() => handleNav('today')}
-          title="Todobar Pro (⌘1)"
+          title="Todobar Pro"
           aria-label="Todobar Pro Home"
-          className="flex items-center justify-center cursor-pointer active:scale-95 transition-transform"
+          className="w-11 h-11 rounded-full liquid-glass-orb flex items-center justify-center cursor-pointer active:scale-95 transition-transform text-white"
         >
-          <LiquidGlassIcon type="sparkles" size="md" />
+          <LiquidGlassIcon type="today" size="sm" isActive={activeView === 'today'} />
         </button>
 
         {/* Global Spotlight Search Button */}
@@ -139,27 +131,20 @@ export const CommandRail: React.FC<CommandRailProps> = ({
           }}
           title="Spotlight Search (/)"
           aria-label="Search tasks"
-          className="flex items-center justify-center relative group cursor-pointer active:scale-95 transition-transform"
+          className="w-10 h-10 rounded-full liquid-glass-orb flex items-center justify-center cursor-pointer active:scale-95 transition-transform text-white/80"
         >
           <LiquidGlassIcon type="search" size="sm" />
-          <span className="absolute left-full ml-3 px-3 py-1.5 text-xs font-semibold rounded-xl bg-black/85 text-white opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 shadow-2xl border border-white/15 font-mono backdrop-blur-xl">
-            Search (/)
-          </span>
         </button>
 
-        <div className="w-7 h-[1px] bg-white/10 my-0.5" />
+        <div className="w-8 h-[1px] bg-white/15 my-0.5" />
 
-        {/* Navigation Items (Apple HIG Liquid Glass Capsule Rail) */}
-        <div className="relative flex flex-col gap-1.5 w-full items-center" role="tablist">
+        {/* Navigation Items (Liquid Glass Capsule Rail) */}
+        <div className="relative flex flex-col gap-2 w-full items-center" role="tablist">
           {/* Sliding Liquid Glass Capsule Highlight */}
           <div
-            className="absolute left-1/2 -translate-x-1/2 w-11 h-10 rounded-[12px] pointer-events-none transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+            className="absolute left-1/2 -translate-x-1/2 w-11 h-11 rounded-[16px] pointer-events-none transition-all duration-400 ease-[cubic-bezier(0.32,0.72,0,1)] liquid-morph-capsule"
             style={{
-              top: `${activeIndex * 44}px`,
-              background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.08) 100%)',
-              backdropFilter: 'blur(24px)',
-              border: '1px solid rgba(255, 255, 255, 0.28)',
-              boxShadow: 'inset 0 1px 1px 0 rgba(255, 255, 255, 0.4), 0 4px 14px rgba(0, 0, 0, 0.25)',
+              top: `${activeIndex * 52}px`,
             }}
           />
 
@@ -173,7 +158,7 @@ export const CommandRail: React.FC<CommandRailProps> = ({
                 aria-label={item.label}
                 onClick={() => handleNav(item.id)}
                 title={`${item.label} (${item.shortcut})`}
-                className="w-11 h-9.5 flex items-center justify-center relative group cursor-pointer z-10 transition-transform active:scale-95"
+                className="w-11 h-11 flex items-center justify-center relative group cursor-pointer z-10 transition-transform active:scale-95 rounded-full"
               >
                 <LiquidGlassIcon
                   type={item.iconType}
@@ -181,27 +166,15 @@ export const CommandRail: React.FC<CommandRailProps> = ({
                   isActive={isActive}
                 />
 
-                {/* Subtle Refined Badge for Today open tasks */}
+                {/* Refined Badge */}
                 {item.badge !== undefined && (
                   <span
                     aria-label={`${item.badge} open tasks`}
-                    className="absolute -top-1 -right-1 text-[10px] min-w-[17px] h-4 px-1 rounded-full flex items-center justify-center font-extrabold font-mono text-white shadow-md z-20 border border-white/30"
-                    style={{
-                      background: 'rgba(239, 68, 68, 0.9)',
-                      boxShadow: '0 2px 6px rgba(0, 0, 0, 0.4)',
-                    }}
+                    className="absolute -top-1 -right-1 text-[9.5px] min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center font-bold font-mono text-white shadow-md z-20 border border-white/40 bg-gradient-to-r from-indigo-500 to-pink-500"
                   >
                     {item.badge > 99 ? '99+' : item.badge}
                   </span>
                 )}
-
-                {/* Apple HIG Tooltip */}
-                <span className="absolute left-full ml-3 px-3 py-1.5 text-xs font-semibold rounded-xl bg-black/85 text-white opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 shadow-2xl border border-white/15 flex items-center gap-2 backdrop-blur-xl">
-                  {item.label}
-                  <kbd className="px-1.5 py-0.5 text-[10px] bg-white/10 rounded-md font-mono text-slate-200 border border-white/15">
-                    {item.shortcut}
-                  </kbd>
-                </span>
               </button>
             )
           })}
@@ -215,7 +188,7 @@ export const CommandRail: React.FC<CommandRailProps> = ({
           onClick={() => handleNav('today')}
           title={`Today's Progress: ${percent}% completed (${totalCompletedTasks}/${total})`}
           aria-label={`Today's Progress: ${percent}%`}
-          className="flex flex-col items-center cursor-pointer group relative w-10 h-10 rounded-[12px] bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 hover:scale-105 justify-center transition-all shadow-sm"
+          className="flex flex-col items-center cursor-pointer group relative w-10 h-10 rounded-full liquid-glass-orb justify-center transition-all shadow-sm"
         >
           <div className="w-7 h-7 relative flex items-center justify-center">
             <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
@@ -226,7 +199,7 @@ export const CommandRail: React.FC<CommandRailProps> = ({
                 d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
               />
               <path
-                className="text-white stroke-current transition-all duration-500 drop-shadow-[0_0_4px_rgba(255,255,255,0.6)]"
+                className="text-cyan-400 stroke-current transition-all duration-500 drop-shadow-[0_0_6px_rgba(34,211,238,0.8)]"
                 strokeDasharray={`${percent}, 100`}
                 strokeWidth="3.5"
                 strokeLinecap="round"

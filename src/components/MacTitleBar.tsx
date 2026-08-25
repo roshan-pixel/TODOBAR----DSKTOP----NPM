@@ -1,7 +1,7 @@
 import React from 'react'
-import { Search, PanelRightClose, PanelRightOpen, Maximize2, Minus, X } from 'lucide-react'
 import { SectionView, DockEdge } from '../types'
 import { sounds } from '../services/audio'
+import { LiquidGlassIcon } from './LiquidGlassIcon'
 
 interface MacTitleBarProps {
   title: string
@@ -10,6 +10,7 @@ interface MacTitleBarProps {
   isExpanded: boolean
   onToggleSidebar: () => void
   onOpenSearch: () => void
+  onOpenAdd?: () => void
   playSounds: boolean
   totalTasks: number
   completedTasks: number
@@ -19,163 +20,76 @@ interface MacTitleBarProps {
 export const MacTitleBar: React.FC<MacTitleBarProps> = ({
   title,
   activeView,
-  dockEdge,
-  isExpanded,
   onToggleSidebar,
   onOpenSearch,
+  onOpenAdd,
   playSounds,
-  totalTasks,
-  completedTasks,
   isMobile = false,
 }) => {
-  if (isMobile) {
-    return (
-      <header className="flex flex-col items-center px-4 pt-safe pb-2 bg-transparent select-none shrink-0 border-b border-white/[0.08] backdrop-blur-md">
-        {/* Apple iOS Sheet Grabber Bar */}
-        <div
-          onClick={() => {
-            sounds.playClick(playSounds)
-            onToggleSidebar()
-          }}
-          className="w-10 h-1.5 rounded-full bg-white/30 hover:bg-white/60 mb-2 cursor-pointer active:scale-95 transition-all shadow-sm"
-          title="Swipe or Tap to dock"
-        />
+  // Format current date matching reference "Tuesday, Aug 25"
+  const formattedDate = new Date().toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'short',
+    day: 'numeric',
+  })
 
-        <div className="w-full flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-bold text-white tracking-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-              {title}
-            </span>
-            {totalTasks > 0 && (
-              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-white/[0.1] border border-white/15 text-white/90 shadow-sm backdrop-blur-md">
-                {completedTasks}/{totalTasks}
-              </span>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                sounds.playClick(playSounds)
-                onOpenSearch()
-              }}
-              title="Search"
-              aria-label="Search"
-              className="p-2 rounded-xl bg-white/[0.1] hover:bg-white/[0.18] border border-white/15 text-white active:scale-90 transition-transform cursor-pointer backdrop-blur-xl"
-            >
-              <Search className="w-4 h-4 stroke-[2.4]" />
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                sounds.playClick(playSounds)
-                onToggleSidebar()
-              }}
-              title="Close Sidebar"
-              aria-label="Close Sidebar"
-              className="p-2 rounded-xl bg-white/[0.1] hover:bg-white/[0.18] border border-white/15 text-white/80 active:scale-90 transition-transform cursor-pointer backdrop-blur-xl"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      </header>
-    )
-  }
-
+  // iOS 26 Liquid Glass Header
   return (
-    <header className="flex items-center justify-between px-4 py-2 bg-transparent border-b border-white/[0.08] select-none shrink-0 h-11 backdrop-blur-md">
-      {/* Left: macOS Traffic Lights & Title */}
-      <div className="flex items-center gap-3">
-        {/* macOS Traffic Light Window Controls */}
-        <div className="flex items-center gap-1.5 group/traffic">
-          <button
-            type="button"
-            onClick={() => {
-              sounds.playClick(playSounds)
-              onToggleSidebar()
-            }}
-            title="Close / Retract Sidebar (Alt+T)"
-            aria-label="Close window"
-            className="w-3 h-3 rounded-full bg-[#ff5f56] border border-[#e0443e] flex items-center justify-center cursor-pointer shadow-sm active:brightness-75 transition-all"
-          >
-            <X className="w-1.5 h-1.5 text-[#4c0002] opacity-0 group-hover/traffic:opacity-100 transition-opacity stroke-[3]" />
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              sounds.playClick(playSounds)
-              onToggleSidebar()
-            }}
-            title="Minimize"
-            aria-label="Minimize window"
-            className="w-3 h-3 rounded-full bg-[#ffbd2e] border border-[#dea123] flex items-center justify-center cursor-pointer shadow-sm active:brightness-75 transition-all"
-          >
-            <Minus className="w-1.5 h-1.5 text-[#5c3e00] opacity-0 group-hover/traffic:opacity-100 transition-opacity stroke-[3]" />
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              sounds.playClick(playSounds)
-            }}
-            title="Expand / Fullscreen"
-            aria-label="Expand window"
-            className="w-3 h-3 rounded-full bg-[#27c93f] border border-[#1aab29] flex items-center justify-center cursor-pointer shadow-sm active:brightness-75 transition-all"
-          >
-            <Maximize2 className="w-1.5 h-1.5 text-[#003800] opacity-0 group-hover/traffic:opacity-100 transition-opacity stroke-[3]" />
-          </button>
-        </div>
-
-        {/* View Title matching Apple HIG typography */}
-        <div className="flex items-center gap-2 pl-1">
-          <span className="text-xs font-semibold text-white tracking-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]">
-            {title}
-          </span>
-          {totalTasks > 0 && (
-            <span className="text-[10px] font-mono font-medium px-2 py-0.2 rounded-full bg-white/[0.08] border border-white/10 text-white/80 shadow-sm backdrop-blur-md">
-              {completedTasks}/{totalTasks}
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* Right: Apple Floating Liquid Glass Search Pill & Sidebar Retract */}
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={() => {
-            sounds.playClick(playSounds)
-            onOpenSearch()
-          }}
-          title="Spotlight Search (⌘/ or /)"
-          aria-label="Spotlight Search"
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[0.1] hover:bg-white/[0.18] border border-white/20 text-white/90 hover:text-white text-xs font-medium transition-all cursor-pointer shadow-sm backdrop-blur-xl"
-        >
-          <Search className="w-3 h-3 text-white stroke-[2.2]" />
-          <span className="text-[11px] hidden sm:inline">Search</span>
-          <kbd className="text-[9px] px-1 py-0.2 rounded-full bg-white/15 font-mono border border-white/20 text-white/80">
-            /
-          </kbd>
-        </button>
-
+    <header className="flex flex-col px-5 pt-safe pb-2 bg-transparent select-none shrink-0 z-20">
+      <div className="flex items-center justify-between w-full pt-2">
+        {/* Left: Floating Circular Glass Menu Orb */}
         <button
           type="button"
           onClick={() => {
             sounds.playClick(playSounds)
             onToggleSidebar()
           }}
-          title={isExpanded ? 'Dock Sidebar (Alt+T)' : 'Expand Sidebar (Alt+T)'}
-          aria-label="Toggle sidebar"
-          className="w-7 h-7 rounded-lg flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+          title="Toggle Navigation Menu"
+          aria-label="Navigation Menu"
+          className="w-11 h-11 rounded-full liquid-glass-orb flex items-center justify-center cursor-pointer text-white/90"
         >
-          {dockEdge === 'right' ? (
-            <PanelRightClose className="w-3.5 h-3.5" />
-          ) : (
-            <PanelRightOpen className="w-3.5 h-3.5" />
-          )}
+          <LiquidGlassIcon type="menu" size="sm" />
         </button>
+
+        {/* Center: Title & Subtitle */}
+        <div className="flex flex-col items-center justify-center text-center">
+          <h1 className="text-2xl font-bold tracking-tight text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]">
+            {activeView === 'today' ? 'Today' : title}
+          </h1>
+          <p className="text-xs text-white/60 font-medium tracking-wide mt-0.5">
+            {formattedDate}
+          </p>
+        </div>
+
+        {/* Right: Floating Circular Glass Search & Add Orbs */}
+        <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={() => {
+              sounds.playClick(playSounds)
+              onOpenSearch()
+            }}
+            title="Spotlight Search"
+            aria-label="Search tasks"
+            className="w-11 h-11 rounded-full liquid-glass-orb flex items-center justify-center cursor-pointer text-white/90"
+          >
+            <LiquidGlassIcon type="search" size="sm" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              sounds.playClick(playSounds)
+              if (onOpenAdd) onOpenAdd()
+              else onOpenSearch()
+            }}
+            title="Add New Objective"
+            aria-label="Add new objective"
+            className="w-11 h-11 rounded-full liquid-glass-orb flex items-center justify-center cursor-pointer text-white/90"
+          >
+            <LiquidGlassIcon type="plus" size="sm" />
+          </button>
+        </div>
       </div>
     </header>
   )

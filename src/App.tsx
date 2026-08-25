@@ -305,6 +305,13 @@ export function App() {
         settings.themeMode === 'dark' ? 'dark' : ''
       }`}
     >
+      {/* 60fps Living Liquid Fluid Gradient Mesh Background (iOS 26 Liquid Glass System) */}
+      <div className="living-liquid-bg">
+        <div className="living-liquid-mesh-1" />
+        <div className="living-liquid-mesh-2" />
+        <div className="living-liquid-mesh-3" />
+      </div>
+
       {/* Desktop Workspace Wallpaper Backdrop */}
       {settings.desktopSimulatorMode && !isMobile && (
         <DesktopSimulator
@@ -377,6 +384,10 @@ export function App() {
             isExpanded={settings.isExpanded}
             onToggleSidebar={toggleSidebar}
             onOpenSearch={() => setIsSearchOpen(true)}
+            onOpenAdd={() => {
+              handleSelectView('today')
+              setTimeout(() => quickInputRef.current?.focus(), 50)
+            }}
             playSounds={settings.playSounds}
             totalTasks={totalTasksCount}
             completedTasks={completedTasksCount}

@@ -1,14 +1,15 @@
 import React from 'react'
 import {
   Sun,
-  CalendarDays,
-  ListTodo,
-  Timer,
+  Calendar,
+  List,
+  Target,
   Settings,
   Search,
-  Sparkles,
-  Flame,
+  Plus,
+  Menu,
   Zap,
+  Flame,
   Moon,
   Check,
   Folder,
@@ -16,11 +17,14 @@ import {
   Bell,
   Clock,
   Coffee,
-  Plus,
   Share2,
   Bookmark,
   Info,
   ChevronLeft,
+  ChevronRight,
+  Play,
+  Pencil,
+  Trash2,
 } from 'lucide-react'
 
 export type LiquidIconType =
@@ -28,10 +32,12 @@ export type LiquidIconType =
   | 'calendar'
   | 'lists'
   | 'pomodoro'
+  | 'focus'
   | 'settings'
   | 'search'
+  | 'plus'
+  | 'menu'
   | 'sparkles'
-  | 'focus'
   | 'normal'
   | 'later'
   | 'check'
@@ -44,8 +50,11 @@ export type LiquidIconType =
   | 'bookmark'
   | 'info'
   | 'back'
+  | 'play'
+  | 'pencil'
+  | 'trash'
 
-export type LiquidIconSize = 'xs' | 'sm' | 'md' | 'lg'
+export type LiquidIconSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
 
 interface LiquidGlassIconProps {
   type: LiquidIconType
@@ -59,64 +68,99 @@ export const LiquidGlassIcon: React.FC<LiquidGlassIconProps> = ({
   type,
   size = 'md',
   isActive = false,
-  customColor,
   className = '',
 }) => {
   // Sizing definitions matching Apple HIG toolbar & control standards
   const sizeClasses: Record<LiquidIconSize, { box: string; icon: string; radius: string }> = {
     xs: { box: 'w-6 h-6', icon: 'w-3.5 h-3.5', radius: 'rounded-[8px]' },
     sm: { box: 'w-8 h-8', icon: 'w-4 h-4', radius: 'rounded-[10px]' },
-    md: { box: 'w-9 h-9', icon: 'w-4.5 h-4.5', radius: 'rounded-[12px]' },
-    lg: { box: 'w-11 h-11', icon: 'w-5.5 h-5.5', radius: 'rounded-[16px]' },
+    md: { box: 'w-10 h-10', icon: 'w-5 h-5', radius: 'rounded-[14px]' },
+    lg: { box: 'w-11 h-11', icon: 'w-5.5 h-5.5', radius: 'rounded-full' },
+    xl: { box: 'w-13 h-13', icon: 'w-6 h-6', radius: 'rounded-full' },
   }
 
-  // Authentic Apple Liquid Glass Icon Definitions (Refined, frosted, subtle neutral specular)
+  // Authentic Apple Liquid Glass Icon Definitions
   const renderIconGlyph = (iconType: LiquidIconType, cls: string) => {
-    const strokeClass = `${cls} stroke-[2] transition-colors duration-150`
+    const strokeClass = `${cls} stroke-[1.75] transition-all duration-200`
 
     switch (iconType) {
       case 'today':
-        return <Sun className={`${strokeClass} text-white`} />
+        // SF Symbol Sun with radiating ray dots
+        return (
+          <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2v2" />
+            <path d="M12 20v2" />
+            <path d="m4.93 4.93 1.41 1.41" />
+            <path d="m17.66 17.66 1.41 1.41" />
+            <path d="M2 12h2" />
+            <path d="M20 12h2" />
+            <path d="m6.34 17.66-1.41 1.41" />
+            <path d="m19.07 4.93-1.41 1.41" />
+          </svg>
+        )
       case 'calendar':
-        return <CalendarDays className={`${strokeClass} text-white`} />
+        return (
+          <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <rect width="18" height="18" x="3" y="4" rx="4" />
+            <path d="M16 2v4" />
+            <path d="M8 2v4" />
+            <path d="M3 10h18" />
+            <circle cx="8" cy="14" r="0.75" fill="currentColor" />
+            <circle cx="12" cy="14" r="0.75" fill="currentColor" />
+            <circle cx="16" cy="14" r="0.75" fill="currentColor" />
+            <circle cx="8" cy="18" r="0.75" fill="currentColor" />
+            <circle cx="12" cy="18" r="0.75" fill="currentColor" />
+          </svg>
+        )
       case 'lists':
-        return <ListTodo className={`${strokeClass} text-white`} />
+        return (
+          <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="9" x2="20" y1="6" y2="6" />
+            <line x1="9" x2="20" y1="12" y2="12" />
+            <line x1="9" x2="20" y1="18" y2="18" />
+            <circle cx="4.5" cy="6" r="1.25" fill="currentColor" />
+            <circle cx="4.5" cy="12" r="1.25" fill="currentColor" />
+            <circle cx="4.5" cy="18" r="1.25" fill="currentColor" />
+          </svg>
+        )
       case 'pomodoro':
-        return <Timer className={`${strokeClass} text-white`} />
-      case 'settings':
-        return <Settings className={`${strokeClass} text-white`} />
-      case 'search':
-        return <Search className={`${strokeClass} text-white/90`} />
-      case 'sparkles':
-        return <Sparkles className={`${strokeClass} text-white fill-white/20`} />
       case 'focus':
-        return <Flame className={`${strokeClass} text-amber-300 fill-amber-400/20`} />
+        // Concentric target ring focus symbol
+        return (
+          <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="9" />
+            <circle cx="12" cy="12" r="4.5" />
+            <circle cx="12" cy="12" r="1" fill="currentColor" />
+          </svg>
+        )
+      case 'settings':
+        return <Settings className={strokeClass} />
+      case 'search':
+        return <Search className={strokeClass} />
+      case 'plus':
+        return <Plus className={strokeClass} />
+      case 'menu':
+        return <Menu className={strokeClass} />
+      case 'sparkles':
       case 'normal':
-        return <Zap className={`${strokeClass} text-sky-300 fill-sky-400/20`} />
+        return <Zap className={strokeClass} />
       case 'later':
-        return <Moon className={`${strokeClass} text-slate-300`} />
+        return <Moon className={strokeClass} />
       case 'check':
-        return <Check className={`${strokeClass} text-white stroke-[2.8]`} />
-      case 'folder':
-        return <Folder className={`${strokeClass}`} style={{ color: customColor || 'white' }} />
-      case 'pin':
-        return <Pin className={`${strokeClass} text-white`} />
-      case 'bell':
-        return <Bell className={`${strokeClass} text-amber-300`} />
+        return <Check className={`${cls} stroke-[2.8]`} />
+      case 'play':
+        return <Play className={`${cls} fill-current stroke-none`} />
+      case 'pencil':
+        return <Pencil className={strokeClass} />
+      case 'trash':
+        return <Trash2 className={strokeClass} />
       case 'clock':
-        return <Clock className={`${strokeClass} text-white/80`} />
-      case 'coffee':
-        return <Coffee className={`${strokeClass} text-emerald-300`} />
-      case 'share':
-        return <Share2 className={`${strokeClass} text-white`} />
-      case 'bookmark':
-        return <Bookmark className={`${strokeClass} text-white`} />
-      case 'info':
-        return <Info className={`${strokeClass} text-white`} />
-      case 'back':
-        return <ChevronLeft className={`${strokeClass} text-white`} />
+        return <Clock className={strokeClass} />
+      case 'bell':
+        return <Bell className={strokeClass} />
       default:
-        return <Sun className={`${strokeClass} text-white`} />
+        return <Sun className={strokeClass} />
     }
   }
 
@@ -124,28 +168,12 @@ export const LiquidGlassIcon: React.FC<LiquidGlassIconProps> = ({
 
   return (
     <div
-      className={`relative ${sz.box} ${sz.radius} flex items-center justify-center select-none transition-all duration-200 group/liquid-icon backdrop-blur-2xl ${className} ${
+      className={`relative ${sz.box} ${sz.radius} flex items-center justify-center select-none transition-all duration-200 backdrop-blur-2xl ${className} ${
         isActive
-          ? 'bg-white/20 border-white/35 shadow-lg scale-105'
-          : 'bg-white/[0.08] hover:bg-white/[0.14] border-white/15 hover:border-white/25 shadow-sm'
+          ? 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.7)]'
+          : 'text-white/60 group-hover:text-white'
       }`}
-      style={{
-        borderWidth: '1px',
-        borderStyle: 'solid',
-        boxShadow: isActive
-          ? 'inset 0 1px 1px 0 rgba(255, 255, 255, 0.4), inset 0 -0.5px 0.5px 0 rgba(0, 0, 0, 0.25), 0 4px 16px rgba(0, 0, 0, 0.25)'
-          : 'inset 0 1px 0.5px 0 rgba(255, 255, 255, 0.25), 0 2px 8px rgba(0, 0, 0, 0.15)',
-      }}
     >
-      {/* Authentic Apple Specular Top Glaze */}
-      <div
-        className={`absolute inset-x-0 top-0 h-[45%] ${sz.radius} pointer-events-none rounded-b-none`}
-        style={{
-          background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.04) 70%, transparent 100%)',
-        }}
-      />
-
-      {/* Monochrome Crisp SF Symbol Glyph */}
       <div className="relative z-10 flex items-center justify-center">
         {renderIconGlyph(type, sz.icon)}
       </div>

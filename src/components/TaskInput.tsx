@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react'
 import {
-  Flame,
   Zap,
+  ChevronRight,
+  Flame,
   Moon,
   Folder,
   ChevronDown,
-  ArrowRight,
   Clock,
   Bell,
 } from 'lucide-react'
@@ -101,21 +101,21 @@ export const TaskInput: React.FC<TaskInputProps> = ({
   const currentList = lists.find(l => l.id === listId) || { id: 'today', title: 'Today', color: '#38bdf8' }
 
   return (
-    <div className="flex flex-col gap-2 p-2.5 rounded-2xl liquid-glass-card shadow-lg focus-within:ring-2 focus-within:ring-white/40 overflow-hidden">
-      {/* Primary Input Row */}
-      <div className="flex items-center gap-2">
-        {/* Priority cycle button */}
+    <div className="flex flex-col gap-2 p-2 rounded-[24px] liquid-glass-card shadow-xl focus-within:border-white/35 focus-within:shadow-[0_0_24px_rgba(56,189,248,0.3)] transition-all overflow-hidden">
+      {/* Primary Input Row (Matching Reference Capsule Layout) */}
+      <div className="flex items-center gap-3 px-1 py-0.5">
+        {/* Luminous Electric Blue Glass Orb with Lightning */}
         <button
           type="button"
           onClick={() => {
             sounds.playClick(playSounds)
             setPriority(prev => (prev === 'normal' ? 'focus' : prev === 'focus' ? 'later' : 'normal'))
           }}
-          title={`Priority: ${priorityMeta[priority].label} (Click to cycle)`}
-          aria-label={`Cycle priority, current: ${priorityMeta[priority].label}`}
-          className={`w-7 h-7 rounded-lg border flex items-center justify-center cursor-pointer shrink-0 transition-transform active:scale-95 backdrop-blur-md ${priorityMeta[priority].bg}`}
+          title={`Priority: ${priorityMeta[priority].label} (Click to toggle)`}
+          aria-label={`Current priority: ${priorityMeta[priority].label}`}
+          className="w-9 h-9 rounded-full bg-gradient-to-tr from-cyan-500 via-sky-500 to-blue-600 flex items-center justify-center text-white shadow-[0_0_16px_rgba(56,189,248,0.6)] shrink-0 active:scale-90 transition-transform cursor-pointer border border-white/40"
         >
-          {priorityMeta[priority].icon}
+          <Zap className="w-4 h-4 fill-white stroke-none" />
         </button>
 
         <input
@@ -126,45 +126,45 @@ export const TaskInput: React.FC<TaskInputProps> = ({
           onFocus={() => setIsExpanded(true)}
           onKeyDown={handleKeyDown}
           placeholder="Capture task... (e.g. !focus #work Submit report)"
-          className="flex-1 bg-transparent text-xs font-bold text-white placeholder:text-white/40 focus:outline-none min-w-0"
+          className="flex-1 bg-transparent text-xs font-normal text-white placeholder:text-white/40 focus:outline-none min-w-0"
         />
 
         <button
           type="button"
           onClick={() => handleSubmit()}
           disabled={!title.trim()}
-          title="Add task (Enter)"
-          aria-label="Add task"
-          className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all cursor-pointer shrink-0 ${
+          title="Submit task (Enter)"
+          aria-label="Submit task"
+          className={`w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer shrink-0 ${
             title.trim()
-              ? 'bg-white/25 hover:bg-white/35 text-white font-bold shadow-md border border-white/30 active:scale-95'
-              : 'text-white/30 bg-white/[0.04] opacity-40 cursor-not-allowed'
+              ? 'bg-white/20 hover:bg-white/30 text-white font-bold shadow-md border border-white/30 active:scale-90'
+              : 'text-white/30 bg-transparent opacity-60'
           }`}
         >
-          <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
+          <ChevronRight className="w-4 h-4" />
         </button>
       </div>
 
       {/* Expanded Quick Tag & Metadata Strip */}
       {isExpanded && (
-        <div className="flex flex-col gap-2 pt-2 border-t border-white/[0.08] animate-in fade-in duration-150">
+        <div className="flex flex-col gap-2 pt-2 px-2 pb-1 border-t border-white/[0.08] animate-in fade-in duration-150">
           {/* Notes description input */}
           <input
             type="text"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Add optional details..."
-            className="text-[11px] font-medium bg-white/[0.06] px-2.5 py-1.5 rounded-lg text-white placeholder:text-white/40 focus:outline-none border border-white/10"
+            className="text-xs font-normal bg-white/[0.06] px-3 py-1.5 rounded-xl text-white placeholder:text-white/40 focus:outline-none border border-white/10"
           />
 
           {/* Quick Option Pills */}
-          <div className="flex items-center gap-1.5 flex-wrap text-xs">
+          <div className="flex items-center gap-2 flex-wrap text-xs">
             {/* List Picker */}
             <div className="relative">
               <button
                 type="button"
                 onClick={() => setActivePopover(prev => (prev === 'list' ? null : 'list'))}
-                className="flex items-center gap-1 px-2 py-1 rounded-lg bg-white/[0.08] border border-white/15 text-white/80 hover:text-white font-semibold cursor-pointer text-[10.5px]"
+                className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/[0.08] border border-white/15 text-white/80 hover:text-white font-medium cursor-pointer text-[10.5px]"
               >
                 <Folder className="w-3 h-3 text-white/70" />
                 <span className="max-w-[70px] truncate">{currentList.title}</span>
@@ -172,14 +172,14 @@ export const TaskInput: React.FC<TaskInputProps> = ({
               </button>
 
               {activePopover === 'list' && (
-                <div className="absolute left-0 top-full mt-1.5 w-44 liquid-glass-card rounded-xl shadow-2xl z-50 p-1.5 flex flex-col gap-1 max-h-44 overflow-y-auto">
+                <div className="absolute left-0 top-full mt-1.5 w-44 liquid-glass-card rounded-2xl shadow-2xl z-50 p-1.5 flex flex-col gap-1 max-h-44 overflow-y-auto">
                   <button
                     type="button"
                     onClick={() => {
                       setListId('today')
                       setActivePopover(null)
                     }}
-                    className={`flex items-center gap-2 px-2 py-1 rounded-lg text-xs font-semibold w-full text-left transition-colors cursor-pointer ${
+                    className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-xs font-medium w-full text-left transition-colors cursor-pointer ${
                       listId === 'today' ? 'bg-white/20 text-white font-bold' : 'hover:bg-white/10 text-white/80'
                     }`}
                   >
@@ -194,7 +194,7 @@ export const TaskInput: React.FC<TaskInputProps> = ({
                         setListId(l.id)
                         setActivePopover(null)
                       }}
-                      className={`flex items-center gap-2 px-2 py-1 rounded-lg text-xs font-semibold w-full text-left transition-colors cursor-pointer ${
+                      className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-xs font-medium w-full text-left transition-colors cursor-pointer ${
                         listId === l.id ? 'bg-white/20 text-white font-bold' : 'hover:bg-white/10 text-white/80'
                       }`}
                     >
@@ -212,7 +212,7 @@ export const TaskInput: React.FC<TaskInputProps> = ({
                 type="date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
-                className="text-[10.5px] bg-white/[0.08] border border-white/15 rounded-lg px-2 py-1 text-white/80 font-medium focus:outline-none cursor-pointer"
+                className="text-[10.5px] bg-white/[0.08] border border-white/15 rounded-full px-2.5 py-1 text-white/80 font-medium focus:outline-none cursor-pointer"
                 title="Due Date"
               />
             </div>
@@ -222,7 +222,7 @@ export const TaskInput: React.FC<TaskInputProps> = ({
               <button
                 type="button"
                 onClick={() => setActivePopover(prev => (prev === 'reminder' ? null : 'reminder'))}
-                className={`flex items-center gap-1 px-2 py-1 rounded-lg border text-[10.5px] font-semibold transition-all cursor-pointer ${
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-full border text-[10.5px] font-medium transition-all cursor-pointer ${
                   reminderAt
                     ? 'bg-amber-500/20 border-amber-500/40 text-amber-300'
                     : 'bg-white/[0.08] border-white/15 text-white/80 hover:text-white'
@@ -233,7 +233,7 @@ export const TaskInput: React.FC<TaskInputProps> = ({
               </button>
 
               {activePopover === 'reminder' && (
-                <div className="absolute left-0 top-full mt-1.5 w-48 liquid-glass-card rounded-xl shadow-2xl z-50 p-2 flex flex-col gap-1">
+                <div className="absolute left-0 top-full mt-1.5 w-48 liquid-glass-card rounded-2xl shadow-2xl z-50 p-2.5 flex flex-col gap-1">
                   <span className="text-[11px] font-bold text-white mb-0.5">Set Reminder:</span>
                   <button
                     type="button"
@@ -241,7 +241,7 @@ export const TaskInput: React.FC<TaskInputProps> = ({
                       setReminderAt(new Date(Date.now() + 15 * 60 * 1000).toISOString())
                       setActivePopover(null)
                     }}
-                    className="px-2 py-1 text-[11px] font-medium rounded-lg hover:bg-white/10 text-left text-white cursor-pointer"
+                    className="px-2.5 py-1 text-[11px] font-medium rounded-xl hover:bg-white/10 text-left text-white cursor-pointer"
                   >
                     In 15 minutes
                   </button>
@@ -251,7 +251,7 @@ export const TaskInput: React.FC<TaskInputProps> = ({
                       setReminderAt(new Date(Date.now() + 60 * 60 * 1000).toISOString())
                       setActivePopover(null)
                     }}
-                    className="px-2 py-1 text-[11px] font-medium rounded-lg hover:bg-white/10 text-left text-white cursor-pointer"
+                    className="px-2.5 py-1 text-[11px] font-medium rounded-xl hover:bg-white/10 text-left text-white cursor-pointer"
                   >
                     In 1 hour
                   </button>
@@ -262,7 +262,7 @@ export const TaskInput: React.FC<TaskInputProps> = ({
                         setReminderAt('')
                         setActivePopover(null)
                       }}
-                      className="px-2 py-1 text-[11px] font-bold rounded-lg text-rose-400 hover:bg-rose-500/20 text-left mt-0.5 border-t border-white/10 cursor-pointer"
+                      className="px-2.5 py-1 text-[11px] font-bold rounded-xl text-rose-400 hover:bg-rose-500/20 text-left mt-0.5 border-t border-white/10 cursor-pointer"
                     >
                       Clear Reminder
                     </button>
@@ -272,7 +272,7 @@ export const TaskInput: React.FC<TaskInputProps> = ({
             </div>
 
             {/* Estimated Minutes */}
-            <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-white/[0.08] border border-white/15 text-white/80">
+            <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/[0.08] border border-white/15 text-white/80">
               <Clock className="w-3 h-3 text-white/50" />
               <input
                 type="number"
