@@ -186,11 +186,11 @@ export const TodayView: React.FC<TodayViewProps> = ({
       <div
         role="tablist"
         aria-label="Filter tasks by category"
-        className="relative grid grid-cols-4 p-1.5 rounded-2xl bg-white/[0.06] border border-white/12 backdrop-blur-xl overflow-hidden select-none"
+        className="relative grid grid-cols-4 p-1 rounded-2xl liquid-segmented-bar select-none h-11 w-full"
       >
-        {/* Physical Liquid Morphing Highlight Pill */}
+        {/* Dynamic Physical Liquid Morphing Pill */}
         <div
-          className="absolute inset-y-1.5 rounded-xl pointer-events-none transition-all duration-380 ease-[cubic-bezier(0.32,0.72,0,1)] liquid-morph-capsule"
+          className="absolute top-1 bottom-1 rounded-xl pointer-events-none transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] liquid-morph-capsule"
           style={{
             left: `calc(${activeTabIdx * 25}% + 3px)`,
             width: 'calc(25% - 6px)',
@@ -208,15 +208,21 @@ export const TodayView: React.FC<TodayViewProps> = ({
                 sounds.playClick(playSounds)
                 setFilterMode(tab.id)
               }}
-              className={`flex flex-col items-center justify-center py-3 z-10 text-center transition-all duration-200 cursor-pointer active:scale-95 ${
+              className={`flex items-center justify-center gap-1 z-10 h-full w-full text-center transition-all duration-200 cursor-pointer active:scale-95 ${
                 isActive
                   ? 'text-white font-bold drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]'
-                  : 'text-white/50 hover:text-white/75'
+                  : 'text-white/60 hover:text-white/90'
               }`}
             >
-              <span className="text-[13px] font-[inherit] leading-none">{tab.label}</span>
+              <span className="text-xs font-semibold tracking-tight">{tab.label}</span>
               {tab.count > 0 && (
-                <span className={`text-[11px] mt-1 leading-none ${isActive ? 'text-white/80' : 'text-white/35'}`}>
+                <span
+                  className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none ${
+                    isActive
+                      ? 'bg-white/25 text-white shadow-xs'
+                      : 'bg-white/10 text-white/50'
+                  }`}
+                >
                   {tab.count}
                 </span>
               )}
