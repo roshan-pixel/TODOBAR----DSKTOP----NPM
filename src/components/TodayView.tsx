@@ -188,9 +188,9 @@ export const TodayView: React.FC<TodayViewProps> = ({
         aria-label="Filter tasks by category"
         className="relative grid grid-cols-4 p-1.5 rounded-2xl bg-white/[0.06] border border-white/12 backdrop-blur-xl overflow-hidden select-none"
       >
-        {/* Physical Liquid Morphing Highlight Pill with Spring Physics */}
+        {/* Physical Liquid Morphing Highlight Pill */}
         <div
-          className="absolute top-1.5 bottom-1.5 rounded-xl pointer-events-none transition-all duration-380 ease-[cubic-bezier(0.32,0.72,0,1)] liquid-morph-capsule"
+          className="absolute inset-y-1.5 rounded-xl pointer-events-none transition-all duration-380 ease-[cubic-bezier(0.32,0.72,0,1)] liquid-morph-capsule"
           style={{
             left: `calc(${activeTabIdx * 25}% + 3px)`,
             width: 'calc(25% - 6px)',
@@ -208,15 +208,15 @@ export const TodayView: React.FC<TodayViewProps> = ({
                 sounds.playClick(playSounds)
                 setFilterMode(tab.id)
               }}
-              className={`py-3 z-10 font-medium text-center text-[13px] truncate transition-all duration-200 cursor-pointer active:scale-95 leading-tight ${
+              className={`flex flex-col items-center justify-center py-3 z-10 text-center transition-all duration-200 cursor-pointer active:scale-95 ${
                 isActive
                   ? 'text-white font-bold drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]'
                   : 'text-white/50 hover:text-white/75'
               }`}
             >
-              <span className="block">{tab.label}</span>
+              <span className="text-[13px] font-[inherit] leading-none">{tab.label}</span>
               {tab.count > 0 && (
-                <span className={`block text-[11px] mt-0.5 ${isActive ? 'text-white/80' : 'text-white/35'}`}>
+                <span className={`text-[11px] mt-1 leading-none ${isActive ? 'text-white/80' : 'text-white/35'}`}>
                   {tab.count}
                 </span>
               )}
