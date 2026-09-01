@@ -68,7 +68,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
       }`}
     >
       {/* Main Task Card Row */}
-      <div className="flex items-center justify-between gap-3 w-full px-4 py-3">
+      <div className="flex items-center justify-between gap-3.5 w-full px-4 py-3.5">
         {/* Left: Elegant Glass Checkbox Ring */}
         <button
           type="button"
@@ -78,7 +78,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
           }}
           title={task.done ? 'Mark pending' : 'Mark complete'}
           aria-label={task.done ? `Mark "${task.title}" incomplete` : `Mark "${task.title}" complete`}
-          className={`w-6 h-6 rounded-full shrink-0 flex items-center justify-center cursor-pointer liquid-checkbox-ring ${
+          className={`w-6 h-6 rounded-full shrink-0 flex items-center justify-center cursor-pointer liquid-checkbox-ring transition-transform active:scale-90 ${
             task.done ? 'checked' : ''
           }`}
         >
@@ -88,7 +88,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
         </button>
 
         {/* Center: Title, Description, and Metadata */}
-        <div className="flex flex-col min-w-0 flex-1">
+        <div className="flex flex-col min-w-0 flex-1 justify-center">
           {/* Title */}
           {isEditing ? (
             <input
@@ -101,13 +101,13 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                 if (e.key === 'Enter') handleSaveEdit()
                 if (e.key === 'Escape') setIsEditing(false)
               }}
-              className="w-full text-sm font-semibold bg-white/10 px-2 py-0.5 rounded-lg border border-white/25 text-white focus:outline-none"
+              className="w-full text-sm font-semibold bg-white/10 px-2 py-1 rounded-lg border border-white/25 text-white focus:outline-none"
             />
           ) : (
             <div className="flex items-center gap-1.5 min-w-0">
               <span
                 onDoubleClick={() => setIsEditing(true)}
-                className={`text-[14px] font-medium tracking-tight select-text cursor-pointer truncate ${
+                className={`text-[13.5px] font-semibold tracking-tight select-text cursor-pointer truncate ${
                   task.done ? 'line-through text-white/40 font-normal' : 'text-white'
                 }`}
               >
@@ -120,20 +120,20 @@ export const TaskItem: React.FC<TaskItemProps> = ({
 
           {/* Description line */}
           {task.description && (
-            <p className="text-[11px] text-white/50 truncate font-normal leading-tight mt-0.5">
+            <p className="text-[11.5px] text-white/55 truncate font-normal leading-tight mt-0.5">
               {task.description}
             </p>
           )}
 
           {/* Metadata Row */}
           {(subtasks.length > 0 || task.estimatedMinutes || task.reminderAt) && (
-            <div className="flex items-center gap-2 mt-1 text-[10px] text-white/45 flex-wrap">
+            <div className="flex items-center gap-2 mt-1.5 text-[10.5px] text-white/50 flex-wrap">
               {/* Subtasks Count Pill */}
               {subtasks.length > 0 && (
                 <button
                   type="button"
                   onClick={() => setShowSubtasks(prev => !prev)}
-                  className="flex items-center gap-0.5 px-1.5 py-0.2 rounded-full bg-white/[0.06] text-white/70 hover:text-white border border-white/10 font-mono font-medium transition-colors cursor-pointer shrink-0"
+                  className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/[0.08] text-white/80 hover:text-white border border-white/10 font-mono font-semibold transition-colors cursor-pointer shrink-0 text-[10px]"
                 >
                   <span>{completedSubtasks}/{subtasks.length}</span>
                   {showSubtasks ? <ChevronDown className="w-2.5 h-2.5" /> : <ChevronRight className="w-2.5 h-2.5" />}
@@ -142,16 +142,16 @@ export const TaskItem: React.FC<TaskItemProps> = ({
 
               {/* Estimated Duration */}
               {task.estimatedMinutes && (
-                <span className="font-mono text-white/50 flex items-center gap-0.5 shrink-0">
-                  <Clock className="w-2.5 h-2.5 text-white/35" />
+                <span className="font-mono text-white/60 flex items-center gap-1 shrink-0">
+                  <Clock className="w-3 h-3 text-white/40" />
                   {task.estimatedMinutes}m
                 </span>
               )}
 
               {/* Reminder Badge */}
               {task.reminderAt && !task.done && (
-                <span className="font-mono text-amber-300/90 flex items-center gap-0.5 shrink-0">
-                  <Bell className="w-2.5 h-2.5" />
+                <span className="font-mono text-amber-300/90 flex items-center gap-1 shrink-0">
+                  <Bell className="w-3 h-3 text-amber-400" />
                   {new Date(task.reminderAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </span>
               )}
