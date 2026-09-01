@@ -186,14 +186,14 @@ export const TodayView: React.FC<TodayViewProps> = ({
       <div
         role="tablist"
         aria-label="Filter tasks by category"
-        className="relative grid grid-cols-4 p-1 rounded-2xl bg-white/[0.06] border border-white/12 backdrop-blur-xl overflow-hidden select-none"
+        className="relative grid grid-cols-4 p-1.5 rounded-2xl bg-white/[0.06] border border-white/12 backdrop-blur-xl overflow-hidden select-none"
       >
         {/* Physical Liquid Morphing Highlight Pill with Spring Physics */}
         <div
-          className="absolute top-1 bottom-1 rounded-xl pointer-events-none transition-all duration-380 ease-[cubic-bezier(0.32,0.72,0,1)] liquid-morph-capsule"
+          className="absolute top-1.5 bottom-1.5 rounded-xl pointer-events-none transition-all duration-380 ease-[cubic-bezier(0.32,0.72,0,1)] liquid-morph-capsule"
           style={{
-            left: `calc(${activeTabIdx * 25}% + 2px)`,
-            width: 'calc(25% - 4px)',
+            left: `calc(${activeTabIdx * 25}% + 3px)`,
+            width: 'calc(25% - 6px)',
           }}
         />
 
@@ -208,13 +208,18 @@ export const TodayView: React.FC<TodayViewProps> = ({
                 sounds.playClick(playSounds)
                 setFilterMode(tab.id)
               }}
-              className={`py-2 z-10 font-medium text-center text-[13px] truncate transition-all duration-200 cursor-pointer active:scale-95 ${
+              className={`py-3 z-10 font-medium text-center text-[13px] truncate transition-all duration-200 cursor-pointer active:scale-95 leading-tight ${
                 isActive
-                  ? 'text-white font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]'
+                  ? 'text-white font-bold drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]'
                   : 'text-white/50 hover:text-white/75'
               }`}
             >
-              {tab.label} {tab.count > 0 ? `(${tab.count})` : ''}
+              <span className="block">{tab.label}</span>
+              {tab.count > 0 && (
+                <span className={`block text-[11px] mt-0.5 ${isActive ? 'text-white/80' : 'text-white/35'}`}>
+                  {tab.count}
+                </span>
+              )}
             </button>
           )
         })}
