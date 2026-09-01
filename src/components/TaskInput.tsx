@@ -1,18 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import {
   Zap,
-  ChevronRight,
   Flame,
   Moon,
-  Folder,
   Calendar,
   Clock,
   Bell,
   X,
   Plus,
-  Check,
-  Sparkles,
-  AlarmClock,
+  Pencil,
+  ChevronDown,
+  MoreHorizontal,
+  Send,
+  Mic,
+  MicOff,
 } from 'lucide-react'
 import { TaskPriority, CustomList } from '../types'
 import { sounds } from '../services/audio'
@@ -45,7 +47,6 @@ export const TaskInput: React.FC<TaskInputProps> = ({
   inputRef: externalInputRef,
 }) => {
   const localInputRef = useRef<HTMLInputElement>(null)
-  const activeInputRef = externalInputRef || localInputRef
   const modalInputRef = useRef<HTMLInputElement>(null)
 
   const [title, setTitle] = useState('')
@@ -58,8 +59,11 @@ export const TaskInput: React.FC<TaskInputProps> = ({
   const [reminderOption, setReminderOption] = useState<'none' | 'at_time' | '15m' | '30m' | '1h' | '1d'>('none')
   const [estimatedMinutes, setEstimatedMinutes] = useState<number | undefined>(undefined)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [showClockWidget, setShowClockWidget] = useState(false)
-  const [showReminderPicker, setShowReminderPicker] = useState(false)
+  const [showDatePicker, setShowDatePicker] = useState(false)
+  const [showClockPicker, setShowClockPicker] = useState(false)
+  const [showReminderOptions, setShowReminderOptions] = useState(false)
+  const [showMoreMenu, setShowMoreMenu] = useState(false)
+  const [isListening, setIsListening] = useState(false)
 
   useEffect(() => {
     setListId(defaultListId)
@@ -70,7 +74,7 @@ export const TaskInput: React.FC<TaskInputProps> = ({
     if (isModalOpen) {
       setTimeout(() => {
         modalInputRef.current?.focus()
-      }, 80)
+      }, 90)
     }
   }, [isModalOpen])
 
@@ -104,15 +108,17 @@ export const TaskInput: React.FC<TaskInputProps> = ({
 
   const closeModal = () => {
     setIsModalOpen(false)
-    setShowClockWidget(false)
-    setShowReminderPicker(false)
+    setShowDatePicker(false)
+    setShowClockPicker(false)
+    setShowReminderOptions(false)
+    setShowMoreMenu(false)
   }
 
   const handleSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault()
     if (!title.trim()) return
 
-    onAddTask(title, {
+    onAddTask(title.trim(), {
       priority,
       listId,
       dueDate: dueDate || undefined,
@@ -141,10 +147,48 @@ export const TaskInput: React.FC<TaskInputProps> = ({
     }
   }
 
+  // Voice dictation toggle
+  const toggleSpeechRecognition = () => {
+    sounds.playClick(playSounds)
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+    if (!SpeechRecognition) {
+      alert('Voice dictation is supported in Chrome, Edge, and Safari.')
+      return
+    }
+
+    if (isListening) {
+      setIsListening(false)
+      return
+    }
+
+    try {
+      const recognition = new SpeechRecognition()
+      recognition.continuous = false
+      recognition.interimResults = false
+      recognition.lang = 'en-US'
+
+      recognition.onstart = () => setIsListening(true)
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript
+        if (transcript) {
+          setTitle((prev) => (prev ? `${prev} ${transcript}` : transcript))
+        }
+        setIsListening(false)
+      }
+      recognition.onerror = () => setIsListening(false)
+      recognition.onend = () => setIsListening(false)
+      recognition.start()
+    } catch (err) {
+      setIsListening(false)
+    }
+  }
+
   // Quick Date Helpers
   const setDateToday = () => {
     sounds.playClick(playSounds)
     setDueDate(new Date().toISOString().split('T')[0])
+    setShowDatePicker(false)
   }
 
   const setDateTomorrow = () => {
@@ -152,6 +196,7 @@ export const TaskInput: React.FC<TaskInputProps> = ({
     const tom = new Date()
     tom.setDate(tom.getDate() + 1)
     setDueDate(tom.toISOString().split('T')[0])
+    setShowDatePicker(false)
   }
 
   const setDateNextWeek = () => {
@@ -159,9 +204,10 @@ export const TaskInput: React.FC<TaskInputProps> = ({
     const next = new Date()
     next.setDate(next.getDate() + 7)
     setDueDate(next.toISOString().split('T')[0])
+    setShowDatePicker(false)
   }
 
-  // Quick Clock / Time slots
+  // Quick Times
   const quickTimes = [
     { label: 'Morning', time: '09:00', icon: '🌅' },
     { label: 'Noon', time: '12:00', icon: '☀️' },
@@ -170,47 +216,47 @@ export const TaskInput: React.FC<TaskInputProps> = ({
     { label: 'Night', time: '21:00', icon: '🌙' },
   ]
 
-  const priorityMeta: Record<TaskPriority, { icon: React.ReactNode; label: string; activeClass: string; ringColor: string }> = {
-    focus: {
-      icon: <Flame className="w-4 h-4 text-amber-400 fill-amber-400" />,
-      label: 'Focus (High)',
-      activeClass: 'bg-amber-500/25 border-amber-400 text-amber-300 shadow-[0_0_14px_rgba(251,191,36,0.35)]',
-      ringColor: '#f59e0b',
-    },
-    normal: {
-      icon: <Zap className="w-4 h-4 text-sky-400 fill-sky-400" />,
-      label: 'Standard',
-      activeClass: 'bg-sky-500/25 border-sky-400 text-sky-300 shadow-[0_0_12px_rgba(56,189,248,0.3)]',
-      ringColor: '#38bdf8',
-    },
-    later: {
-      icon: <Moon className="w-4 h-4 text-slate-300" />,
-      label: 'Later (Low)',
-      activeClass: 'bg-white/20 border-white/40 text-white shadow-[0_0_10px_rgba(255,255,255,0.2)]',
-      ringColor: '#94a3b8',
-    },
+  // Date formatted label
+  const getDateLabel = () => {
+    const todayStr = new Date().toISOString().split('T')[0]
+    const tomDate = new Date()
+    tomDate.setDate(tomDate.getDate() + 1)
+    const tomStr = tomDate.toISOString().split('T')[0]
+
+    if (dueDate === todayStr) return 'Today'
+    if (dueDate === tomStr) return 'Tomorrow'
+    if (!dueDate) return 'Schedule date'
+
+    try {
+      const d = new Date(`${dueDate}T00:00:00`)
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    } catch {
+      return dueDate
+    }
   }
 
-  const currentList = lists.find(l => l.id === listId) || { id: 'today', title: 'Today', color: '#38bdf8' }
+  // Collection options (combine Today with user lists)
+  const defaultCollections = [
+    { id: 'today', title: 'Today', color: '#38bdf8' },
+    { id: 'work', title: 'Work', color: '#818cf8' },
+    { id: 'personal', title: 'Personal', color: '#34d399' },
+    { id: 'ideas', title: 'Ideas', color: '#fbbf24' },
+  ]
+
+  const collectionList = lists.length > 0
+    ? [{ id: 'today', title: 'Today', color: '#38bdf8' }, ...lists.map(l => ({ id: l.id, title: l.title, color: l.color }))]
+    : defaultCollections
 
   return (
     <>
       {/* ── 1. Compact Floating Trigger Bar in the Main View ── */}
       <div
         onClick={openModal}
-        className="flex items-center gap-2.5 px-3 py-2.5 rounded-2xl liquid-glass-card hover:bg-white/[0.12] hover:border-white/25 transition-all cursor-pointer select-none group shadow-lg"
+        className="flex items-center gap-3 px-4 py-3 rounded-2xl liquid-glass-card hover:bg-white/[0.12] hover:border-white/25 transition-all cursor-pointer select-none group shadow-lg"
       >
         {/* Priority Indicator Orb */}
-        <div
-          className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border transition-transform group-hover:scale-105 ${
-            priority === 'focus'
-              ? 'bg-amber-500/20 border-amber-400/40 text-amber-300'
-              : priority === 'later'
-              ? 'bg-white/10 border-white/20 text-slate-300'
-              : 'bg-sky-500/20 border-sky-400/40 text-sky-300'
-          }`}
-        >
-          {priorityMeta[priority].icon}
+        <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 border bg-sky-500/20 border-sky-400/40 text-sky-300 transition-transform group-hover:scale-105 shadow-[0_0_10px_rgba(56,189,248,0.25)]">
+          <Zap className="w-4 h-4 fill-sky-400 text-sky-300" />
         </div>
 
         {/* Placeholder text that invites clicking for full popup modal */}
@@ -218,7 +264,7 @@ export const TaskInput: React.FC<TaskInputProps> = ({
           <span className="text-xs font-medium text-white/50 group-hover:text-white/80 transition-colors">
             Capture task... (Tap to open full editor)
           </span>
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
             <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-white/[0.08] text-white/60 border border-white/10">
               New
             </span>
@@ -229,235 +275,264 @@ export const TaskInput: React.FC<TaskInputProps> = ({
         </div>
       </div>
 
-      {/* ── 2. Full Liquid Glass Modal Popup (Spacious & Rich) ── */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 select-none animate-in fade-in duration-200">
+      {/* ── 2. Full Native Apple Liquid Glass Modal Popup (Reference unnamed.png) ── */}
+      {typeof document !== 'undefined' && isModalOpen && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-3 pb-6 sm:p-4 select-none animate-in fade-in duration-200">
           {/* Backdrop Blur */}
           <div
-            className="absolute inset-0 bg-black/65 backdrop-blur-md transition-opacity"
+            className="absolute inset-0 bg-black/60 backdrop-blur-xl transition-opacity"
             onClick={closeModal}
           />
 
           {/* Modal Container */}
           <div
-            className="relative w-full max-w-[480px] rounded-[28px] p-5 flex flex-col gap-4 z-10 shadow-2xl animate-in zoom-in-95 duration-200"
+            className="relative w-full sm:max-w-[460px] max-h-[88dvh] overflow-y-auto rounded-[32px] p-5 sm:p-6 flex flex-col gap-4 z-10 shadow-2xl animate-in slide-in-from-bottom-6 sm:zoom-in-95 duration-250 scrollbar-none"
             style={{
-              background: 'rgba(18, 12, 42, 0.88)',
-              backdropFilter: 'blur(48px) saturate(200%)',
-              WebkitBackdropFilter: 'blur(48px) saturate(200%)',
+              background: 'linear-gradient(180deg, rgba(22, 28, 62, 0.88) 0%, rgba(14, 18, 42, 0.92) 100%)',
+              backdropFilter: 'blur(54px) saturate(200%)',
+              WebkitBackdropFilter: 'blur(54px) saturate(200%)',
               border: '1px solid rgba(255, 255, 255, 0.22)',
               boxShadow: [
-                'inset 0 1.5px 0 rgba(255, 255, 255, 0.45)',
-                'inset 0 -1px 0 rgba(0, 0, 0, 0.30)',
+                'inset 0 1.5px 0 rgba(255, 255, 255, 0.5)',
+                'inset 0 -1px 0 rgba(0, 0, 0, 0.35)',
                 '0 32px 80px rgba(0, 0, 0, 0.85)',
+                '0 0 50px rgba(99, 102, 241, 0.30)',
               ].join(', '),
             }}
             onKeyDown={handleKeyDown}
           >
-            {/* Modal Header */}
-            <div className="flex items-center justify-between pb-2 border-b border-white/10">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full liquid-glass-orb flex items-center justify-center text-sky-400">
-                  <Sparkles className="w-4 h-4" />
+            {/* Top Sheet Grab Handle (iOS native indicator) */}
+            <div className="w-10 h-1 rounded-full bg-white/30 mx-auto -mt-1 -mb-1 shrink-0" />
+
+            {/* 1. Header */}
+            <div className="flex items-center justify-between pt-1">
+              <div className="flex items-center gap-3">
+                {/* Luminous Glass Lightning Orb */}
+                <div
+                  className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 border"
+                  style={{
+                    background: 'radial-gradient(circle, rgba(56,189,248,0.4) 0%, rgba(99,102,241,0.25) 60%, rgba(255,255,255,0.06) 100%)',
+                    borderColor: 'rgba(255, 255, 255, 0.35)',
+                    boxShadow: '0 0 16px rgba(56, 189, 248, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.6)',
+                  }}
+                >
+                  <Zap className="w-6 h-6 text-sky-400 fill-sky-400 drop-shadow-[0_0_8px_rgba(56,189,248,0.8)]" />
                 </div>
-                <h3 className="text-base font-bold text-white tracking-tight">
-                  Capture Objective
-                </h3>
+
+                <div className="flex flex-col">
+                  <h2 className="text-lg font-bold text-white tracking-tight drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]">
+                    Capture Objective
+                  </h2>
+                  <p className="text-xs text-white/60 font-normal mt-0.5">
+                    Add what you want to accomplish
+                  </p>
+                </div>
               </div>
 
+              {/* Close Circular Glass Button */}
               <button
                 type="button"
                 onClick={closeModal}
-                className="w-8 h-8 rounded-full liquid-glass-orb flex items-center justify-center text-white/60 hover:text-white cursor-pointer active:scale-90 transition-all"
+                className="w-9 h-9 rounded-full liquid-glass-orb flex items-center justify-center text-white/70 hover:text-white cursor-pointer active:scale-90 transition-all"
+                title="Close"
               >
-                <X className="w-4 h-4" />
+                <X className="w-4 h-4 stroke-[2.2]" />
               </button>
             </div>
 
-            {/* Task Title Input (Large & Clear) */}
-            <div className="flex flex-col gap-1.5">
+            {/* 2. Main Objective Input */}
+            <div className="relative rounded-[22px] bg-white/[0.06] border border-white/18 focus-within:border-sky-400/80 focus-within:ring-2 focus-within:ring-sky-400/25 px-4 py-3.5 flex items-center gap-3 transition-all backdrop-blur-xl shadow-inner">
+              {/* Cyan Accent Indicator */}
+              <div className="w-0.5 h-6 rounded-full bg-sky-400 shrink-0 shadow-[0_0_8px_rgba(56,189,248,0.8)]" />
+
               <input
                 ref={modalInputRef}
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="What needs to be accomplished?"
-                className="w-full text-base font-semibold text-white placeholder:text-white/35 bg-white/[0.06] border border-white/15 focus:border-sky-400/80 focus:bg-white/[0.10] rounded-2xl px-4 py-3 outline-none transition-all"
+                className="w-full bg-transparent text-sm font-semibold text-white placeholder:text-white/40 focus:outline-none tracking-tight"
+              />
+
+              {/* Voice / Mic Action Button */}
+              <button
+                type="button"
+                onClick={toggleSpeechRecognition}
+                title={isListening ? 'Listening...' : 'Voice capture'}
+                className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border transition-all cursor-pointer ${
+                  isListening
+                    ? 'bg-rose-500/30 border-rose-400 text-rose-300 animate-pulse shadow-[0_0_12px_rgba(244,63,94,0.5)]'
+                    : 'bg-white/[0.08] hover:bg-white/[0.15] border-white/12 text-white/75'
+                }`}
+              >
+                {isListening ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+              </button>
+            </div>
+
+            {/* 3. Secondary Notes Field */}
+            <div className="relative rounded-[18px] bg-white/[0.04] border border-white/10 focus-within:border-white/25 px-4 py-2.5 flex items-center gap-2.5 transition-all">
+              <Pencil className="w-3.5 h-3.5 text-white/40 shrink-0" />
+              <input
+                type="text"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Add notes, checklist items, or details... (optional)"
+                className="w-full bg-transparent text-xs text-white placeholder:text-white/35 focus:outline-none font-normal"
               />
             </div>
 
-            {/* Task Description Textarea (Optional Details) */}
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Add optional notes, checklist items, or details..."
-              rows={2}
-              className="w-full text-xs font-normal text-white placeholder:text-white/35 bg-white/[0.04] border border-white/10 focus:border-white/25 rounded-xl px-3.5 py-2.5 outline-none resize-none transition-all scrollbar-thin"
-            />
-
-            {/* Priority Selector (Segmented Liquid Buttons) */}
+            {/* 4. Priority Section */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-semibold text-white/60 uppercase tracking-wider">
-                Priority Tier
-              </label>
-              <div className="grid grid-cols-3 gap-2">
-                {(['focus', 'normal', 'later'] as TaskPriority[]).map((p) => {
-                  const meta = priorityMeta[p]
-                  const isSelected = priority === p
+              <span className="text-xs font-semibold text-white/70">Priority</span>
+              <div className="grid grid-cols-3 gap-2.5">
+                {[
+                  { id: 'focus' as const, label: 'Focus', icon: <Flame className="w-3.5 h-3.5 fill-current text-amber-400" /> },
+                  { id: 'normal' as const, label: 'Standard', icon: <Zap className="w-3.5 h-3.5 fill-current text-sky-400" /> },
+                  { id: 'later' as const, label: 'Later', icon: <Moon className="w-3.5 h-3.5 text-slate-300" /> },
+                ].map((tier) => {
+                  const isSelected = priority === tier.id
                   return (
                     <button
-                      key={p}
+                      key={tier.id}
                       type="button"
                       onClick={() => {
                         sounds.playClick(playSounds)
-                        setPriority(p)
+                        setPriority(tier.id)
                       }}
-                      className={`flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl border text-xs font-semibold cursor-pointer transition-all active:scale-95 ${
+                      className={`py-2.5 px-3 rounded-[20px] border flex items-center justify-center gap-2 text-xs font-semibold cursor-pointer transition-all active:scale-95 ${
                         isSelected
-                          ? meta.activeClass
-                          : 'bg-white/[0.05] border-white/10 text-white/60 hover:text-white hover:bg-white/[0.09]'
+                          ? 'bg-gradient-to-r from-sky-500/40 via-indigo-600/40 to-purple-600/40 border-sky-400/80 text-white shadow-[0_0_20px_rgba(56,189,248,0.4),inset_0_1px_1px_rgba(255,255,255,0.45)] ring-1 ring-sky-300/30 font-bold'
+                          : 'bg-white/[0.05] border-white/10 text-white/60 hover:text-white/90 hover:bg-white/[0.08]'
                       }`}
                     >
-                      {meta.icon}
-                      <span>{meta.label.split(' ')[0]}</span>
+                      {tier.icon}
+                      <span>{tier.label}</span>
                     </button>
                   )
                 })}
               </div>
             </div>
 
-            {/* List Selection Chips */}
+            {/* 5. Collection Section */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-semibold text-white/60 uppercase tracking-wider">
-                Target Collection
-              </label>
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <button
-                  type="button"
-                  onClick={() => {
-                    sounds.playClick(playSounds)
-                    setListId('today')
-                  }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold cursor-pointer border transition-all ${
-                    listId === 'today'
-                      ? 'bg-sky-500/25 border-sky-400 text-sky-300 shadow-[0_0_10px_rgba(56,189,248,0.3)]'
-                      : 'bg-white/[0.05] border-white/10 text-white/60 hover:text-white'
-                  }`}
-                >
-                  <span className="w-2 h-2 rounded-full bg-sky-400" />
-                  Today
-                </button>
-
-                {lists.map((l) => (
-                  <button
-                    key={l.id}
-                    type="button"
-                    onClick={() => {
-                      sounds.playClick(playSounds)
-                      setListId(l.id)
-                    }}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold cursor-pointer border transition-all ${
-                      listId === l.id
-                        ? 'bg-white/20 border-white/40 text-white shadow-md'
-                        : 'bg-white/[0.05] border-white/10 text-white/60 hover:text-white'
-                    }`}
-                  >
-                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: l.color }} />
-                    <span className="truncate max-w-[110px]">{l.title}</span>
-                  </button>
-                ))}
+              <span className="text-xs font-semibold text-white/70">Collection</span>
+              <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-0.5">
+                {collectionList.map((col) => {
+                  const isSelected = listId === col.id
+                  return (
+                    <button
+                      key={col.id}
+                      type="button"
+                      onClick={() => {
+                        sounds.playClick(playSounds)
+                        setListId(col.id)
+                      }}
+                      className={`px-4 py-2 rounded-full border text-xs font-medium flex items-center gap-2 shrink-0 cursor-pointer transition-all active:scale-95 ${
+                        isSelected
+                          ? 'bg-sky-500/25 border-sky-400/80 text-white shadow-[0_0_12px_rgba(56,189,248,0.35)] ring-1 ring-white/20 font-semibold'
+                          : 'bg-white/[0.05] border-white/10 text-white/70 hover:text-white hover:bg-white/[0.08]'
+                      }`}
+                    >
+                      <span
+                        className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm"
+                        style={{ backgroundColor: col.color, boxShadow: `0 0 6px ${col.color}` }}
+                      />
+                      <span className="truncate max-w-[120px]">{col.title}</span>
+                    </button>
+                  )
+                })}
               </div>
             </div>
 
-            {/* Due Date & Clock Widget Section */}
-            <div className="flex flex-col gap-2 pt-1">
-              <label className="text-[11px] font-semibold text-white/60 uppercase tracking-wider">
-                Schedule & Time
-              </label>
+            {/* 6. Schedule Section */}
+            <div className="flex flex-col gap-2">
+              <span className="text-xs font-semibold text-white/70">Schedule</span>
 
-              {/* Quick Date Pills */}
-              <div className="flex items-center gap-2 flex-wrap">
+              {/* Date & Time Pickers Row */}
+              <div className="grid grid-cols-2 gap-2.5">
+                {/* Date Dropdown Pill */}
                 <button
                   type="button"
-                  onClick={setDateToday}
-                  className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-white/[0.07] border border-white/15 text-white/80 hover:text-white cursor-pointer active:scale-95 transition-all"
+                  onClick={() => {
+                    sounds.playClick(playSounds)
+                    setShowDatePicker((prev) => !prev)
+                    setShowClockPicker(false)
+                  }}
+                  className="relative rounded-2xl bg-white/[0.05] border border-white/12 hover:bg-white/[0.09] hover:border-white/20 px-3.5 py-2.5 flex items-center justify-between text-xs text-white/85 cursor-pointer transition-all active:scale-98"
                 >
-                  Today
-                </button>
-                <button
-                  type="button"
-                  onClick={setDateTomorrow}
-                  className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-white/[0.07] border border-white/15 text-white/80 hover:text-white cursor-pointer active:scale-95 transition-all"
-                >
-                  Tomorrow
-                </button>
-                <button
-                  type="button"
-                  onClick={setDateNextWeek}
-                  className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-white/[0.07] border border-white/15 text-white/80 hover:text-white cursor-pointer active:scale-95 transition-all"
-                >
-                  Next Week
+                  <div className="flex items-center gap-2 truncate">
+                    <Calendar className="w-4 h-4 text-white/60 shrink-0" />
+                    <span className="truncate">{getDateLabel()}</span>
+                  </div>
+                  <ChevronDown className="w-3.5 h-3.5 text-white/40 shrink-0" />
                 </button>
 
-                {/* Native Date Picker input */}
-                <div className="flex items-center gap-1 bg-white/[0.07] border border-white/15 rounded-full px-2.5 py-1 text-white/80">
-                  <Calendar className="w-3 h-3 text-white/50" />
-                  <input
-                    type="date"
-                    value={dueDate}
-                    onChange={(e) => setDueDate(e.target.value)}
-                    className="bg-transparent text-[11px] text-white font-medium focus:outline-none cursor-pointer"
-                  />
+                {/* Time Dropdown Pill */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    sounds.playClick(playSounds)
+                    setShowClockPicker((prev) => !prev)
+                    setShowDatePicker(false)
+                  }}
+                  className="relative rounded-2xl bg-white/[0.05] border border-white/12 hover:bg-white/[0.09] hover:border-white/20 px-3.5 py-2.5 flex items-center justify-between text-xs text-white/85 cursor-pointer transition-all active:scale-98"
+                >
+                  <div className="flex items-center gap-2 truncate">
+                    <Clock className="w-4 h-4 text-white/60 shrink-0" />
+                    <span className="truncate">{dueTime ? dueTime : 'Set time'}</span>
+                  </div>
+                  <ChevronDown className="w-3.5 h-3.5 text-white/40 shrink-0" />
+                </button>
+              </div>
+
+              {/* Date Popover Menu */}
+              {showDatePicker && (
+                <div className="p-3 rounded-2xl bg-white/[0.08] border border-white/20 flex flex-col gap-2 animate-in fade-in duration-150 backdrop-blur-xl">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <button
+                      type="button"
+                      onClick={setDateToday}
+                      className="px-3 py-1.5 rounded-full text-xs font-semibold bg-white/10 hover:bg-white/20 border border-white/15 text-white cursor-pointer active:scale-95"
+                    >
+                      Today
+                    </button>
+                    <button
+                      type="button"
+                      onClick={setDateTomorrow}
+                      className="px-3 py-1.5 rounded-full text-xs font-semibold bg-white/10 hover:bg-white/20 border border-white/15 text-white cursor-pointer active:scale-95"
+                    >
+                      Tomorrow
+                    </button>
+                    <button
+                      type="button"
+                      onClick={setDateNextWeek}
+                      className="px-3 py-1.5 rounded-full text-xs font-semibold bg-white/10 hover:bg-white/20 border border-white/15 text-white cursor-pointer active:scale-95"
+                    >
+                      Next Week
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-between pt-1 border-t border-white/10">
+                    <span className="text-[11px] text-white/60">Custom date:</span>
+                    <input
+                      type="date"
+                      value={dueDate}
+                      onChange={(e) => {
+                        setDueDate(e.target.value)
+                        setShowDatePicker(false)
+                      }}
+                      className="bg-white/10 border border-white/20 text-xs font-mono font-semibold text-white rounded-lg px-2 py-1 focus:outline-none cursor-pointer"
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
 
-              {/* Interactive Clock Widget Button & Widget Dropdown */}
-              <div className="flex items-center gap-2 mt-1">
-                <button
-                  type="button"
-                  onClick={() => {
-                    sounds.playClick(playSounds)
-                    setShowClockWidget((prev) => !prev)
-                  }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold cursor-pointer transition-all ${
-                    dueTime
-                      ? 'bg-indigo-500/25 border-indigo-400 text-indigo-300 shadow-[0_0_10px_rgba(99,102,241,0.3)]'
-                      : 'bg-white/[0.07] border-white/15 text-white/80 hover:text-white'
-                  }`}
-                >
-                  <Clock className="w-3.5 h-3.5 text-indigo-400" />
-                  <span>{dueTime ? `Time: ${dueTime}` : 'Select Time (Clock)'}</span>
-                </button>
-
-                {/* Reminder Notification Toggle Button */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    sounds.playClick(playSounds)
-                    setShowReminderPicker((prev) => !prev)
-                  }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold cursor-pointer transition-all ${
-                    reminderOption !== 'none'
-                      ? 'bg-amber-500/25 border-amber-400 text-amber-300 shadow-[0_0_10px_rgba(245,158,11,0.3)]'
-                      : 'bg-white/[0.07] border-white/15 text-white/80 hover:text-white'
-                  }`}
-                >
-                  <Bell className="w-3.5 h-3.5 text-amber-400" />
-                  <span>
-                    {reminderOption !== 'none'
-                      ? `Reminder (${reminderOption})`
-                      : 'Set Reminder'}
-                  </span>
-                </button>
-              </div>
-
-              {/* ── Clock Widget Popover ── */}
-              {showClockWidget && (
-                <div className="p-3.5 rounded-2xl bg-white/[0.08] border border-white/20 flex flex-col gap-2.5 animate-in fade-in duration-150">
+              {/* Clock / Time Popover Menu */}
+              {showClockPicker && (
+                <div className="p-3 rounded-2xl bg-white/[0.08] border border-white/20 flex flex-col gap-2.5 animate-in fade-in duration-150 backdrop-blur-xl">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-white flex items-center gap-1.5">
                       <Clock className="w-3.5 h-3.5 text-sky-400" />
-                      Clock Widget
+                      Select Time
                     </span>
                     <input
                       type="time"
@@ -466,9 +541,7 @@ export const TaskInput: React.FC<TaskInputProps> = ({
                       className="bg-white/10 border border-white/20 text-xs font-mono font-bold text-white rounded-lg px-2 py-1 focus:outline-none cursor-pointer"
                     />
                   </div>
-
-                  {/* Quick Time Presets */}
-                  <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
+                  <div className="grid grid-cols-5 gap-1">
                     {quickTimes.map((slot) => (
                       <button
                         key={slot.time}
@@ -476,37 +549,84 @@ export const TaskInput: React.FC<TaskInputProps> = ({
                         onClick={() => {
                           sounds.playClick(playSounds)
                           setDueTime(slot.time)
+                          setShowClockPicker(false)
                         }}
                         className={`flex flex-col items-center justify-center p-1.5 rounded-xl border text-[10px] font-semibold cursor-pointer transition-all ${
                           dueTime === slot.time
                             ? 'bg-sky-500/30 border-sky-400 text-white shadow-sm'
-                            : 'bg-white/[0.05] border-white/10 text-white/70 hover:text-white hover:bg-white/[0.10]'
+                            : 'bg-white/[0.05] border-white/10 text-white/70 hover:text-white'
                         }`}
                       >
-                        <span className="text-xs">{slot.icon}</span>
+                        <span>{slot.icon}</span>
                         <span>{slot.label}</span>
-                        <span className="text-[9px] text-white/50 font-mono">{slot.time}</span>
                       </button>
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* ── Reminder Notification Options ── */}
-              {showReminderPicker && (
-                <div className="p-3.5 rounded-2xl bg-white/[0.08] border border-white/20 flex flex-col gap-2 animate-in fade-in duration-150">
-                  <span className="text-xs font-bold text-white flex items-center gap-1.5">
-                    <Bell className="w-3.5 h-3.5 text-amber-400" />
-                    Notification Alert
+              {/* Reminder Row with iOS Glass Toggle */}
+              <div className="relative rounded-2xl bg-white/[0.05] border border-white/12 hover:bg-white/[0.08] px-3.5 py-2.5 flex items-center justify-between text-xs text-white/85 transition-all">
+                <div
+                  className="flex items-center gap-2 cursor-pointer flex-1"
+                  onClick={() => {
+                    sounds.playClick(playSounds)
+                    if (reminderOption === 'none') {
+                      setReminderOption('at_time')
+                      setShowReminderOptions(true)
+                    } else {
+                      setShowReminderOptions((prev) => !prev)
+                    }
+                  }}
+                >
+                  <Bell className="w-4 h-4 text-white/60 shrink-0" />
+                  <span>
+                    {reminderOption !== 'none'
+                      ? `Reminder (${reminderOption === 'at_time' ? 'At time' : reminderOption})`
+                      : 'Set reminder'}
                   </span>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                </div>
+
+                {/* iOS Glass Toggle */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    sounds.playClick(playSounds)
+                    if (reminderOption !== 'none') {
+                      setReminderOption('none')
+                      setShowReminderOptions(false)
+                    } else {
+                      setReminderOption('at_time')
+                      setShowReminderOptions(true)
+                    }
+                  }}
+                  aria-label="Toggle reminder"
+                  className={`w-11 h-6 rounded-full p-0.5 transition-colors cursor-pointer shrink-0 border ${
+                    reminderOption !== 'none'
+                      ? 'bg-sky-500/80 border-sky-400/80 shadow-[0_0_10px_rgba(56,189,248,0.5)]'
+                      : 'bg-white/15 border-white/20'
+                  }`}
+                >
+                  <div
+                    className={`w-4.5 h-4.5 rounded-full bg-white shadow-md transform transition-transform ${
+                      reminderOption !== 'none' ? 'translate-x-5' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {/* Reminder Duration Presets Dropdown */}
+              {showReminderOptions && reminderOption !== 'none' && (
+                <div className="p-3 rounded-2xl bg-white/[0.08] border border-white/20 flex flex-col gap-2 animate-in fade-in duration-150 backdrop-blur-xl">
+                  <span className="text-[11px] font-semibold text-white/70">Alert timing</span>
+                  <div className="grid grid-cols-3 gap-1.5">
                     {[
-                      { id: 'none', label: 'Off' },
-                      { id: 'at_time', label: 'At time of task' },
-                      { id: '15m', label: '15 mins before' },
-                      { id: '30m', label: '30 mins before' },
-                      { id: '1h', label: '1 hour before' },
-                      { id: '1d', label: '1 day before' },
+                      { id: 'at_time', label: 'At time' },
+                      { id: '15m', label: '15m before' },
+                      { id: '30m', label: '30m before' },
+                      { id: '1h', label: '1h before' },
+                      { id: '1d', label: '1d before' },
+                      { id: 'none', label: 'Turn Off' },
                     ].map((opt) => (
                       <button
                         key={opt.id}
@@ -514,10 +634,11 @@ export const TaskInput: React.FC<TaskInputProps> = ({
                         onClick={() => {
                           sounds.playClick(playSounds)
                           setReminderOption(opt.id as any)
+                          if (opt.id === 'none') setShowReminderOptions(false)
                         }}
-                        className={`py-1.5 px-2 rounded-xl text-[10.5px] font-semibold border cursor-pointer transition-all ${
+                        className={`py-1.5 px-2 rounded-xl text-[11px] font-semibold border cursor-pointer transition-all ${
                           reminderOption === opt.id
-                            ? 'bg-amber-500/30 border-amber-400 text-amber-200'
+                            ? 'bg-sky-500/30 border-sky-400 text-sky-200 shadow-sm'
                             : 'bg-white/[0.05] border-white/10 text-white/70 hover:text-white'
                         }`}
                       >
@@ -529,32 +650,94 @@ export const TaskInput: React.FC<TaskInputProps> = ({
               )}
             </div>
 
-            {/* Modal Footer Actions */}
-            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-white/10 mt-1">
+            {/* 7. Bottom Action Bar */}
+            <div className="flex items-center gap-3 pt-2 mt-0.5">
+              {/* Options Orb Button (•••) */}
               <button
                 type="button"
-                onClick={closeModal}
-                className="px-4 py-2 rounded-full text-xs font-semibold text-white/70 hover:text-white bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 cursor-pointer transition-all active:scale-95"
+                onClick={() => {
+                  sounds.playClick(playSounds)
+                  setShowMoreMenu((prev) => !prev)
+                }}
+                className="w-12 h-12 rounded-full liquid-glass-orb flex items-center justify-center text-white/70 hover:text-white cursor-pointer active:scale-90 shrink-0"
+                title="More Options"
               >
-                Cancel
+                <MoreHorizontal className="w-5 h-5" />
               </button>
 
+              {/* Primary "Add Objective" Liquid Glass Action Button */}
               <button
                 type="button"
                 onClick={() => handleSubmit()}
                 disabled={!title.trim()}
-                className={`px-5 py-2.5 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all shadow-lg cursor-pointer ${
+                className={`flex-1 h-12 rounded-full flex items-center justify-center gap-2.5 font-bold text-sm text-white cursor-pointer transition-all active:scale-98 shadow-xl ${
                   title.trim()
-                    ? 'bg-gradient-to-r from-sky-400 to-indigo-500 text-white border border-white/30 shadow-[0_0_18px_rgba(56,189,248,0.4)] active:scale-95 hover:brightness-110'
+                    ? 'border border-white/40 text-white shadow-[0_0_26px_rgba(56,189,248,0.45),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:brightness-110'
                     : 'bg-white/10 text-white/30 border border-white/10 cursor-not-allowed'
                 }`}
+                style={
+                  title.trim()
+                    ? {
+                        background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.5) 0%, rgba(99, 102, 241, 0.5) 50%, rgba(168, 85, 247, 0.5) 100%)',
+                        backdropFilter: 'blur(20px)',
+                      }
+                    : undefined
+                }
               >
-                <Check className="w-3.5 h-3.5 stroke-[2.5]" />
                 <span>Add Objective</span>
+                <div className="w-7 h-7 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white shrink-0 shadow-inner">
+                  <Send className="w-3.5 h-3.5 fill-current ml-0.5" />
+                </div>
               </button>
             </div>
+
+            {/* Extra Options Dropdown (Duration estimate & Quick reset) */}
+            {showMoreMenu && (
+              <div className="p-3.5 rounded-2xl bg-white/[0.08] border border-white/20 flex flex-col gap-2.5 animate-in fade-in duration-150 backdrop-blur-xl">
+                <span className="text-xs font-bold text-white">Estimated Focus Duration</span>
+                <div className="flex items-center gap-2">
+                  {[15, 25, 45, 60, 90].map((mins) => (
+                    <button
+                      key={mins}
+                      type="button"
+                      onClick={() => {
+                        sounds.playClick(playSounds)
+                        setEstimatedMinutes(mins)
+                        setShowMoreMenu(false)
+                      }}
+                      className={`flex-1 py-1.5 rounded-xl border text-xs font-mono font-semibold cursor-pointer transition-all ${
+                        estimatedMinutes === mins
+                          ? 'bg-sky-500/30 border-sky-400 text-white'
+                          : 'bg-white/[0.05] border-white/10 text-white/70 hover:text-white'
+                      }`}
+                    >
+                      {mins}m
+                    </button>
+                  ))}
+                </div>
+                <div className="flex justify-between items-center pt-2 border-t border-white/10">
+                  <button
+                    type="button"
+                    onClick={closeModal}
+                    className="text-xs text-rose-300 hover:underline cursor-pointer"
+                  >
+                    Cancel & Discard
+                  </button>
+                  {estimatedMinutes && (
+                    <button
+                      type="button"
+                      onClick={() => setEstimatedMinutes(undefined)}
+                      className="text-xs text-white/60 hover:text-white cursor-pointer"
+                    >
+                      Clear estimate
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   )
