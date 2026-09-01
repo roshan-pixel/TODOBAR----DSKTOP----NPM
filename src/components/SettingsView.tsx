@@ -5,12 +5,8 @@ import {
   Download,
   Upload,
   Layout,
-  Check,
-  Image as ImageIcon,
 } from 'lucide-react'
 import { AppSettings, Task, CustomList, DockEdge } from '../types'
-import { THEME_PRESETS_LIST, WALLPAPER_PRESETS } from '../constants/themes'
-import { LiquidGlassIcon } from './LiquidGlassIcon'
 import { sounds } from '../services/audio'
 
 interface SettingsViewProps {
@@ -76,92 +72,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
   return (
     <div className="flex flex-col h-full overflow-y-auto px-4 py-1 gap-3.5 scrollbar-thin pb-28 md:pb-6">
-      {/* 1. Liquid Glass Theme Selector */}
-      <div className="flex flex-col gap-2.5 p-3.5 rounded-2xl liquid-glass-card shadow-lg">
-        <div className="flex items-center gap-2">
-          <LiquidGlassIcon type="sparkles" size="xs" />
-          <h2 className="text-xs font-extrabold text-text-primary drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]">
-            Liquid Glass Visual Palette
-          </h2>
-        </div>
-        <p className="text-[11px] text-text-muted font-medium">
-          Apple Liquid Glass materials with dynamic specular highlights and light refraction.
-        </p>
 
-        <div className="grid grid-cols-2 gap-2 mt-1">
-          {THEME_PRESETS_LIST.map((theme) => {
-            const isSelected = settings.visualStyle === theme.id
-            return (
-              <button
-                key={theme.id}
-                type="button"
-                onClick={() => {
-                  sounds.playClick(settings.playSounds)
-                  onUpdateSettings({ visualStyle: theme.id, themeMode: theme.mode })
-                }}
-                className={`flex flex-col gap-1.5 p-2.5 rounded-2xl border text-left transition-all cursor-pointer relative ${
-                  isSelected
-                    ? 'border-accent bg-accent/25 ring-2 ring-white/60 shadow-xl shadow-accent/40 scale-[1.02] backdrop-blur-xl'
-                    : 'border-white/10 hover:border-white/20 bg-white/[0.04] hover:bg-white/[0.08]'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-3.5 h-3.5 rounded-full shadow-md" style={{ backgroundColor: theme.accentColor, boxShadow: `0 0 8px ${theme.accentColor}` }} />
-                    <span className="text-xs font-extrabold text-text-primary">{theme.name}</span>
-                  </div>
-                  {isSelected && <Check className="w-3.5 h-3.5 text-accent stroke-[3]" />}
-                </div>
-                <span className="text-[10px] text-text-muted leading-tight line-clamp-1 font-medium">
-                  {theme.description}
-                </span>
-              </button>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* 2. Workspace Backdrop Simulator */}
-      <div className="flex flex-col gap-2.5 p-4 rounded-3xl liquid-glass-card shadow-xl">
-        <div className="flex items-center gap-2">
-          <ImageIcon className="w-4 h-4 text-accent" />
-          <h2 className="text-xs font-extrabold text-text-primary drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]">
-            Workspace Backdrop Wallpaper
-          </h2>
-        </div>
-
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-bold text-text-secondary">Desktop Wallpaper Preview</span>
-          <input
-            type="checkbox"
-            checked={settings.desktopSimulatorMode}
-            onChange={(e) => onUpdateSettings({ desktopSimulatorMode: e.target.checked })}
-            className="rounded accent-accent cursor-pointer"
-          />
-        </div>
-
-        {settings.desktopSimulatorMode && (
-          <div className="grid grid-cols-3 gap-2 mt-1">
-            {WALLPAPER_PRESETS.map((wp) => (
-              <button
-                key={wp.id}
-                type="button"
-                onClick={() => onUpdateSettings({ backdropImage: wp.url })}
-                className={`relative rounded-2xl overflow-hidden h-14 border transition-all cursor-pointer ${
-                  settings.backdropImage === wp.url ? 'ring-2 ring-accent border-accent scale-105 shadow-xl' : 'border-white/10 opacity-70 hover:opacity-100'
-                }`}
-              >
-                <img src={wp.url} alt={wp.name} className="w-full h-full object-cover" />
-                <span className="absolute bottom-0 inset-x-0 bg-black/70 text-[9px] font-bold text-white text-center py-0.5 backdrop-blur-md">
-                  {wp.name}
-                </span>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* 3. Dock Placement & Geometry */}
+      {/* 1. Dock Placement & Geometry */}
       <div className="flex flex-col gap-3 p-4 rounded-3xl liquid-glass-card shadow-xl">
         <div className="flex items-center gap-2">
           <Layout className="w-4 h-4 text-accent" />
@@ -264,7 +176,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </div>
       </div>
 
-      {/* 4. Audio Feedback & Sound FX */}
+      {/* 2. Audio Feedback & Sound FX */}
       <div className="flex items-center justify-between p-4 rounded-3xl liquid-glass-card shadow-xl">
         <div className="flex items-center gap-3">
           {settings.playSounds ? (
@@ -289,7 +201,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </button>
       </div>
 
-      {/* 5. Backup, Restore & Reset */}
+      {/* 3. Backup, Restore & Reset */}
       <div className="flex flex-col gap-2.5 p-4 rounded-3xl liquid-glass-card shadow-xl">
         <div className="flex items-center gap-2">
           <Download className="w-4 h-4 text-accent" />
