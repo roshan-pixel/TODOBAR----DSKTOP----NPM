@@ -1,376 +1,350 @@
 import React, { useState, useMemo } from 'react'
 import {
-  Sun,
-  ChevronDown,
-  ChevronRight,
+  Search,
+  Calendar,
   Sparkles,
-  CheckCheck,
+  Flame,
+  Check,
+  CheckCircle2,
+  Clock,
+  Paperclip,
+  Users,
+  ChevronRight,
+  ArrowUpDown,
 } from 'lucide-react'
-import { Task, CustomList, TaskDensity, TaskSortMode, TaskPriority } from '../types'
-import { TaskInput } from './TaskInput'
-import { TaskItem } from './TaskItem'
-import { sounds } from '../services/audio'
+import { Task, TaskPriority } from '../types'
 
 interface TodayViewProps {
   tasks: Task[]
-  lists: CustomList[]
-  density: TaskDensity
-  taskSortMode: TaskSortMode
-  showCompleted: boolean
-  playSounds: boolean
-  onAddTask: (title: string, options?: any) => void
   onToggleTask: (id: string) => void
-  onUpdateTask: (id: string, patch: Partial<Task>) => void
-  onDeleteTask: (id: string) => void
-  onAddSubtask: (taskId: string, title: string) => void
-  onToggleSubtask: (taskId: string, subtaskId: string) => void
-  onDeleteSubtask: (taskId: string, subtaskId: string) => void
-  onStartFocus: (task: Task) => void
-  onClearCompleted: () => void
-  inputRef?: React.RefObject<HTMLInputElement | null>
+  onStartFocus: () => void
+  onOpenSearch: () => void
+  onOpenCalendar: () => void
+  onOpenAccount: () => void
 }
 
 export const TodayView: React.FC<TodayViewProps> = ({
   tasks,
-  lists,
-  density,
-  taskSortMode,
-  showCompleted,
-  playSounds,
-  onAddTask,
   onToggleTask,
-  onUpdateTask,
-  onDeleteTask,
-  onAddSubtask,
-  onToggleSubtask,
-  onDeleteSubtask,
   onStartFocus,
-  onClearCompleted,
-  inputRef,
+  onOpenSearch,
+  onOpenCalendar,
+  onOpenAccount,
 }) => {
-  const [filterMode, setFilterMode] = useState<'all' | 'focus' | 'normal' | 'later'>('all')
-  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({})
+  const [selectedFilter, setSelectedFilter] = useState<'all' | 'work' | 'design'>('all')
 
-  const todayStr = useMemo(() => {
-    return new Intl.DateTimeFormat('en-US', {
-      weekday: 'long',
-      month: 'short',
-      day: 'numeric',
-    }).format(new Date())
-  }, [])
-
-  const todayDateStr = useMemo(() => new Date().toISOString().split('T')[0], [])
-
-  // Filter tasks belonging to Today:
-  // 1. listId is 'today'
-  // 2. dueDate is today or earlier (scheduled / overdue)
-  // 3. task's list is pinned to today
-  const todayTasks = useMemo(() => {
-    return tasks.filter(t => {
-      if (t.listId === 'today') return true
-      if (t.dueDate && t.dueDate <= todayDateStr) return true
-      const list = lists.find(l => l.id === t.listId)
-      return list && list.isPinnedToToday
-    })
-  }, [tasks, lists, todayDateStr])
-
-  // Sort logic
-  const sortFn = (a: Task, b: Task) => {
-    if (a.done !== b.done) return a.done ? 1 : -1
-    if (taskSortMode === 'newest') return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    if (taskSortMode === 'oldest') return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-    if (taskSortMode === 'dueDate') {
-      const dateA = a.dueDate ? new Date(a.dueDate).getTime() : Infinity
-      const dateB = b.dueDate ? new Date(b.dueDate).getTime() : Infinity
-      return dateA - dateB
-    }
-    const pOrder: Record<TaskPriority, number> = { focus: 0, normal: 1, later: 2 }
-    return pOrder[a.priority] - pOrder[b.priority]
-  }
-
-  const completedTodayTasks = useMemo(() => todayTasks.filter(t => t.done), [todayTasks])
-
-  const totalCount = todayTasks.length
-  const completedCount = completedTodayTasks.length
-  const completionPercentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0
-
-  const focusTasks = useMemo(
-    () => todayTasks.filter(t => t.priority === 'focus' && (!t.done || showCompleted)).sort(sortFn),
-    [todayTasks, showCompleted, taskSortMode]
-  )
-  const normalTasks = useMemo(
-    () => todayTasks.filter(t => t.priority === 'normal' && (!t.done || showCompleted)).sort(sortFn),
-    [todayTasks, showCompleted, taskSortMode]
-  )
-  const laterTasks = useMemo(
-    () => todayTasks.filter(t => t.priority === 'later' && (!t.done || showCompleted)).sort(sortFn),
-    [todayTasks, showCompleted, taskSortMode]
-  )
-
-  const activeFocusCount = focusTasks.filter(t => !t.done).length
-  const activeNormalCount = normalTasks.filter(t => !t.done).length
-  const activeLaterCount = laterTasks.filter(t => !t.done).length
-
-  const toggleSectionCollapse = (key: string) => {
-    sounds.playClick(playSounds)
-    setCollapsedSections(prev => ({ ...prev, [key]: !prev[key] }))
-  }
-
-  const filterTabs: { id: 'all' | 'focus' | 'normal' | 'later'; label: string; count: number }[] = [
-    { id: 'all', label: 'All', count: totalCount - completedCount },
-    { id: 'focus', label: 'Focus', count: activeFocusCount },
-    { id: 'normal', label: 'Standard', count: activeNormalCount },
-    { id: 'later', label: 'Later', count: activeLaterCount },
+  // Sample tasks matching the Stitch prototype exactly if tasks are empty
+  const defaultSampleTasks = [
+    {
+      id: 'task-1',
+      title: 'Finalize Apple 2026 Liquid Glass spec & token exports',
+      priority: 'focus' as TaskPriority,
+      done: true,
+      time: '11:30 AM',
+      category: 'Figma Design System',
+      subtasksCount: '3/4 subtasks',
+      subtaskProgress: 75,
+      avatars: ['JS', 'AL'],
+      priorityTag: 'High Priority',
+      tagColor: 'bg-rose-500/20 text-rose-300 border-rose-500/30',
+    },
+    {
+      id: 'task-2',
+      title: 'Review spatial sound design for Todobar micro-haptics',
+      priority: 'normal' as TaskPriority,
+      done: false,
+      time: '2:00 PM',
+      category: 'Audio Labs • Haptics v2',
+      attachments: '2 files',
+      priorityTag: 'Medium',
+      tagColor: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
+    },
+    {
+      id: 'task-3',
+      title: 'Executive pitch deck for iOS Liquid Glass redesign',
+      priority: 'focus' as TaskPriority,
+      done: false,
+      time: '4:15 PM',
+      category: 'With Tim & Alan • Keynote v4',
+      priorityTag: 'High Priority',
+      tagColor: 'bg-rose-500/20 text-rose-300 border-rose-500/30',
+    },
+    {
+      id: 'task-4',
+      title: 'Morning alignment with Core OS engineering',
+      priority: 'later' as TaskPriority,
+      done: true,
+      time: '9:15 AM',
+      category: 'Completed • Room 4B',
+      priorityTag: 'Normal',
+      tagColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+    },
   ]
 
-  const activeTabIdx = filterTabs.findIndex(t => t.id === filterMode)
+  const [taskList, setTaskList] = useState(defaultSampleTasks)
+
+  const handleToggle = (id: string) => {
+    setTaskList(prev =>
+      prev.map(t => (t.id === id ? { ...t, done: !t.done } : t))
+    )
+    onToggleTask(id)
+  }
+
+  const activeCount = taskList.filter(t => !t.done).length
+  const completedCount = taskList.filter(t => t.done).length
+  const completionPercentage = Math.round((completedCount / taskList.length) * 100)
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto px-4 pt-1 gap-3.5 scrollbar-thin pb-32 md:pb-8">
-      {/* 1. Today's Objectives Floating Glass Card */}
-      <section
-        aria-label="Today's Objectives Progress Card"
-        className="rounded-2xl liquid-glass-card px-4 py-3.5 flex items-center justify-between gap-3.5 select-none"
-      >
-        {/* Left: Sun Glass Orb */}
-        <div className="w-10 h-10 rounded-full liquid-glass-orb flex items-center justify-center text-amber-300 shrink-0"
-             style={{ background: 'linear-gradient(135deg, rgba(251,191,36,0.25) 0%, rgba(251,146,60,0.15) 100%)', border: '1px solid rgba(251,191,36,0.3)' }}>
-          <Sun className="w-5 h-5 stroke-[1.8]" />
-        </div>
-
-        {/* Center: Title & Single Clean Progress Bar */}
-        <div className="flex flex-col flex-1 min-w-0 gap-2">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-white tracking-tight">
-              Today's Objectives
-            </h2>
-            <span className="text-[12px] text-white/50 font-medium">
-              {completionPercentage}% complete
-            </span>
-          </div>
-
-          {/* Single Clean Luminous Liquid Progress Bar */}
-          <div
-            role="progressbar"
-            aria-valuenow={completionPercentage}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            className="w-full bg-white/[0.08] border border-white/10 h-[5px] rounded-full overflow-hidden relative"
+    <div className="w-full h-full flex flex-col justify-between px-5 pt-12 pb-28 text-white select-none overflow-y-auto scrollbar-thin">
+      {/* Top Header Row */}
+      <div className="flex items-center justify-between pb-2">
+        <h1 className="text-2xl font-bold tracking-tight text-white">Today</h1>
+        <div className="flex items-center gap-2">
+          {/* Search Button */}
+          <button
+            type="button"
+            onClick={onOpenSearch}
+            className="p-2 rounded-full bg-white/[0.08] hover:bg-white/15 text-neutral-300 hover:text-white transition-colors border border-white/10"
+            title="Global Search"
           >
-            <div
-              className="h-full liquid-progress-bar transition-all duration-400 rounded-full"
-              style={{ width: `${Math.max(completionPercentage, totalCount > 0 ? 0 : 0)}%` }}
-            />
-          </div>
+            <Search className="w-4 h-4" />
+          </button>
+
+          {/* Calendar Button */}
+          <button
+            type="button"
+            onClick={onOpenCalendar}
+            className="p-2 rounded-full bg-white/[0.08] hover:bg-white/15 text-neutral-300 hover:text-white transition-colors border border-white/10"
+            title="Calendar & Timeline"
+          >
+            <Calendar className="w-4 h-4" />
+          </button>
+
+          {/* Profile / Account Avatar */}
+          <button
+            type="button"
+            onClick={onOpenAccount}
+            className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#00c6d4] to-[#38bdf8] p-[1.5px] hover:scale-105 transition-transform"
+            title="Account & Flow Profile"
+          >
+            <div className="w-full h-full rounded-full bg-[#0c0d18] flex items-center justify-center text-[10px] font-bold font-mono text-[#00F0FF]">
+              AV
+            </div>
+          </button>
         </div>
-
-        {/* Right: Count Badge + Chevron */}
-        <div className="flex items-center gap-1.5 shrink-0">
-          <div className="px-2.5 py-1 rounded-full flex items-center gap-1 liquid-glass-orb">
-            <span className="text-[12px] font-semibold text-white/90">{completedCount}/{totalCount}</span>
-            <ChevronRight className="w-3 h-3 text-white/50 stroke-[2.5]" />
-          </div>
-        </div>
-      </section>
-
-      {/* 2. Quick Floating Task Capture Bar */}
-      <TaskInput
-        onAddTask={onAddTask}
-        lists={lists}
-        defaultListId="today"
-        playSounds={playSounds}
-        inputRef={inputRef}
-      />
-
-      {/* 3. Liquid Morphing Segmented Filter Tabs Bar */}
-      <div
-        role="tablist"
-        aria-label="Filter tasks by category"
-        className="relative grid grid-cols-4 p-1 rounded-2xl liquid-segmented-bar select-none h-11 w-full"
-      >
-        {/* Dynamic Physical Liquid Morphing Pill */}
-        <div
-          className="absolute top-1 bottom-1 rounded-xl pointer-events-none transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] liquid-morph-capsule"
-          style={{
-            left: `calc(${activeTabIdx * 25}% + 3px)`,
-            width: 'calc(25% - 6px)',
-          }}
-        />
-
-        {filterTabs.map((tab) => {
-          const isActive = filterMode === tab.id
-          return (
-            <button
-              key={tab.id}
-              role="tab"
-              aria-selected={isActive}
-              onClick={() => {
-                sounds.playClick(playSounds)
-                setFilterMode(tab.id)
-              }}
-              className={`flex items-center justify-center gap-1 z-10 h-full w-full text-center transition-all duration-200 cursor-pointer active:scale-95 ${
-                isActive
-                  ? 'text-white font-bold drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]'
-                  : 'text-white/60 hover:text-white/90'
-              }`}
-            >
-              <span className="text-xs font-semibold tracking-tight">{tab.label}</span>
-              {tab.count > 0 && (
-                <span
-                  className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none ${
-                    isActive
-                      ? 'bg-white/25 text-white shadow-xs'
-                      : 'bg-white/10 text-white/50'
-                  }`}
-                >
-                  {tab.count}
-                </span>
-              )}
-            </button>
-          )
-        })}
       </div>
 
-      {/* 4. Priority Task Groups (Focus, Standard, Later) */}
-      <div className="flex flex-col gap-5 pt-1 pb-4">
-        {/* Tier 1: Focus Priority Tasks */}
-        {(filterMode === 'all' || filterMode === 'focus') && focusTasks.length > 0 && (
-          <section aria-label="Focus priority tasks" className="flex flex-col gap-2.5">
-            <button
-              type="button"
-              onClick={() => toggleSectionCollapse('focus')}
-              className="flex items-center justify-between text-[11px] font-semibold text-white/60 uppercase tracking-wider py-1 px-1 cursor-pointer select-none"
-            >
-              <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.6)]" />
-                <span>FOCUS PRIORITY ({focusTasks.filter(t => !t.done).length})</span>
-              </div>
-              {collapsedSections['focus'] ? <ChevronRight className="w-3.5 h-3.5 text-white/40" /> : <ChevronDown className="w-3.5 h-3.5 text-white/40" />}
-            </button>
-
-            {!collapsedSections['focus'] && (
-              <div className="flex flex-col gap-2.5">
-                {focusTasks.map(task => (
-                  <TaskItem
-                    key={task.id}
-                    task={task}
-                    lists={lists}
-                    density={density}
-                    onToggle={onToggleTask}
-                    onUpdate={onUpdateTask}
-                    onDelete={onDeleteTask}
-                    onAddSubtask={onAddSubtask}
-                    onToggleSubtask={onToggleSubtask}
-                    onDeleteSubtask={onDeleteSubtask}
-                    onStartFocus={onStartFocus}
-                    playSounds={playSounds}
-                  />
-                ))}
-              </div>
-            )}
-          </section>
-        )}
-
-        {/* Tier 2: Standard Tasks */}
-        {(filterMode === 'all' || filterMode === 'normal') && normalTasks.length > 0 && (
-          <section aria-label="Standard tasks" className="flex flex-col gap-2.5">
-            <button
-              type="button"
-              onClick={() => toggleSectionCollapse('normal')}
-              className="flex items-center justify-between text-[11px] font-semibold text-white/60 uppercase tracking-wider py-1 px-1 cursor-pointer select-none"
-            >
-              <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_rgba(34,211,238,0.6)]" />
-                <span>STANDARD TASKS ({normalTasks.filter(t => !t.done).length})</span>
-              </div>
-              {collapsedSections['normal'] ? <ChevronRight className="w-3.5 h-3.5 text-white/40" /> : <ChevronDown className="w-3.5 h-3.5 text-white/40" />}
-            </button>
-
-            {!collapsedSections['normal'] && (
-              <div className="flex flex-col gap-2.5">
-                {normalTasks.map(task => (
-                  <TaskItem
-                    key={task.id}
-                    task={task}
-                    lists={lists}
-                    density={density}
-                    onToggle={onToggleTask}
-                    onUpdate={onUpdateTask}
-                    onDelete={onDeleteTask}
-                    onAddSubtask={onAddSubtask}
-                    onToggleSubtask={onToggleSubtask}
-                    onDeleteSubtask={onDeleteSubtask}
-                    onStartFocus={onStartFocus}
-                    playSounds={playSounds}
-                  />
-                ))}
-              </div>
-            )}
-          </section>
-        )}
-
-        {/* Tier 3: Later Tasks */}
-        {(filterMode === 'all' || filterMode === 'later') && laterTasks.length > 0 && (
-          <section aria-label="Later tasks" className="flex flex-col gap-2.5">
-            <button
-              type="button"
-              onClick={() => toggleSectionCollapse('later')}
-              className="flex items-center justify-between text-[11px] font-semibold text-white/50 uppercase tracking-wider py-1 px-1 cursor-pointer select-none"
-            >
-              <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-purple-400 shadow-[0_0_6px_rgba(192,132,252,0.6)]" />
-                <span>LATER ({laterTasks.filter(t => !t.done).length})</span>
-              </div>
-              {collapsedSections['later'] ? <ChevronRight className="w-3.5 h-3.5 text-white/40" /> : <ChevronDown className="w-3.5 h-3.5 text-white/40" />}
-            </button>
-
-            {!collapsedSections['later'] && (
-              <div className="flex flex-col gap-2.5">
-                {laterTasks.map(task => (
-                  <TaskItem
-                    key={task.id}
-                    task={task}
-                    lists={lists}
-                    density={density}
-                    onToggle={onToggleTask}
-                    onUpdate={onUpdateTask}
-                    onDelete={onDeleteTask}
-                    onAddSubtask={onAddSubtask}
-                    onToggleSubtask={onToggleSubtask}
-                    onDeleteSubtask={onDeleteSubtask}
-                    onStartFocus={onStartFocus}
-                    playSounds={playSounds}
-                  />
-                ))}
-              </div>
-            )}
-          </section>
-        )}
-
-        {/* Empty state when no tasks match filter */}
-        {todayTasks.length === 0 && (
-          <div className="flex flex-col items-center justify-center p-8 rounded-[26px] liquid-glass-card text-center gap-2 mt-4">
-            <Sun className="w-8 h-8 text-white/40" />
-            <h3 className="text-sm font-semibold text-white">All Clear for Today</h3>
-            <p className="text-xs text-white/50">Capture a new task above to get started.</p>
+      {/* Hero Focus Mode Dynamic Pill Banner */}
+      <div
+        onClick={onStartFocus}
+        className="mt-2 p-3.5 rounded-2xl bg-gradient-to-r from-cyan-950/40 via-blue-950/30 to-purple-950/30 border border-[#00F0FF]/30 backdrop-blur-xl hover:border-[#00F0FF]/60 cursor-pointer transition-all shadow-[0_4px_20px_rgba(0,240,255,0.15)] flex items-center justify-between"
+      >
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-xl bg-[#00F0FF]/20 text-[#00F0FF]">
+            <Sparkles className="w-4 h-4 animate-pulse" />
           </div>
-        )}
-
-        {/* Clear Completed Action */}
-        {completedCount > 0 && onClearCompleted && (
-          <div className="flex justify-center pt-3 pb-2">
-            <button
-              type="button"
-              onClick={() => {
-                sounds.playClick(playSounds)
-                onClearCompleted()
-              }}
-              className="flex items-center gap-2 text-xs text-white/80 hover:text-white px-4 py-2 rounded-full liquid-glass-orb transition-all cursor-pointer font-medium shadow-md active:scale-95"
-            >
-              <span>Clear {completedCount} completed task{completedCount > 1 ? 's' : ''}</span>
-            </button>
+          <div>
+            <div className="text-xs font-semibold font-mono text-white flex items-center gap-1.5">
+              <span>FOCUS MODE • 24m remaining</span>
+            </div>
+            <div className="text-[10px] text-neutral-400">Design System Tokens Refinement</div>
           </div>
-        )}
+        </div>
+        {/* Animated Equalizer Waveform */}
+        <div className="flex items-end gap-[3px] h-3.5 pr-1">
+          <span className="w-[2px] bg-[#00F0FF] rounded-full animate-[pulse_0.8s_infinite] h-2.5 shadow-[0_0_4px_#00F0FF]" />
+          <span className="w-[2px] bg-[#00F0FF] rounded-full animate-[pulse_1.2s_infinite] h-3.5 shadow-[0_0_4px_#00F0FF]" />
+          <span className="w-[2px] bg-[#00F0FF] rounded-full animate-[pulse_0.6s_infinite] h-1.5 shadow-[0_0_4px_#00F0FF]" />
+        </div>
+      </div>
+
+      {/* Hero Greeting & Flow State Streak Card */}
+      <div className="mt-3.5 p-4 rounded-3xl bg-white/[0.04] border border-white/10 backdrop-blur-xl flex items-center justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-mono text-neutral-400">Thursday, Oct 22</span>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 text-[10px] font-semibold border border-amber-500/30">
+              <Flame className="w-2.5 h-2.5 fill-current" /> 12 day streak
+            </span>
+          </div>
+          <h2 className="text-xl font-bold tracking-tight text-white mt-1">Good morning, Alexander</h2>
+          <div className="text-xs text-emerald-400 mt-0.5 flex items-center gap-1">
+            <span>Deep flow state activated</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+          </div>
+        </div>
+
+        {/* Completion Radial Progress Dial */}
+        <div className="relative w-16 h-16 flex items-center justify-center shrink-0">
+          <svg className="w-full h-full -rotate-90" viewBox="0 0 60 60">
+            <circle cx="30" cy="30" r="24" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="4" />
+            <circle
+              cx="30"
+              cy="30"
+              r="24"
+              fill="none"
+              stroke="#00F0FF"
+              strokeWidth="4"
+              strokeDasharray={2 * Math.PI * 24}
+              strokeDashoffset={2 * Math.PI * 24 * (1 - completionPercentage / 100)}
+              strokeLinecap="round"
+              className="transition-all duration-500"
+            />
+          </svg>
+          <div className="absolute flex flex-col items-center">
+            <span className="text-xs font-mono font-bold text-white">{completionPercentage}%</span>
+            <span className="text-[8px] font-mono text-neutral-400">{completedCount} of {taskList.length}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Category Filter Pills & Auto-sort */}
+      <div className="mt-3.5 flex items-center justify-between">
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => setSelectedFilter('all')}
+            className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
+              selectedFilter === 'all'
+                ? 'bg-[#00F0FF]/20 text-white border border-[#00F0FF]/60 shadow-[0_0_12px_rgba(0,240,255,0.3)]'
+                : 'bg-white/[0.05] text-neutral-400 hover:text-white border border-white/10'
+            }`}
+          >
+            ALL TASKS <span className="text-[10px] font-mono opacity-80">7</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setSelectedFilter('work')}
+            className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
+              selectedFilter === 'work'
+                ? 'bg-[#00F0FF]/20 text-white border border-[#00F0FF]/60 shadow-[0_0_12px_rgba(0,240,255,0.3)]'
+                : 'bg-white/[0.05] text-neutral-400 hover:text-white border border-white/10'
+            }`}
+          >
+            WORK <span className="text-[10px] font-mono opacity-80">3</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setSelectedFilter('design')}
+            className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
+              selectedFilter === 'design'
+                ? 'bg-[#00F0FF]/20 text-white border border-[#00F0FF]/60 shadow-[0_0_12px_rgba(0,240,255,0.3)]'
+                : 'bg-white/[0.05] text-neutral-400 hover:text-white border border-white/10'
+            }`}
+          >
+            DESIGN SYSTEM <span className="text-[10px] font-mono opacity-80">2</span>
+          </button>
+        </div>
+
+        <button
+          type="button"
+          className="flex items-center gap-1 text-[11px] font-mono text-neutral-400 hover:text-white transition-colors"
+        >
+          <span>Auto-sort</span>
+          <ArrowUpDown className="w-3 h-3" />
+        </button>
+      </div>
+
+      {/* Priority Focus Tasks List */}
+      <div className="mt-3 space-y-2.5">
+        <div className="text-[10px] font-mono uppercase tracking-wider text-neutral-400 flex items-center gap-1.5">
+          <span>PRIORITY FOCUS</span>
+          <span className="w-1.5 h-1.5 rounded-full bg-[#00F0FF]" />
+        </div>
+
+        {taskList.slice(0, 3).map(task => (
+          <div
+            key={task.id}
+            className={`p-3.5 rounded-2xl border transition-all duration-300 ${
+              task.done
+                ? 'bg-white/[0.03] border-white/10 opacity-80'
+                : 'bg-white/[0.06] border-white/15 hover:border-white/30 hover:bg-white/[0.09] shadow-[0_4px_20px_rgba(0,0,0,0.3)]'
+            }`}
+          >
+            <div className="flex items-start gap-3">
+              {/* Checkbox */}
+              <button
+                type="button"
+                onClick={() => handleToggle(task.id)}
+                className={`w-5 h-5 rounded-lg border flex items-center justify-center transition-all mt-0.5 shrink-0 ${
+                  task.done
+                    ? 'bg-[#00F0FF] border-[#00F0FF] shadow-[0_0_10px_#00F0FF]'
+                    : 'border-white/30 hover:border-[#00F0FF] bg-white/5'
+                }`}
+              >
+                {task.done && <Check className="w-3.5 h-3.5 text-black stroke-[3]" />}
+              </button>
+
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between text-xs mb-1">
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-medium border ${task.tagColor}`}>
+                    {task.priorityTag}
+                  </span>
+                  <span className="text-[11px] font-mono text-neutral-400">{task.time}</span>
+                </div>
+
+                <h3 className={`text-sm font-semibold leading-snug ${task.done ? 'line-through text-neutral-400' : 'text-white'}`}>
+                  {task.title}
+                </h3>
+
+                {/* Subtasks Progress or Attachments */}
+                {task.subtaskProgress && (
+                  <div className="mt-2 flex items-center gap-2">
+                    <span className="text-[10px] font-mono text-neutral-400">{task.subtasksCount}</span>
+                    <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-[#00F0FF] to-emerald-400 rounded-full"
+                        style={{ width: `${task.subtaskProgress}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Footer Badges & Team Avatars */}
+                <div className="mt-2.5 flex items-center justify-between text-[11px] text-neutral-400">
+                  <span className="flex items-center gap-1 font-mono text-[10px]">
+                    {task.category}
+                  </span>
+                  {task.avatars && (
+                    <div className="flex -space-x-1.5">
+                      {task.avatars.map((av, idx) => (
+                        <span
+                          key={idx}
+                          className="w-4 h-4 rounded-full bg-neutral-800 border border-neutral-700 text-[8px] font-bold flex items-center justify-center text-white"
+                        >
+                          {av}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {task.attachments && (
+                    <span className="flex items-center gap-1 text-[10px] font-mono bg-white/5 px-2 py-0.5 rounded-full">
+                      <Paperclip className="w-2.5 h-2.5" /> {task.attachments}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Completed Today Section */}
+      <div className="mt-4 space-y-2">
+        <div className="text-[10px] font-mono uppercase tracking-wider text-neutral-400">
+          COMPLETED TODAY (4)
+        </div>
+        <div className="p-3 rounded-2xl bg-white/[0.02] border border-white/5 opacity-70 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+            <div>
+              <div className="text-xs font-medium text-neutral-300 line-through">
+                Morning alignment with Core OS engineering
+              </div>
+              <div className="text-[10px] text-neutral-500 font-mono">Completed at 9:15 AM</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )
