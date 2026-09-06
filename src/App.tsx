@@ -10,21 +10,47 @@ import { MiniBreakModal } from './components/MiniBreakModal'
 import { CalendarTimelineView } from './components/CalendarTimelineView'
 import { GlobalSearchModal } from './components/GlobalSearchModal'
 import { AccountProfileView } from './components/AccountProfileView'
-import { useTasks } from './hooks/useTasks'
+import { useTodayTasks } from './hooks/useTodayTasks'
+import { useFocusTimer } from './hooks/useFocusTimer'
 
 export type PrototypeScreen = 'today' | 'focus' | 'completed' | 'calendar' | 'account'
 
 export function App() {
   const [currentScreen, setCurrentScreen] = useState<PrototypeScreen>('today')
   const [activeTab, setActiveTab] = useState<TodobarTab>('today')
-  const [islandMode, setIslandMode] = useState<IslandMode>('focusing')
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false)
   const [isMiniBreakOpen, setIsMiniBreakOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isSimulatedFrame, setIsSimulatedFrame] = useState(true)
   const [isAudioActive, setIsAudioActive] = useState(true)
 
-  const { tasks, toggleTask, addTask } = useTasks(true)
+  // Centralized Tasks State - Synchronized across all screens
+  const {
+    tasks,
+    activeTasks,
+    completedTasks,
+    toggleTask,
+    addTask,
+  } = useTodayTasks()
+
+  // Sprints & Centralized Focus Stopwatch - Ticks down in real time across tabs
+  const handleSessionComplete = () => {
+    setCurrentScreen('completed')
+    setActiveTab('done')
+  }
+
+  const timer = useFocusTimer({
+    initialSeconds: 24 * 60 + 7, // 24:07 active sprint progress
+    defaultTotalSeconds: 45 * 60, // 45:00 target
+    onComplete: handleSessionComplete,
+  })
+
+  // Determine Dynamic Island status dynamically
+  const getIslandMode = (): IslandMode => {
+    if (currentScreen === 'completed') return 'completed'
+    if (timer.isRunning) return 'focusing'
+    return 'paused'
+  }
 
   // Tab Selection
   const handleSelectTab = (tab: TodobarTab) => {
@@ -33,10 +59,8 @@ export function App() {
       setCurrentScreen('today')
     } else if (tab === 'focus') {
       setCurrentScreen('focus')
-      setIslandMode('focusing')
     } else if (tab === 'done') {
       setCurrentScreen('completed')
-      setIslandMode('completed')
     }
   }
 
@@ -44,43 +68,37 @@ export function App() {
   const handleStartFocus = () => {
     setCurrentScreen('focus')
     setActiveTab('focus')
-    setIslandMode('focusing')
-  }
-
-  const handlePauseFocus = () => {
-    setIsMiniBreakOpen(true)
-    setIslandMode('paused')
+    if (!timer.isRunning) {
+      timer.resume()
+    }
   }
 
   const handleResumeSprint = () => {
     setIsMiniBreakOpen(false)
-    setIslandMode('focusing')
+    timer.resume()
   }
 
   const handleEndSprintEarly = () => {
     setIsMiniBreakOpen(false)
+    timer.pause()
     setCurrentScreen('today')
     setActiveTab('today')
-    setIslandMode('idle')
-  }
-
-  const handleCompleteSession = () => {
-    setCurrentScreen('completed')
-    setActiveTab('done')
-    setIslandMode('completed')
   }
 
   const handleReturnToToday = () => {
     setCurrentScreen('today')
     setActiveTab('today')
-    setIslandMode('idle')
   }
+
+  // Active task for focus sprint
+  const activeFocusTask = activeTasks.find(t => t.priority === 'focus') || activeTasks[0]
 
   return (
     <IPhone16ProMaxFrame
       isSimulatedFrame={isSimulatedFrame}
       onToggleFrame={() => setIsSimulatedFrame(!isSimulatedFrame)}
-      islandMode={islandMode}
+      islandMode={getIslandMode()}
+      timeRemaining={timer.timeString}
       onTapIsland={() => {
         if (currentScreen === 'focus') {
           setIsMiniBreakOpen(true)
@@ -99,6 +117,10 @@ export function App() {
             onOpenSearch={() => setIsSearchOpen(true)}
             onOpenCalendar={() => setCurrentScreen('calendar')}
             onOpenAccount={() => setCurrentScreen('account')}
+            focusTimeString={timer.timeString}
+            focusMinutesRemaining={timer.minutes}
+            isFocusRunning={timer.isRunning}
+            focusTaskTitle={activeFocusTask?.title || 'Design System Tokens Refinement'}
           />
         )}
 
@@ -108,13 +130,24 @@ export function App() {
               setCurrentScreen('today')
               setActiveTab('today')
             }}
-            onPause={handlePauseFocus}
-            onComplete={handleCompleteSession}
+            onComplete={handleSessionComplete}
+            secondsRemaining={timer.secondsRemaining}
+            totalSeconds={timer.totalSeconds}
+            isRunning={timer.isRunning}
+            onTogglePlayPause={timer.togglePlayPause}
+            onReset={() => timer.reset()}
+            onAdjust={timer.adjust}
+            activeTask={activeFocusTask}
+            onToggleTask={toggleTask}
           />
         )}
 
         {currentScreen === 'completed' && (
-          <SessionCompletedView onReturnToToday={handleReturnToToday} />
+          <SessionCompletedView
+            onReturnToToday={handleReturnToToday}
+            completedTasks={completedTasks}
+            focusMinutesElapsed={Math.max(1, Math.round((timer.totalSeconds - timer.secondsRemaining) / 60)) || 45}
+          />
         )}
 
         {currentScreen === 'calendar' && (
@@ -152,7 +185,11 @@ export function App() {
         isOpen={isQuickAddOpen}
         onClose={() => setIsQuickAddOpen(false)}
         onAddTask={taskData => {
-          addTask(taskData.title, taskData)
+          addTask({
+            title: taskData.title,
+            priority: taskData.priority,
+            category: taskData.tags?.[0] ? taskData.tags.join(' • ') : undefined,
+          })
         }}
       />
 

@@ -7,6 +7,7 @@ interface IPhone16ProMaxFrameProps {
   isSimulatedFrame: boolean
   onToggleFrame: () => void
   islandMode?: IslandMode
+  timeRemaining?: string
   onTapIsland?: () => void
 }
 
@@ -15,6 +16,7 @@ export const IPhone16ProMaxFrame: React.FC<IPhone16ProMaxFrameProps> = ({
   isSimulatedFrame,
   onToggleFrame,
   islandMode = 'focusing',
+  timeRemaining,
   onTapIsland,
 }) => {
   const [isMobileScreen, setIsMobileScreen] = useState(() => {
@@ -88,6 +90,7 @@ export const IPhone16ProMaxFrame: React.FC<IPhone16ProMaxFrameProps> = ({
             <div className="pointer-events-auto flex justify-center">
               <DynamicIsland
                 mode={islandMode}
+                timeRemaining={timeRemaining}
                 onTap={onTapIsland}
                 isCompact={true}
               />

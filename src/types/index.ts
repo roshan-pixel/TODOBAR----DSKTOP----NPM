@@ -24,6 +24,24 @@ export type Task = {
   isPinned?: boolean
 }
 
+export type TodayTask = {
+  id: string
+  title: string
+  priority: TaskPriority
+  done: boolean
+  time: string
+  category: string
+  subtasksCount?: string
+  subtaskProgress?: number
+  avatars?: { initials: string; bg: string }[]
+  attachments?: string
+  priorityTag: string
+  dotColor: string
+  tagColor: string
+  completedAt?: string
+  categoryType?: 'work' | 'design'
+}
+
 export type CustomList = {
   id: string
   title: string

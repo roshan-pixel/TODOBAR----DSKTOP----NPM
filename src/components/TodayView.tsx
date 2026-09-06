@@ -6,7 +6,6 @@ import {
   Target,
   Flame,
   Check,
-  CheckCircle2,
   Paperclip,
   ArrowUpDown,
   ListTodo,
@@ -14,16 +13,22 @@ import {
   Headphones,
   Users,
   ChevronDown,
+  Sparkles,
 } from 'lucide-react'
-import { Task, TaskPriority } from '../types'
+import { TodayTask } from '../types'
+import { isWorkTask, isDesignSystemTask } from '../hooks/useTodayTasks'
 
 interface TodayViewProps {
-  tasks: Task[]
+  tasks: TodayTask[]
   onToggleTask: (id: string) => void
   onStartFocus: () => void
   onOpenSearch: () => void
   onOpenCalendar: () => void
   onOpenAccount: () => void
+  focusTimeString?: string
+  focusMinutesRemaining?: number
+  isFocusRunning?: boolean
+  focusTaskTitle?: string
 }
 
 export const TodayView: React.FC<TodayViewProps> = ({
@@ -33,112 +38,47 @@ export const TodayView: React.FC<TodayViewProps> = ({
   onOpenSearch,
   onOpenCalendar,
   onOpenAccount,
+  focusTimeString = '24:07',
+  focusMinutesRemaining = 24,
+  isFocusRunning = true,
+  focusTaskTitle = 'Design System Tokens Refinement',
 }) => {
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'work' | 'design'>('all')
-
-  const defaultSampleTasks = [
-    {
-      id: 'task-1',
-      title: 'Finalize Apple 2026 Liquid Glass spec & token exports',
-      priority: 'focus' as TaskPriority,
-      done: true,
-      time: '11:30 AM',
-      category: 'Figma Design System',
-      subtasksCount: '3/4 subtasks',
-      subtaskProgress: 75,
-      avatars: [
-        { initials: 'JD', bg: 'bg-[#3b49df] text-white' },
-        { initials: 'AL', bg: 'bg-[#10b981] text-neutral-950 font-bold' },
-      ],
-      priorityTag: 'High Priority',
-      dotColor: 'bg-rose-400',
-      tagColor: 'bg-rose-500/20 text-rose-300 border-rose-500/35',
-    },
-    {
-      id: 'task-2',
-      title: 'Review spatial sound design for Todobar micro-haptics',
-      priority: 'normal' as TaskPriority,
-      done: false,
-      time: '2:00 PM',
-      category: 'Audio Labs • Haptics v2',
-      attachments: '2 files',
-      priorityTag: 'Medium',
-      dotColor: 'bg-[#00F0FF]',
-      tagColor: 'bg-cyan-500/20 text-[#00F0FF] border-cyan-500/35',
-    },
-    {
-      id: 'task-3',
-      title: 'Executive pitch deck for iOS Liquid Glass redesign',
-      priority: 'focus' as TaskPriority,
-      done: false,
-      time: '4:15 PM',
-      category: 'With Tim & Alan • Keynote v4',
-      priorityTag: 'High Priority',
-      dotColor: 'bg-rose-400',
-      tagColor: 'bg-rose-500/20 text-rose-300 border-rose-500/35',
-    },
-    {
-      id: 'task-4',
-      title: 'Morning alignment with Core OS engineering',
-      priority: 'later' as TaskPriority,
-      done: true,
-      time: '9:15 AM',
-      category: 'Completed • Room 4B',
-      priorityTag: 'Normal',
-      dotColor: 'bg-emerald-400',
-      tagColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/35',
-    },
-  ]
-
-  const [taskList, setTaskList] = useState(defaultSampleTasks)
-
-  const [completedTasks, setCompletedTasks] = useState([
-    {
-      id: 'comp-1',
-      title: 'Morning alignment with Core OS engineering',
-      time: '9:15 AM',
-      category: 'Room 4B',
-      done: true,
-    },
-    {
-      id: 'comp-2',
-      title: 'Review token exports for SwiftUI Liquid Glass',
-      time: '8:45 AM',
-      category: 'Design Tokens',
-      done: true,
-    },
-    {
-      id: 'comp-3',
-      title: 'Sync with Alan on Keynote v4 outline',
-      time: '8:15 AM',
-      category: 'Keynote v4',
-      done: true,
-    },
-    {
-      id: 'comp-4',
-      title: 'Daily standup & backlog triage',
-      time: '8:00 AM',
-      category: 'Sprint 3',
-      done: true,
-    },
-  ])
   const [isCompletedOpen, setIsCompletedOpen] = useState(true)
+  const [sortByPriority, setSortByPriority] = useState(false)
 
-  const toggleCompletedTask = (id: string) => {
-    setCompletedTasks(prev =>
-      prev.map(t => (t.id === id ? { ...t, done: !t.done } : t))
-    )
-  }
+  // Dynamic calculations from real tasks
+  const totalCount = tasks.length
+  const completedCount = tasks.filter(t => t.done).length
+  const completionPercentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0
+  const leftTodayCount = Math.max(0, totalCount - completedCount)
 
-  const handleToggle = (id: string) => {
-    setTaskList(prev =>
-      prev.map(t => (t.id === id ? { ...t, done: !t.done } : t))
-    )
-    onToggleTask(id)
-  }
+  // Category counts (dynamic)
+  const allCount = totalCount
+  const workCount = tasks.filter(isWorkTask).length
+  const designCount = tasks.filter(isDesignSystemTask).length
 
-  const completedCount = taskList.filter(t => t.done).length + completedTasks.filter(t => t.done).length
-  const completionPercentage = 57 // Matches exact prototype dial value
+  // Filtered active tasks
+  const activeTasks = tasks.filter(t => !t.done)
+  const completedTasks = tasks.filter(t => t.done)
+
+  const filteredActiveTasks = activeTasks
+    .filter(task => {
+      if (selectedFilter === 'work') return isWorkTask(task)
+      if (selectedFilter === 'design') return isDesignSystemTask(task)
+      return true
+    })
+    .sort((a, b) => {
+      if (!sortByPriority) return 0
+      const order = { focus: 0, normal: 1, later: 2 }
+      return (order[a.priority] ?? 1) - (order[b.priority] ?? 1)
+    })
+
+  const filteredCompletedTasks = completedTasks.filter(task => {
+    if (selectedFilter === 'work') return isWorkTask(task)
+    if (selectedFilter === 'design') return isDesignSystemTask(task)
+    return true
+  })
 
   return (
     <div className="w-full h-full flex flex-col px-5 pt-12 pb-48 text-white select-none overflow-y-auto scrollbar-thin max-w-[430px] mx-auto bg-gradient-to-b from-[#0a0e20] via-[#060916] to-[#030610]">
@@ -191,18 +131,33 @@ export const TodayView: React.FC<TodayViewProps> = ({
             <div className="text-[13px] font-bold text-white flex items-center gap-1.5 truncate tracking-wide">
               <span>FOCUS MODE</span>
               <span className="text-[#00F0FF]">•</span>
-              <span className="text-neutral-300 font-medium">24m remaining</span>
+              <span className="text-neutral-300 font-medium">
+                {isFocusRunning ? `${focusMinutesRemaining}m remaining` : `Paused (${focusTimeString})`}
+              </span>
             </div>
             <div className="text-xs text-neutral-400 truncate mt-0.5 font-normal">
-              Design System Tokens Refinement
+              {focusTaskTitle}
             </div>
           </div>
         </div>
+
         {/* Animated Equalizer Waveform */}
         <div className="flex items-end gap-[3px] h-4 pr-1 shrink-0">
-          <span className="w-[2.5px] bg-[#00F0FF] rounded-full animate-[pulse_0.8s_infinite] h-3 shadow-[0_0_6px_#00F0FF]" />
-          <span className="w-[2.5px] bg-[#00F0FF] rounded-full animate-[pulse_1.2s_infinite] h-4.5 shadow-[0_0_6px_#00F0FF]" />
-          <span className="w-[2.5px] bg-[#00F0FF] rounded-full animate-[pulse_0.6s_infinite] h-2 shadow-[0_0_6px_#00F0FF]" />
+          <span
+            className={`w-[2.5px] bg-[#00F0FF] rounded-full h-3 shadow-[0_0_6px_#00F0FF] ${
+              isFocusRunning ? 'animate-[pulse_0.8s_infinite]' : 'opacity-60'
+            }`}
+          />
+          <span
+            className={`w-[2.5px] bg-[#00F0FF] rounded-full h-4.5 shadow-[0_0_6px_#00F0FF] ${
+              isFocusRunning ? 'animate-[pulse_1.2s_infinite]' : 'opacity-60'
+            }`}
+          />
+          <span
+            className={`w-[2.5px] bg-[#00F0FF] rounded-full h-2 shadow-[0_0_6px_#00F0FF] ${
+              isFocusRunning ? 'animate-[pulse_0.6s_infinite]' : 'opacity-60'
+            }`}
+          />
         </div>
       </div>
 
@@ -219,7 +174,7 @@ export const TodayView: React.FC<TodayViewProps> = ({
             Good morning,<br />Alexander
           </h2>
           <div className="text-xs text-emerald-400 mt-2 flex items-center gap-1.5 font-medium">
-            <span>Deep flow state activated</span>
+            <span>{completionPercentage === 100 ? 'All tasks conquered today!' : 'Deep flow state activated'}</span>
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400 shadow-[0_0_8px_#10b981]" />
@@ -227,7 +182,7 @@ export const TodayView: React.FC<TodayViewProps> = ({
           </div>
         </div>
 
-        {/* Completion Radial Progress Dial matching prototype */}
+        {/* Dynamic Completion Radial Progress Dial */}
         <div className="flex flex-col items-center shrink-0">
           <div className="relative w-20 h-20 flex items-center justify-center">
             <svg className="w-full h-full -rotate-90" viewBox="0 0 70 70">
@@ -237,27 +192,36 @@ export const TodayView: React.FC<TodayViewProps> = ({
                 cy="35"
                 r="28"
                 fill="none"
-                stroke="#00F0FF"
+                stroke={completionPercentage === 100 ? '#10b981' : '#00F0FF'}
                 strokeWidth="5.5"
                 strokeDasharray={2 * Math.PI * 28}
                 strokeDashoffset={2 * Math.PI * 28 * (1 - completionPercentage / 100)}
                 strokeLinecap="round"
-                className="transition-all duration-700"
-                style={{ filter: 'drop-shadow(0 0 8px rgba(0,240,255,0.65))' }}
+                className="transition-all duration-700 ease-out"
+                style={{
+                  filter:
+                    completionPercentage === 100
+                      ? 'drop-shadow(0 0 8px rgba(16,185,129,0.65))'
+                      : 'drop-shadow(0 0 8px rgba(0,240,255,0.65))',
+                }}
               />
             </svg>
-            <div className="absolute flex flex-col items-center justify-center">
-              <span className="text-base font-mono font-bold text-white leading-none">57%</span>
-              <span className="text-[9px] font-mono text-neutral-400 mt-0.5">4 of 7</span>
+            <div className="absolute flex flex-col items-center justify-center pointer-events-none">
+              <span className="text-base font-mono font-bold text-white leading-none">
+                {completionPercentage}%
+              </span>
+              <span className="text-[9px] font-mono text-neutral-400 mt-0.5">
+                {completedCount} of {totalCount}
+              </span>
             </div>
           </div>
           <span className="mt-1.5 px-2.5 py-0.5 rounded-full bg-white/10 text-[10px] font-mono font-medium text-neutral-200 border border-white/15 backdrop-blur-md">
-            +3 left today
+            {leftTodayCount > 0 ? `+${leftTodayCount} left today` : 'All done today!'}
           </span>
         </div>
       </div>
 
-      {/* Category Filter Chips */}
+      {/* Dynamic Category Filter Chips */}
       <div className="mt-3.5 flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none shrink-0">
         <button
           type="button"
@@ -269,7 +233,13 @@ export const TodayView: React.FC<TodayViewProps> = ({
           }`}
         >
           <span>ALL TASKS</span>
-          <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded-full ${selectedFilter === 'all' ? 'bg-[#00F0FF]/30 text-[#00F0FF]' : 'bg-white/10 text-neutral-400'}`}>7</span>
+          <span
+            className={`text-[10px] font-mono px-1.5 py-0.5 rounded-full ${
+              selectedFilter === 'all' ? 'bg-[#00F0FF]/30 text-[#00F0FF]' : 'bg-white/10 text-neutral-400'
+            }`}
+          >
+            {allCount}
+          </span>
         </button>
         <button
           type="button"
@@ -281,7 +251,13 @@ export const TodayView: React.FC<TodayViewProps> = ({
           }`}
         >
           <span>WORK</span>
-          <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded-full ${selectedFilter === 'work' ? 'bg-[#00F0FF]/30 text-[#00F0FF]' : 'bg-white/10 text-neutral-400'}`}>3</span>
+          <span
+            className={`text-[10px] font-mono px-1.5 py-0.5 rounded-full ${
+              selectedFilter === 'work' ? 'bg-[#00F0FF]/30 text-[#00F0FF]' : 'bg-white/10 text-neutral-400'
+            }`}
+          >
+            {workCount}
+          </span>
         </button>
         <button
           type="button"
@@ -293,7 +269,13 @@ export const TodayView: React.FC<TodayViewProps> = ({
           }`}
         >
           <span>DESIGN SYSTEM</span>
-          <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded-full ${selectedFilter === 'design' ? 'bg-[#00F0FF]/30 text-[#00F0FF]' : 'bg-white/10 text-neutral-400'}`}>2</span>
+          <span
+            className={`text-[10px] font-mono px-1.5 py-0.5 rounded-full ${
+              selectedFilter === 'design' ? 'bg-[#00F0FF]/30 text-[#00F0FF]' : 'bg-white/10 text-neutral-400'
+            }`}
+          >
+            {designCount}
+          </span>
         </button>
       </div>
 
@@ -305,101 +287,115 @@ export const TodayView: React.FC<TodayViewProps> = ({
         </div>
         <button
           type="button"
-          className="flex items-center gap-1 text-xs font-mono text-neutral-400 hover:text-white transition-colors"
+          onClick={() => setSortByPriority(!sortByPriority)}
+          className={`flex items-center gap-1 text-xs font-mono transition-colors ${
+            sortByPriority ? 'text-[#00F0FF]' : 'text-neutral-400 hover:text-white'
+          }`}
         >
-          <span>Auto-sort</span>
+          <span>{sortByPriority ? 'Sorted' : 'Auto-sort'}</span>
           <ArrowUpDown className="w-3.5 h-3.5" />
         </button>
       </div>
 
       {/* Priority Focus Tasks List */}
       <div className="mt-3 flex flex-col gap-3.5">
-        {taskList.slice(0, 3).map(task => (
-          <div
-            key={task.id}
-            className={`w-full shrink-0 p-4 rounded-[22px] border transition-all duration-300 ${
-              task.done
-                ? 'bg-white/[0.05] border-white/14 shadow-[0_6px_24px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.12)]'
-                : 'bg-white/[0.08] border-white/18 hover:border-white/30 hover:bg-white/[0.11] shadow-[0_8px_32px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.2)]'
-            }`}
-          >
-            <div className="flex items-start gap-3.5">
-              {/* Checkbox Squircle */}
-              <button
-                type="button"
-                onClick={() => handleToggle(task.id)}
-                className={`w-6 h-6 rounded-xl flex items-center justify-center transition-all mt-0.5 shrink-0 ${
-                  task.done
-                    ? 'bg-[#00F0FF] text-neutral-950 shadow-[0_0_14px_rgba(0,240,255,0.7)]'
-                    : 'border-2 border-white/25 hover:border-[#00F0FF] bg-white/5'
-                }`}
-              >
-                {task.done && <Check className="w-4 h-4 stroke-[3.2]" />}
-              </button>
+        {filteredActiveTasks.length === 0 ? (
+          <div className="p-6 rounded-[22px] bg-white/[0.03] border border-white/10 text-center flex flex-col items-center justify-center">
+            <Sparkles className="w-6 h-6 text-[#00F0FF] mb-2" />
+            <p className="text-sm font-semibold text-neutral-200">No active tasks in this view</p>
+            <p className="text-xs text-neutral-400 mt-1">
+              {leftTodayCount === 0 ? 'All tasks conquered!' : 'Switch filters or tap + to add one'}
+            </p>
+          </div>
+        ) : (
+          filteredActiveTasks.map(task => (
+            <div
+              key={task.id}
+              className="w-full shrink-0 p-4 rounded-[22px] border transition-all duration-300 bg-white/[0.08] border-white/18 hover:border-white/30 hover:bg-white/[0.11] shadow-[0_8px_32px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.2)]"
+            >
+              <div className="flex items-start gap-3.5">
+                {/* Checkbox Squircle */}
+                <button
+                  type="button"
+                  onClick={() => onToggleTask(task.id)}
+                  className="w-6 h-6 rounded-xl flex items-center justify-center transition-all mt-0.5 shrink-0 border-2 border-white/25 hover:border-[#00F0FF] bg-white/5 hover:bg-[#00F0FF]/10 active:scale-90"
+                  aria-label={`Mark ${task.title} as completed`}
+                >
+                  {task.done && <Check className="w-4 h-4 stroke-[3.2] text-[#00F0FF]" />}
+                </button>
 
-              <div className="flex-1 min-w-0">
-                {/* Priority Badge & Time */}
-                <div className="flex items-center justify-between text-xs mb-1.5">
-                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold border ${task.tagColor}`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${task.dotColor || 'bg-rose-400'}`} />
-                    {task.priorityTag}
-                  </span>
-                  <span className="text-xs font-mono font-bold text-neutral-200">{task.time}</span>
-                </div>
-
-                {/* Title (Crisp, readable, bold white, NO strikethrough!) */}
-                <h3 className="text-[15px] font-bold text-white leading-snug">
-                  {task.title}
-                </h3>
-
-                {/* Subtasks Progress Bar (Task 1) */}
-                {task.subtaskProgress && (
-                  <div className="mt-2.5 flex items-center gap-2.5">
-                    <div className="flex items-center gap-1 text-[11px] font-mono text-neutral-400 shrink-0">
-                      <ListTodo className="w-3.5 h-3.5 text-neutral-400" />
-                      <span>{task.subtasksCount}</span>
-                    </div>
-                    <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-[#00F0FF] to-emerald-400 rounded-full shadow-[0_0_8px_#00F0FF]"
-                        style={{ width: `${task.subtaskProgress}%` }}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* Footer Project & Team Avatars / Attachments */}
-                <div className="mt-3 flex items-center justify-between text-xs text-neutral-400 pt-1 border-t border-white/[0.06]">
-                  <div className="flex items-center gap-1.5 font-medium text-neutral-300 text-xs">
-                    {task.id === 'task-1' && <Palette className="w-3.5 h-3.5 text-neutral-400" />}
-                    {task.id === 'task-2' && <Headphones className="w-3.5 h-3.5 text-neutral-400" />}
-                    {task.id === 'task-3' && <Users className="w-3.5 h-3.5 text-neutral-400" />}
-                    <span>{task.category}</span>
-                  </div>
-
-                  {task.avatars && (
-                    <div className="flex -space-x-1.5 shrink-0">
-                      {task.avatars.map((av, idx) => (
-                        <span
-                          key={idx}
-                          className={`w-5 h-5 rounded-full border border-[#0c0d18] text-[9px] flex items-center justify-center shadow-md ${av.bg}`}
-                        >
-                          {av.initials}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  {task.attachments && (
-                    <span className="flex items-center gap-1 text-[11px] font-mono bg-white/10 px-2.5 py-0.5 rounded-full text-neutral-200 border border-white/10">
-                      <Paperclip className="w-3 h-3" /> {task.attachments}
+                <div className="flex-1 min-w-0">
+                  {/* Priority Badge & Time */}
+                  <div className="flex items-center justify-between text-xs mb-1.5">
+                    <span
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold border ${
+                        task.tagColor || 'bg-rose-500/20 text-rose-300 border-rose-500/35'
+                      }`}
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full ${task.dotColor || 'bg-rose-400'}`} />
+                      {task.priorityTag || 'Priority'}
                     </span>
+                    <span className="text-xs font-mono font-bold text-neutral-200">{task.time}</span>
+                  </div>
+
+                  {/* Title (Crisp, readable, bold white, NO strikethrough!) */}
+                  <h3 className="text-[15px] font-bold text-white leading-snug">
+                    {task.title}
+                  </h3>
+
+                  {/* Subtasks Progress Bar if available */}
+                  {task.subtaskProgress && (
+                    <div className="mt-2.5 flex items-center gap-2.5">
+                      <div className="flex items-center gap-1 text-[11px] font-mono text-neutral-400 shrink-0">
+                        <ListTodo className="w-3.5 h-3.5 text-neutral-400" />
+                        <span>{task.subtasksCount}</span>
+                      </div>
+                      <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-[#00F0FF] to-emerald-400 rounded-full shadow-[0_0_8px_#00F0FF]"
+                          style={{ width: `${task.subtaskProgress}%` }}
+                        />
+                      </div>
+                    </div>
                   )}
+
+                  {/* Footer Project & Team Avatars / Attachments */}
+                  <div className="mt-3 flex items-center justify-between text-xs text-neutral-400 pt-1 border-t border-white/[0.06]">
+                    <div className="flex items-center gap-1.5 font-medium text-neutral-300 text-xs">
+                      {isDesignSystemTask(task) && <Palette className="w-3.5 h-3.5 text-neutral-400" />}
+                      {!isDesignSystemTask(task) && task.title.toLowerCase().includes('audio') && (
+                        <Headphones className="w-3.5 h-3.5 text-neutral-400" />
+                      )}
+                      {!isDesignSystemTask(task) && !task.title.toLowerCase().includes('audio') && (
+                        <Users className="w-3.5 h-3.5 text-neutral-400" />
+                      )}
+                      <span>{task.category}</span>
+                    </div>
+
+                    {task.avatars && (
+                      <div className="flex -space-x-1.5 shrink-0">
+                        {task.avatars.map((av, idx) => (
+                          <span
+                            key={idx}
+                            className={`w-5 h-5 rounded-full border border-[#0c0d18] text-[9px] flex items-center justify-center shadow-md ${av.bg}`}
+                          >
+                            {av.initials}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {task.attachments && (
+                      <span className="flex items-center gap-1 text-[11px] font-mono bg-white/10 px-2.5 py-0.5 rounded-full text-neutral-200 border border-white/10">
+                        <Paperclip className="w-3 h-3" /> {task.attachments}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
 
       {/* Completed Today Section - Minimalist High-End Liquid Glass Boxes */}
@@ -408,7 +404,7 @@ export const TodayView: React.FC<TodayViewProps> = ({
           <div className="flex items-center gap-2">
             <span className="text-[13px] font-semibold text-neutral-300 tracking-tight">Completed today</span>
             <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold text-neutral-300 bg-white/[0.08] border border-white/12 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
-              {completedTasks.filter(t => t.done).length}
+              {filteredCompletedTasks.length}
             </span>
           </div>
           <button
@@ -427,48 +423,45 @@ export const TodayView: React.FC<TodayViewProps> = ({
 
         {isCompletedOpen && (
           <div className="flex flex-col gap-3">
-            {completedTasks.map(task => (
-              <div
-                key={task.id}
-                className="w-full shrink-0 group p-3.5 sm:p-4 rounded-[20px] bg-gradient-to-b from-white/[0.04] to-white/[0.015] border border-white/[0.08] backdrop-blur-2xl flex items-start gap-3.5 hover:bg-white/[0.045] hover:border-white/15 transition-all shadow-[0_4px_16px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.08)]"
-              >
-                {/* Jewel-like Minimalist Squircle Checkbox */}
-                <button
-                  type="button"
-                  onClick={() => toggleCompletedTask(task.id)}
-                  className={`w-5 h-5 rounded-[7px] flex items-center justify-center transition-all mt-0.5 shrink-0 ${
-                    task.done
-                      ? 'bg-emerald-400/20 border border-emerald-400/45 text-emerald-300 hover:bg-emerald-400/30 shadow-[0_0_10px_rgba(52,211,153,0.25)]'
-                      : 'border-2 border-white/25 hover:border-white/45 bg-white/[0.04]'
-                  }`}
-                  aria-label={`Toggle ${task.title}`}
+            {filteredCompletedTasks.length === 0 ? (
+              <div className="p-4 rounded-[20px] bg-white/[0.02] border border-white/[0.06] text-center text-xs text-neutral-500 font-mono">
+                No completed tasks in this view yet
+              </div>
+            ) : (
+              filteredCompletedTasks.map(task => (
+                <div
+                  key={task.id}
+                  className="w-full shrink-0 group p-3.5 sm:p-4 rounded-[20px] bg-gradient-to-b from-white/[0.04] to-white/[0.015] border border-white/[0.08] backdrop-blur-2xl flex items-start gap-3.5 hover:bg-white/[0.045] hover:border-white/15 transition-all shadow-[0_4px_16px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.08)]"
                 >
-                  {task.done && <Check className="w-3.5 h-3.5 stroke-[3]" />}
-                </button>
-
-                {/* Title & Metadata */}
-                <div className="flex-1 min-w-0">
-                  <p
-                    className={`text-[13px] leading-snug transition-all ${
-                      task.done
-                        ? 'text-neutral-400/85 line-through decoration-neutral-500/50 font-normal'
-                        : 'text-white font-semibold'
-                    }`}
+                  {/* Jewel-like Minimalist Squircle Checkbox */}
+                  <button
+                    type="button"
+                    onClick={() => onToggleTask(task.id)}
+                    className="w-5 h-5 rounded-[7px] flex items-center justify-center transition-all mt-0.5 shrink-0 bg-emerald-400/20 border border-emerald-400/45 text-emerald-300 hover:bg-emerald-400/30 shadow-[0_0_10px_rgba(52,211,153,0.25)] active:scale-90"
+                    aria-label={`Uncheck ${task.title}`}
                   >
-                    {task.title}
-                  </p>
-                  <div className="flex items-center gap-2 mt-1 text-[11px] text-neutral-400">
-                    <span className="font-mono text-neutral-300">{task.time}</span>
-                    <span className="w-1 h-1 rounded-full bg-neutral-600" />
-                    <span className="truncate text-neutral-400">{task.category}</span>
+                    <Check className="w-3.5 h-3.5 stroke-[3]" />
+                  </button>
+
+                  {/* Title & Metadata */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] leading-snug transition-all text-neutral-400/85 line-through decoration-neutral-500/50 font-normal">
+                      {task.title}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1 text-[11px] text-neutral-400">
+                      <span className="font-mono text-neutral-300">
+                        {task.completedAt || task.time}
+                      </span>
+                      <span className="w-1 h-1 rounded-full bg-neutral-600" />
+                      <span className="truncate text-neutral-400">{task.category}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         )}
       </div>
     </div>
   )
 }
-
