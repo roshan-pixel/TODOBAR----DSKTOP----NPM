@@ -181,7 +181,7 @@ export const TodayView: React.FC<TodayViewProps> = ({
       {/* Hero Focus Mode Dynamic Pill Banner */}
       <div
         onClick={onStartFocus}
-        className="mt-2 p-3.5 rounded-2xl bg-gradient-to-r from-[#071e30]/85 via-[#0a2342]/75 to-[#141238]/75 border border-[#00F0FF]/40 backdrop-blur-2xl hover:border-[#00F0FF]/70 cursor-pointer transition-all shadow-[0_8px_30px_rgba(0,240,255,0.18),inset_0_1px_0_rgba(255,255,255,0.2)] flex items-center justify-between shrink-0"
+        className="mt-3 p-3.5 rounded-2xl bg-gradient-to-r from-[#071e30]/85 via-[#0a2342]/75 to-[#141238]/75 border border-[#00F0FF]/40 backdrop-blur-2xl hover:border-[#00F0FF]/70 cursor-pointer transition-all shadow-[0_8px_30px_rgba(0,240,255,0.18),inset_0_1px_0_rgba(255,255,255,0.2)] flex items-center justify-between shrink-0"
       >
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-10 h-10 rounded-xl bg-[#00F0FF]/15 border border-[#00F0FF]/40 text-[#00F0FF] flex items-center justify-center shadow-[0_0_14px_rgba(0,240,255,0.35)] shrink-0">
@@ -313,7 +313,7 @@ export const TodayView: React.FC<TodayViewProps> = ({
       </div>
 
       {/* Priority Focus Tasks List */}
-      <div className="mt-2.5 space-y-3">
+      <div className="mt-3 space-y-3">
         {taskList.slice(0, 3).map(task => (
           <div
             key={task.id}
@@ -402,8 +402,8 @@ export const TodayView: React.FC<TodayViewProps> = ({
         ))}
       </div>
 
-      {/* Completed Today Section - Minimalist High-End Liquid Glass */}
-      <div className="mt-8 mb-4">
+      {/* Completed Today Section - Minimalist High-End Liquid Glass Boxes */}
+      <div className="mt-5 mb-4">
         <div className="flex items-center justify-between mb-3 px-1">
           <div className="flex items-center gap-2">
             <span className="text-[13px] font-semibold text-neutral-300 tracking-tight">Completed today</span>
@@ -426,11 +426,11 @@ export const TodayView: React.FC<TodayViewProps> = ({
         </div>
 
         {isCompletedOpen && (
-          <div className="rounded-[22px] bg-gradient-to-b from-white/[0.045] to-white/[0.015] border border-white/10 backdrop-blur-2xl divide-y divide-white/[0.05] overflow-hidden shadow-[0_12px_36px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.1)] transition-all">
+          <div className="space-y-3">
             {completedTasks.map(task => (
               <div
                 key={task.id}
-                className="group px-4 py-3.5 flex items-start gap-3.5 hover:bg-white/[0.03] transition-colors"
+                className="group p-3.5 sm:p-4 rounded-[20px] bg-gradient-to-b from-white/[0.04] to-white/[0.015] border border-white/[0.08] backdrop-blur-2xl flex items-start gap-3.5 hover:bg-white/[0.045] hover:border-white/15 transition-all shadow-[0_4px_16px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.08)]"
               >
                 {/* Jewel-like Minimalist Squircle Checkbox */}
                 <button
@@ -457,7 +457,7 @@ export const TodayView: React.FC<TodayViewProps> = ({
                   >
                     {task.title}
                   </p>
-                  <div className="flex items-center gap-2 mt-1.5 text-[11px] text-neutral-400">
+                  <div className="flex items-center gap-2 mt-1 text-[11px] text-neutral-400">
                     <span className="font-mono text-neutral-300">{task.time}</span>
                     <span className="w-1 h-1 rounded-full bg-neutral-600" />
                     <span className="truncate text-neutral-400">{task.category}</span>
