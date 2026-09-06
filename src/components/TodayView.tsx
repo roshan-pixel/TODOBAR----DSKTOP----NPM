@@ -13,6 +13,7 @@ import {
   Palette,
   Headphones,
   Users,
+  ChevronDown,
 } from 'lucide-react'
 import { Task, TaskPriority } from '../types'
 
@@ -91,6 +92,44 @@ export const TodayView: React.FC<TodayViewProps> = ({
 
   const [taskList, setTaskList] = useState(defaultSampleTasks)
 
+  const [completedTasks, setCompletedTasks] = useState([
+    {
+      id: 'comp-1',
+      title: 'Morning alignment with Core OS engineering',
+      time: '9:15 AM',
+      category: 'Room 4B',
+      done: true,
+    },
+    {
+      id: 'comp-2',
+      title: 'Review token exports for SwiftUI Liquid Glass',
+      time: '8:45 AM',
+      category: 'Design Tokens',
+      done: true,
+    },
+    {
+      id: 'comp-3',
+      title: 'Sync with Alan on Keynote v4 outline',
+      time: '8:15 AM',
+      category: 'Keynote v4',
+      done: true,
+    },
+    {
+      id: 'comp-4',
+      title: 'Daily standup & backlog triage',
+      time: '8:00 AM',
+      category: 'Sprint 3',
+      done: true,
+    },
+  ])
+  const [isCompletedOpen, setIsCompletedOpen] = useState(true)
+
+  const toggleCompletedTask = (id: string) => {
+    setCompletedTasks(prev =>
+      prev.map(t => (t.id === id ? { ...t, done: !t.done } : t))
+    )
+  }
+
   const handleToggle = (id: string) => {
     setTaskList(prev =>
       prev.map(t => (t.id === id ? { ...t, done: !t.done } : t))
@@ -98,7 +137,7 @@ export const TodayView: React.FC<TodayViewProps> = ({
     onToggleTask(id)
   }
 
-  const completedCount = taskList.filter(t => t.done).length
+  const completedCount = taskList.filter(t => t.done).length + completedTasks.filter(t => t.done).length
   const completionPercentage = 57 // Matches exact prototype dial value
 
   return (
@@ -363,22 +402,71 @@ export const TodayView: React.FC<TodayViewProps> = ({
         ))}
       </div>
 
-      {/* Completed Today Section */}
-      <div className="mt-5 space-y-2">
-        <div className="text-[11px] font-mono uppercase tracking-wider text-neutral-400 font-bold">
-          COMPLETED TODAY (4)
-        </div>
-        <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/8 opacity-75 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
-            <div>
-              <div className="text-xs font-semibold text-neutral-300 line-through">
-                Morning alignment with Core OS engineering
-              </div>
-              <div className="text-[10px] text-neutral-500 font-mono mt-0.5">Completed at 9:15 AM</div>
-            </div>
+      {/* Completed Today Section - Minimalist High-End Liquid Glass */}
+      <div className="mt-8 mb-4">
+        <div className="flex items-center justify-between mb-3 px-1">
+          <div className="flex items-center gap-2">
+            <span className="text-[13px] font-semibold text-neutral-300 tracking-tight">Completed today</span>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold text-neutral-300 bg-white/[0.08] border border-white/12 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
+              {completedTasks.filter(t => t.done).length}
+            </span>
           </div>
+          <button
+            type="button"
+            onClick={() => setIsCompletedOpen(!isCompletedOpen)}
+            className="flex items-center gap-1.5 text-[11px] font-medium text-neutral-400 hover:text-neutral-200 transition-colors py-1 px-2.5 rounded-lg hover:bg-white/[0.06] border border-transparent hover:border-white/10"
+          >
+            <span>{isCompletedOpen ? 'Hide' : 'Show'}</span>
+            <ChevronDown
+              className={`w-3.5 h-3.5 text-neutral-400 transition-transform duration-200 ${
+                isCompletedOpen ? 'rotate-180' : ''
+              }`}
+            />
+          </button>
         </div>
+
+        {isCompletedOpen && (
+          <div className="rounded-[22px] bg-gradient-to-b from-white/[0.045] to-white/[0.015] border border-white/10 backdrop-blur-2xl divide-y divide-white/[0.05] overflow-hidden shadow-[0_12px_36px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.1)] transition-all">
+            {completedTasks.map(task => (
+              <div
+                key={task.id}
+                className="group px-4 py-3.5 flex items-start gap-3.5 hover:bg-white/[0.03] transition-colors"
+              >
+                {/* Jewel-like Minimalist Squircle Checkbox */}
+                <button
+                  type="button"
+                  onClick={() => toggleCompletedTask(task.id)}
+                  className={`w-5 h-5 rounded-[7px] flex items-center justify-center transition-all mt-0.5 shrink-0 ${
+                    task.done
+                      ? 'bg-emerald-400/20 border border-emerald-400/45 text-emerald-300 hover:bg-emerald-400/30 shadow-[0_0_10px_rgba(52,211,153,0.25)]'
+                      : 'border-2 border-white/25 hover:border-white/45 bg-white/[0.04]'
+                  }`}
+                  aria-label={`Toggle ${task.title}`}
+                >
+                  {task.done && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                </button>
+
+                {/* Title & Metadata */}
+                <div className="flex-1 min-w-0">
+                  <p
+                    className={`text-[13px] leading-snug transition-all ${
+                      task.done
+                        ? 'text-neutral-400/85 line-through decoration-neutral-500/50 font-normal'
+                        : 'text-white font-semibold'
+                    }`}
+                  >
+                    {task.title}
+                  </p>
+                  <div className="flex items-center gap-2 mt-1.5 text-[11px] text-neutral-400">
+                    <span className="font-mono text-neutral-300">{task.time}</span>
+                    <span className="w-1 h-1 rounded-full bg-neutral-600" />
+                    <span className="truncate text-neutral-400">{task.category}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
