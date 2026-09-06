@@ -313,11 +313,11 @@ export const TodayView: React.FC<TodayViewProps> = ({
       </div>
 
       {/* Priority Focus Tasks List */}
-      <div className="mt-3 space-y-3">
+      <div className="mt-3 flex flex-col gap-3.5">
         {taskList.slice(0, 3).map(task => (
           <div
             key={task.id}
-            className={`p-4 rounded-[22px] border transition-all duration-300 ${
+            className={`w-full shrink-0 p-4 rounded-[22px] border transition-all duration-300 ${
               task.done
                 ? 'bg-white/[0.05] border-white/14 shadow-[0_6px_24px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.12)]'
                 : 'bg-white/[0.08] border-white/18 hover:border-white/30 hover:bg-white/[0.11] shadow-[0_8px_32px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.2)]'
@@ -426,11 +426,11 @@ export const TodayView: React.FC<TodayViewProps> = ({
         </div>
 
         {isCompletedOpen && (
-          <div className="space-y-3">
+          <div className="flex flex-col gap-3">
             {completedTasks.map(task => (
               <div
                 key={task.id}
-                className="group p-3.5 sm:p-4 rounded-[20px] bg-gradient-to-b from-white/[0.04] to-white/[0.015] border border-white/[0.08] backdrop-blur-2xl flex items-start gap-3.5 hover:bg-white/[0.045] hover:border-white/15 transition-all shadow-[0_4px_16px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.08)]"
+                className="w-full shrink-0 group p-3.5 sm:p-4 rounded-[20px] bg-gradient-to-b from-white/[0.04] to-white/[0.015] border border-white/[0.08] backdrop-blur-2xl flex items-start gap-3.5 hover:bg-white/[0.045] hover:border-white/15 transition-all shadow-[0_4px_16px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.08)]"
               >
                 {/* Jewel-like Minimalist Squircle Checkbox */}
                 <button
