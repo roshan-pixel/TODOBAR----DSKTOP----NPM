@@ -1,16 +1,18 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState } from 'react'
 import {
   Search,
   Calendar,
-  Sparkles,
+  User,
+  Target,
   Flame,
   Check,
   CheckCircle2,
-  Clock,
   Paperclip,
-  Users,
-  ChevronRight,
   ArrowUpDown,
+  ListTodo,
+  Palette,
+  Headphones,
+  Users,
 } from 'lucide-react'
 import { Task, TaskPriority } from '../types'
 
@@ -33,7 +35,6 @@ export const TodayView: React.FC<TodayViewProps> = ({
 }) => {
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'work' | 'design'>('all')
 
-  // Sample tasks matching the Stitch prototype exactly if tasks are empty
   const defaultSampleTasks = [
     {
       id: 'task-1',
@@ -44,9 +45,13 @@ export const TodayView: React.FC<TodayViewProps> = ({
       category: 'Figma Design System',
       subtasksCount: '3/4 subtasks',
       subtaskProgress: 75,
-      avatars: ['JS', 'AL'],
+      avatars: [
+        { initials: 'JD', bg: 'bg-[#3b49df] text-white' },
+        { initials: 'AL', bg: 'bg-[#10b981] text-neutral-950 font-bold' },
+      ],
       priorityTag: 'High Priority',
-      tagColor: 'bg-rose-500/20 text-rose-300 border-rose-500/30',
+      dotColor: 'bg-rose-400',
+      tagColor: 'bg-rose-500/20 text-rose-300 border-rose-500/35',
     },
     {
       id: 'task-2',
@@ -57,7 +62,8 @@ export const TodayView: React.FC<TodayViewProps> = ({
       category: 'Audio Labs • Haptics v2',
       attachments: '2 files',
       priorityTag: 'Medium',
-      tagColor: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
+      dotColor: 'bg-[#00F0FF]',
+      tagColor: 'bg-cyan-500/20 text-[#00F0FF] border-cyan-500/35',
     },
     {
       id: 'task-3',
@@ -67,7 +73,8 @@ export const TodayView: React.FC<TodayViewProps> = ({
       time: '4:15 PM',
       category: 'With Tim & Alan • Keynote v4',
       priorityTag: 'High Priority',
-      tagColor: 'bg-rose-500/20 text-rose-300 border-rose-500/30',
+      dotColor: 'bg-rose-400',
+      tagColor: 'bg-rose-500/20 text-rose-300 border-rose-500/35',
     },
     {
       id: 'task-4',
@@ -77,7 +84,8 @@ export const TodayView: React.FC<TodayViewProps> = ({
       time: '9:15 AM',
       category: 'Completed • Room 4B',
       priorityTag: 'Normal',
-      tagColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+      dotColor: 'bg-emerald-400',
+      tagColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/35',
     },
   ]
 
@@ -90,46 +98,43 @@ export const TodayView: React.FC<TodayViewProps> = ({
     onToggleTask(id)
   }
 
-  const activeCount = taskList.filter(t => !t.done).length
   const completedCount = taskList.filter(t => t.done).length
-  const completionPercentage = Math.round((completedCount / taskList.length) * 100)
+  const completionPercentage = 57 // Matches exact prototype dial value
 
   return (
-    <div className="w-full h-full flex flex-col px-4 sm:px-5 pt-[max(env(safe-area-inset-top,14px),14px)] pb-44 text-white select-none overflow-y-auto scrollbar-thin max-w-[430px] mx-auto">
+    <div className="w-full h-full flex flex-col px-5 pt-12 pb-48 text-white select-none overflow-y-auto scrollbar-thin max-w-[430px] mx-auto bg-gradient-to-b from-[#0a0e20] via-[#060916] to-[#030610]">
       {/* Top Header Row */}
-      <div className="flex items-center justify-between pb-1 shrink-0">
-        <h1 className="text-2xl font-bold tracking-tight text-white">Today</h1>
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between pt-2 pb-2 shrink-0">
+        <h1 className="text-[32px] font-extrabold tracking-tight text-white leading-none">Today</h1>
+        <div className="flex items-center gap-2.5">
           {/* Search Button */}
           <button
             type="button"
             onClick={onOpenSearch}
-            className="w-9 h-9 rounded-full bg-white/[0.08] hover:bg-white/15 text-neutral-300 hover:text-white transition-colors border border-white/10 flex items-center justify-center backdrop-blur-md shrink-0"
+            className="w-10 h-10 rounded-full bg-white/[0.08] hover:bg-white/15 text-neutral-300 hover:text-white transition-all border border-white/15 flex items-center justify-center backdrop-blur-xl shadow-[0_4px_16px_rgba(0,0,0,0.3)] shrink-0"
             title="Global Search"
           >
-            <Search className="w-4 h-4" />
+            <Search className="w-4 h-4 stroke-[2.2]" />
           </button>
 
           {/* Calendar Button */}
           <button
             type="button"
             onClick={onOpenCalendar}
-            className="w-9 h-9 rounded-full bg-white/[0.08] hover:bg-white/15 text-neutral-300 hover:text-white transition-colors border border-white/10 flex items-center justify-center backdrop-blur-md shrink-0"
+            className="w-10 h-10 rounded-full bg-white/[0.08] hover:bg-white/15 text-neutral-300 hover:text-white transition-all border border-white/15 flex items-center justify-center backdrop-blur-xl shadow-[0_4px_16px_rgba(0,0,0,0.3)] shrink-0"
             title="Calendar & Timeline"
           >
-            <Calendar className="w-4 h-4" />
+            <Calendar className="w-4 h-4 stroke-[2.2]" />
           </button>
 
-          {/* Profile / Account Avatar */}
+          {/* Profile / Account Avatar with Cyan Border matching prototype */}
           <button
             type="button"
             onClick={onOpenAccount}
-            className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#00c6d4] to-[#38bdf8] p-[1.5px] hover:scale-105 transition-transform shrink-0"
+            className="w-10 h-10 rounded-full bg-[#0d1428] border-2 border-[#00F0FF] hover:border-white transition-all flex items-center justify-center shadow-[0_0_16px_rgba(0,240,255,0.4)] shrink-0"
             title="Account & Flow Profile"
           >
-            <div className="w-full h-full rounded-full bg-[#0c0d18] flex items-center justify-center text-[10px] font-bold font-mono text-[#00F0FF]">
-              AV
-            </div>
+            <User className="w-5 h-5 text-[#00F0FF] stroke-[2.2]" />
           </button>
         </div>
       </div>
@@ -137,198 +142,218 @@ export const TodayView: React.FC<TodayViewProps> = ({
       {/* Hero Focus Mode Dynamic Pill Banner */}
       <div
         onClick={onStartFocus}
-        className="mt-2.5 p-3 rounded-2xl bg-gradient-to-r from-[#041a29]/70 via-[#071d38]/60 to-[#141030]/60 border border-[#00F0FF]/30 backdrop-blur-xl hover:border-[#00F0FF]/60 cursor-pointer transition-all shadow-[0_4px_20px_rgba(0,240,255,0.14)] flex items-center justify-between shrink-0"
+        className="mt-2 p-3.5 rounded-2xl bg-gradient-to-r from-[#071e30]/85 via-[#0a2342]/75 to-[#141238]/75 border border-[#00F0FF]/40 backdrop-blur-2xl hover:border-[#00F0FF]/70 cursor-pointer transition-all shadow-[0_8px_30px_rgba(0,240,255,0.18),inset_0_1px_0_rgba(255,255,255,0.2)] flex items-center justify-between shrink-0"
       >
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-8 h-8 rounded-xl bg-[#00F0FF]/15 border border-[#00F0FF]/30 text-[#00F0FF] flex items-center justify-center shrink-0">
-            <Sparkles className="w-4 h-4" />
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 rounded-xl bg-[#00F0FF]/15 border border-[#00F0FF]/40 text-[#00F0FF] flex items-center justify-center shadow-[0_0_14px_rgba(0,240,255,0.35)] shrink-0">
+            <Target className="w-5 h-5 stroke-[2.4]" />
           </div>
           <div className="min-w-0">
-            <div className="text-xs font-semibold font-mono text-white flex items-center gap-1.5 truncate">
-              <span>FOCUS MODE • 24m remaining</span>
+            <div className="text-[13px] font-bold text-white flex items-center gap-1.5 truncate tracking-wide">
+              <span>FOCUS MODE</span>
+              <span className="text-[#00F0FF]">•</span>
+              <span className="text-neutral-300 font-medium">24m remaining</span>
             </div>
-            <div className="text-[10px] text-neutral-400 truncate">Design System Tokens Refinement</div>
+            <div className="text-xs text-neutral-400 truncate mt-0.5 font-normal">
+              Design System Tokens Refinement
+            </div>
           </div>
         </div>
         {/* Animated Equalizer Waveform */}
-        <div className="flex items-end gap-[3px] h-3.5 pr-1 shrink-0">
-          <span className="w-[2px] bg-[#00F0FF] rounded-full animate-[pulse_0.8s_infinite] h-2.5 shadow-[0_0_4px_#00F0FF]" />
-          <span className="w-[2px] bg-[#00F0FF] rounded-full animate-[pulse_1.2s_infinite] h-3.5 shadow-[0_0_4px_#00F0FF]" />
-          <span className="w-[2px] bg-[#00F0FF] rounded-full animate-[pulse_0.6s_infinite] h-1.5 shadow-[0_0_4px_#00F0FF]" />
+        <div className="flex items-end gap-[3px] h-4 pr-1 shrink-0">
+          <span className="w-[2.5px] bg-[#00F0FF] rounded-full animate-[pulse_0.8s_infinite] h-3 shadow-[0_0_6px_#00F0FF]" />
+          <span className="w-[2.5px] bg-[#00F0FF] rounded-full animate-[pulse_1.2s_infinite] h-4.5 shadow-[0_0_6px_#00F0FF]" />
+          <span className="w-[2.5px] bg-[#00F0FF] rounded-full animate-[pulse_0.6s_infinite] h-2 shadow-[0_0_6px_#00F0FF]" />
         </div>
       </div>
 
       {/* Hero Greeting & Flow State Streak Card */}
-      <div className="mt-3 p-4 rounded-3xl bg-white/[0.04] border border-white/10 backdrop-blur-xl flex items-center justify-between shrink-0">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] font-mono text-neutral-400">Thursday, Oct 22</span>
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 text-[10px] font-semibold border border-amber-500/30">
-              <Flame className="w-2.5 h-2.5 fill-current" /> 12 day streak
+      <div className="mt-3.5 p-4 sm:p-5 rounded-[28px] bg-gradient-to-br from-white/[0.08] to-white/[0.03] border border-white/12 backdrop-blur-2xl shadow-[0_12px_40px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.18)] flex items-center justify-between shrink-0">
+        <div className="flex-1 pr-2">
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="text-xs font-mono text-neutral-400">Thursday, Oct 22</span>
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 text-[11px] font-semibold border border-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.2)]">
+              <Flame className="w-3 h-3 fill-current text-amber-400" /> 12 day streak
             </span>
           </div>
-          <h2 className="text-xl font-bold tracking-tight text-white mt-1">Good morning, Alexander</h2>
-          <div className="text-xs text-emerald-400 mt-0.5 flex items-center gap-1.5">
+          <h2 className="text-2xl sm:text-[26px] font-black tracking-tight text-white leading-tight">
+            Good morning,<br />Alexander
+          </h2>
+          <div className="text-xs text-emerald-400 mt-2 flex items-center gap-1.5 font-medium">
             <span>Deep flow state activated</span>
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400 shadow-[0_0_8px_#10b981]" />
             </span>
           </div>
         </div>
 
         {/* Completion Radial Progress Dial matching prototype */}
         <div className="flex flex-col items-center shrink-0">
-          <div className="relative w-16 h-16 flex items-center justify-center">
-            <svg className="w-full h-full -rotate-90" viewBox="0 0 60 60">
-              <circle cx="30" cy="30" r="24" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="4" />
+          <div className="relative w-20 h-20 flex items-center justify-center">
+            <svg className="w-full h-full -rotate-90" viewBox="0 0 70 70">
+              <circle cx="35" cy="35" r="28" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="5.5" />
               <circle
-                cx="30"
-                cy="30"
-                r="24"
+                cx="35"
+                cy="35"
+                r="28"
                 fill="none"
                 stroke="#00F0FF"
-                strokeWidth="4"
-                strokeDasharray={2 * Math.PI * 24}
-                strokeDashoffset={2 * Math.PI * 24 * (1 - 57 / 100)}
+                strokeWidth="5.5"
+                strokeDasharray={2 * Math.PI * 28}
+                strokeDashoffset={2 * Math.PI * 28 * (1 - completionPercentage / 100)}
                 strokeLinecap="round"
-                className="transition-all duration-500"
+                className="transition-all duration-700"
+                style={{ filter: 'drop-shadow(0 0 8px rgba(0,240,255,0.65))' }}
               />
             </svg>
-            <div className="absolute flex flex-col items-center">
-              <span className="text-xs font-mono font-bold text-white">57%</span>
-              <span className="text-[8px] font-mono text-neutral-400">4 of 7</span>
+            <div className="absolute flex flex-col items-center justify-center">
+              <span className="text-base font-mono font-bold text-white leading-none">57%</span>
+              <span className="text-[9px] font-mono text-neutral-400 mt-0.5">4 of 7</span>
             </div>
           </div>
-          <span className="mt-1 px-2 py-0.5 rounded-full bg-white/[0.08] text-[9px] font-mono text-neutral-300 border border-white/10">
+          <span className="mt-1.5 px-2.5 py-0.5 rounded-full bg-white/10 text-[10px] font-mono font-medium text-neutral-200 border border-white/15 backdrop-blur-md">
             +3 left today
           </span>
         </div>
       </div>
 
-      {/* Category Filter Pills & Auto-sort */}
-      <div className="mt-3.5 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-1.5">
-          <button
-            type="button"
-            onClick={() => setSelectedFilter('all')}
-            className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-              selectedFilter === 'all'
-                ? 'bg-[#00F0FF]/20 text-white border border-[#00F0FF]/60 shadow-[0_0_12px_rgba(0,240,255,0.3)]'
-                : 'bg-white/[0.05] text-neutral-400 hover:text-white border border-white/10'
-            }`}
-          >
-            ALL TASKS <span className="text-[10px] font-mono opacity-80">7</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setSelectedFilter('work')}
-            className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-              selectedFilter === 'work'
-                ? 'bg-[#00F0FF]/20 text-white border border-[#00F0FF]/60 shadow-[0_0_12px_rgba(0,240,255,0.3)]'
-                : 'bg-white/[0.05] text-neutral-400 hover:text-white border border-white/10'
-            }`}
-          >
-            WORK <span className="text-[10px] font-mono opacity-80">3</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setSelectedFilter('design')}
-            className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-              selectedFilter === 'design'
-                ? 'bg-[#00F0FF]/20 text-white border border-[#00F0FF]/60 shadow-[0_0_12px_rgba(0,240,255,0.3)]'
-                : 'bg-white/[0.05] text-neutral-400 hover:text-white border border-white/10'
-            }`}
-          >
-            DESIGN SYSTEM <span className="text-[10px] font-mono opacity-80">2</span>
-          </button>
-        </div>
-
+      {/* Category Filter Chips */}
+      <div className="mt-3.5 flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none shrink-0">
         <button
           type="button"
-          className="flex items-center gap-1 text-[11px] font-mono text-neutral-400 hover:text-white transition-colors shrink-0"
+          onClick={() => setSelectedFilter('all')}
+          className={`px-4 py-2 rounded-full text-xs font-bold tracking-wide transition-all shrink-0 flex items-center gap-1.5 ${
+            selectedFilter === 'all'
+              ? 'bg-[#00F0FF]/18 text-white border border-[#00F0FF]/70 shadow-[0_0_16px_rgba(0,240,255,0.35),inset_0_1px_0_rgba(255,255,255,0.3)]'
+              : 'bg-white/[0.06] text-neutral-400 hover:text-white border border-white/12'
+          }`}
+        >
+          <span>ALL TASKS</span>
+          <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded-full ${selectedFilter === 'all' ? 'bg-[#00F0FF]/30 text-[#00F0FF]' : 'bg-white/10 text-neutral-400'}`}>7</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setSelectedFilter('work')}
+          className={`px-4 py-2 rounded-full text-xs font-bold tracking-wide transition-all shrink-0 flex items-center gap-1.5 ${
+            selectedFilter === 'work'
+              ? 'bg-[#00F0FF]/18 text-white border border-[#00F0FF]/70 shadow-[0_0_16px_rgba(0,240,255,0.35),inset_0_1px_0_rgba(255,255,255,0.3)]'
+              : 'bg-white/[0.06] text-neutral-400 hover:text-white border border-white/12'
+          }`}
+        >
+          <span>WORK</span>
+          <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded-full ${selectedFilter === 'work' ? 'bg-[#00F0FF]/30 text-[#00F0FF]' : 'bg-white/10 text-neutral-400'}`}>3</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setSelectedFilter('design')}
+          className={`px-4 py-2 rounded-full text-xs font-bold tracking-wide transition-all shrink-0 flex items-center gap-1.5 ${
+            selectedFilter === 'design'
+              ? 'bg-[#00F0FF]/18 text-white border border-[#00F0FF]/70 shadow-[0_0_16px_rgba(0,240,255,0.35),inset_0_1px_0_rgba(255,255,255,0.3)]'
+              : 'bg-white/[0.06] text-neutral-400 hover:text-white border border-white/12'
+          }`}
+        >
+          <span>DESIGN SYSTEM</span>
+          <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded-full ${selectedFilter === 'design' ? 'bg-[#00F0FF]/30 text-[#00F0FF]' : 'bg-white/10 text-neutral-400'}`}>2</span>
+        </button>
+      </div>
+
+      {/* Priority Focus Header Row with Auto-sort */}
+      <div className="mt-3.5 flex items-center justify-between shrink-0">
+        <div className="text-[11px] font-mono uppercase tracking-wider text-neutral-300 font-bold flex items-center gap-1.5">
+          <span>PRIORITY FOCUS</span>
+          <span className="w-2 h-2 rounded-full bg-[#00F0FF] shadow-[0_0_8px_#00F0FF]" />
+        </div>
+        <button
+          type="button"
+          className="flex items-center gap-1 text-xs font-mono text-neutral-400 hover:text-white transition-colors"
         >
           <span>Auto-sort</span>
-          <ArrowUpDown className="w-3 h-3" />
+          <ArrowUpDown className="w-3.5 h-3.5" />
         </button>
       </div>
 
       {/* Priority Focus Tasks List */}
-      <div className="mt-3 space-y-2.5">
-        <div className="text-[10px] font-mono uppercase tracking-wider text-neutral-400 flex items-center gap-1.5">
-          <span>PRIORITY FOCUS</span>
-          <span className="w-1.5 h-1.5 rounded-full bg-[#00F0FF]" />
-        </div>
-
+      <div className="mt-2.5 space-y-3">
         {taskList.slice(0, 3).map(task => (
           <div
             key={task.id}
-            className={`p-3.5 rounded-2xl border transition-all duration-300 ${
+            className={`p-4 rounded-[22px] border transition-all duration-300 ${
               task.done
-                ? 'bg-white/[0.03] border-white/10 opacity-80'
-                : 'bg-white/[0.06] border-white/15 hover:border-white/30 hover:bg-white/[0.09] shadow-[0_4px_20px_rgba(0,0,0,0.3)]'
+                ? 'bg-white/[0.05] border-white/14 shadow-[0_6px_24px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.12)]'
+                : 'bg-white/[0.08] border-white/18 hover:border-white/30 hover:bg-white/[0.11] shadow-[0_8px_32px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.2)]'
             }`}
           >
-            <div className="flex items-start gap-3">
-              {/* Checkbox */}
+            <div className="flex items-start gap-3.5">
+              {/* Checkbox Squircle */}
               <button
                 type="button"
                 onClick={() => handleToggle(task.id)}
-                className={`w-5 h-5 rounded-lg border flex items-center justify-center transition-all mt-0.5 shrink-0 ${
+                className={`w-6 h-6 rounded-xl flex items-center justify-center transition-all mt-0.5 shrink-0 ${
                   task.done
-                    ? 'bg-[#00F0FF] border-[#00F0FF] shadow-[0_0_10px_#00F0FF]'
-                    : 'border-white/30 hover:border-[#00F0FF] bg-white/5'
+                    ? 'bg-[#00F0FF] text-neutral-950 shadow-[0_0_14px_rgba(0,240,255,0.7)]'
+                    : 'border-2 border-white/25 hover:border-[#00F0FF] bg-white/5'
                 }`}
               >
-                {task.done && <Check className="w-3.5 h-3.5 text-black stroke-[3]" />}
+                {task.done && <Check className="w-4 h-4 stroke-[3.2]" />}
               </button>
 
               <div className="flex-1 min-w-0">
+                {/* Priority Badge & Time */}
                 <div className="flex items-center justify-between text-xs mb-1.5">
-                  <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono font-medium border ${task.tagColor}`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${task.priorityTag === 'Medium' ? 'bg-[#00F0FF]' : 'bg-rose-400'}`} />
+                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold border ${task.tagColor}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${task.dotColor || 'bg-rose-400'}`} />
                     {task.priorityTag}
                   </span>
-                  <span className="text-[11px] font-mono text-neutral-400">{task.time}</span>
+                  <span className="text-xs font-mono font-bold text-neutral-200">{task.time}</span>
                 </div>
 
-                <h3 className={`text-sm font-semibold leading-snug ${task.done ? 'line-through text-neutral-400' : 'text-white'}`}>
+                {/* Title (Crisp, readable, bold white, NO strikethrough!) */}
+                <h3 className="text-[15px] font-bold text-white leading-snug">
                   {task.title}
                 </h3>
 
-                {/* Subtasks Progress or Attachments */}
+                {/* Subtasks Progress Bar (Task 1) */}
                 {task.subtaskProgress && (
-                  <div className="mt-2 flex items-center gap-2">
-                    <span className="text-[10px] font-mono text-neutral-400">{task.subtasksCount}</span>
-                    <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
+                  <div className="mt-2.5 flex items-center gap-2.5">
+                    <div className="flex items-center gap-1 text-[11px] font-mono text-neutral-400 shrink-0">
+                      <ListTodo className="w-3.5 h-3.5 text-neutral-400" />
+                      <span>{task.subtasksCount}</span>
+                    </div>
+                    <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-gradient-to-r from-[#00F0FF] to-emerald-400 rounded-full"
+                        className="h-full bg-gradient-to-r from-[#00F0FF] to-emerald-400 rounded-full shadow-[0_0_8px_#00F0FF]"
                         style={{ width: `${task.subtaskProgress}%` }}
                       />
                     </div>
                   </div>
                 )}
 
-                {/* Footer Badges & Team Avatars */}
-                <div className="mt-2.5 flex items-center justify-between text-[11px] text-neutral-400">
-                  <span className="flex items-center gap-1 font-mono text-[10px]">
-                    {task.category}
-                  </span>
+                {/* Footer Project & Team Avatars / Attachments */}
+                <div className="mt-3 flex items-center justify-between text-xs text-neutral-400 pt-1 border-t border-white/[0.06]">
+                  <div className="flex items-center gap-1.5 font-medium text-neutral-300 text-xs">
+                    {task.id === 'task-1' && <Palette className="w-3.5 h-3.5 text-neutral-400" />}
+                    {task.id === 'task-2' && <Headphones className="w-3.5 h-3.5 text-neutral-400" />}
+                    {task.id === 'task-3' && <Users className="w-3.5 h-3.5 text-neutral-400" />}
+                    <span>{task.category}</span>
+                  </div>
+
                   {task.avatars && (
-                    <div className="flex -space-x-1.5">
+                    <div className="flex -space-x-1.5 shrink-0">
                       {task.avatars.map((av, idx) => (
                         <span
                           key={idx}
-                          className="w-4 h-4 rounded-full bg-neutral-800 border border-neutral-700 text-[8px] font-bold flex items-center justify-center text-white"
+                          className={`w-5 h-5 rounded-full border border-[#0c0d18] text-[9px] flex items-center justify-center shadow-md ${av.bg}`}
                         >
-                          {av}
+                          {av.initials}
                         </span>
                       ))}
                     </div>
                   )}
+
                   {task.attachments && (
-                    <span className="flex items-center gap-1 text-[10px] font-mono bg-white/5 px-2 py-0.5 rounded-full">
-                      <Paperclip className="w-2.5 h-2.5" /> {task.attachments}
+                    <span className="flex items-center gap-1 text-[11px] font-mono bg-white/10 px-2.5 py-0.5 rounded-full text-neutral-200 border border-white/10">
+                      <Paperclip className="w-3 h-3" /> {task.attachments}
                     </span>
                   )}
                 </div>
@@ -339,18 +364,18 @@ export const TodayView: React.FC<TodayViewProps> = ({
       </div>
 
       {/* Completed Today Section */}
-      <div className="mt-4 space-y-2">
-        <div className="text-[10px] font-mono uppercase tracking-wider text-neutral-400">
+      <div className="mt-5 space-y-2">
+        <div className="text-[11px] font-mono uppercase tracking-wider text-neutral-400 font-bold">
           COMPLETED TODAY (4)
         </div>
-        <div className="p-3 rounded-2xl bg-white/[0.02] border border-white/5 opacity-70 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+        <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/8 opacity-75 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
             <div>
-              <div className="text-xs font-medium text-neutral-300 line-through">
+              <div className="text-xs font-semibold text-neutral-300 line-through">
                 Morning alignment with Core OS engineering
               </div>
-              <div className="text-[10px] text-neutral-500 font-mono">Completed at 9:15 AM</div>
+              <div className="text-[10px] text-neutral-500 font-mono mt-0.5">Completed at 9:15 AM</div>
             </div>
           </div>
         </div>
@@ -358,3 +383,4 @@ export const TodayView: React.FC<TodayViewProps> = ({
     </div>
   )
 }
+

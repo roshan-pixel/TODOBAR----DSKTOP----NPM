@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', -system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: 'SF Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', -system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', Menlo, Monaco, Consolas, monospace;
 
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
@@ -109,18 +109,34 @@ body {
 .border-strong { border-color: var(--border-strong) !important; }
 .border-accent { border-color: var(--accent) !important; }
 
-/* iOS Safe Area Inset Utilities */
+/* iOS Safe Area Inset Utilities with robust fallbacks */
 .pt-safe {
-  padding-top: max(env(safe-area-inset-top, 0px), 16px);
+  padding-top: 40px;
+  padding-top: max(env(safe-area-inset-top, 0px), 40px);
 }
 .pb-safe {
-  padding-bottom: max(env(safe-area-inset-bottom, 0px), 24px);
+  padding-bottom: 32px;
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 32px);
 }
 .pl-safe {
+  padding-left: 16px;
   padding-left: max(env(safe-area-inset-left, 0px), 16px);
 }
 .pr-safe {
+  padding-right: 16px;
   padding-right: max(env(safe-area-inset-right, 0px), 16px);
+}
+
+.today-screen-scroll {
+  padding-top: 44px;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 40px);
+  padding-bottom: 160px;
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 140px);
+}
+
+.todobar-dock-fixed {
+  bottom: 24px;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
 }
 
 /* ==========================================================================
