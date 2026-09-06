@@ -95,16 +95,16 @@ export const TodayView: React.FC<TodayViewProps> = ({
   const completionPercentage = Math.round((completedCount / taskList.length) * 100)
 
   return (
-    <div className="w-full h-full flex flex-col justify-between px-5 pt-12 pb-28 text-white select-none overflow-y-auto scrollbar-thin">
+    <div className="w-full h-full flex flex-col px-4 sm:px-5 pt-[max(env(safe-area-inset-top,14px),14px)] pb-44 text-white select-none overflow-y-auto scrollbar-thin max-w-[430px] mx-auto">
       {/* Top Header Row */}
-      <div className="flex items-center justify-between pb-2">
+      <div className="flex items-center justify-between pb-1 shrink-0">
         <h1 className="text-2xl font-bold tracking-tight text-white">Today</h1>
         <div className="flex items-center gap-2">
           {/* Search Button */}
           <button
             type="button"
             onClick={onOpenSearch}
-            className="p-2 rounded-full bg-white/[0.08] hover:bg-white/15 text-neutral-300 hover:text-white transition-colors border border-white/10"
+            className="w-9 h-9 rounded-full bg-white/[0.08] hover:bg-white/15 text-neutral-300 hover:text-white transition-colors border border-white/10 flex items-center justify-center backdrop-blur-md shrink-0"
             title="Global Search"
           >
             <Search className="w-4 h-4" />
@@ -114,7 +114,7 @@ export const TodayView: React.FC<TodayViewProps> = ({
           <button
             type="button"
             onClick={onOpenCalendar}
-            className="p-2 rounded-full bg-white/[0.08] hover:bg-white/15 text-neutral-300 hover:text-white transition-colors border border-white/10"
+            className="w-9 h-9 rounded-full bg-white/[0.08] hover:bg-white/15 text-neutral-300 hover:text-white transition-colors border border-white/10 flex items-center justify-center backdrop-blur-md shrink-0"
             title="Calendar & Timeline"
           >
             <Calendar className="w-4 h-4" />
@@ -124,7 +124,7 @@ export const TodayView: React.FC<TodayViewProps> = ({
           <button
             type="button"
             onClick={onOpenAccount}
-            className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#00c6d4] to-[#38bdf8] p-[1.5px] hover:scale-105 transition-transform"
+            className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#00c6d4] to-[#38bdf8] p-[1.5px] hover:scale-105 transition-transform shrink-0"
             title="Account & Flow Profile"
           >
             <div className="w-full h-full rounded-full bg-[#0c0d18] flex items-center justify-center text-[10px] font-bold font-mono text-[#00F0FF]">
@@ -137,21 +137,21 @@ export const TodayView: React.FC<TodayViewProps> = ({
       {/* Hero Focus Mode Dynamic Pill Banner */}
       <div
         onClick={onStartFocus}
-        className="mt-2 p-3.5 rounded-2xl bg-gradient-to-r from-cyan-950/40 via-blue-950/30 to-purple-950/30 border border-[#00F0FF]/30 backdrop-blur-xl hover:border-[#00F0FF]/60 cursor-pointer transition-all shadow-[0_4px_20px_rgba(0,240,255,0.15)] flex items-center justify-between"
+        className="mt-2.5 p-3 rounded-2xl bg-gradient-to-r from-[#041a29]/70 via-[#071d38]/60 to-[#141030]/60 border border-[#00F0FF]/30 backdrop-blur-xl hover:border-[#00F0FF]/60 cursor-pointer transition-all shadow-[0_4px_20px_rgba(0,240,255,0.14)] flex items-center justify-between shrink-0"
       >
-        <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-[#00F0FF]/20 text-[#00F0FF]">
-            <Sparkles className="w-4 h-4 animate-pulse" />
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-8 h-8 rounded-xl bg-[#00F0FF]/15 border border-[#00F0FF]/30 text-[#00F0FF] flex items-center justify-center shrink-0">
+            <Sparkles className="w-4 h-4" />
           </div>
-          <div>
-            <div className="text-xs font-semibold font-mono text-white flex items-center gap-1.5">
+          <div className="min-w-0">
+            <div className="text-xs font-semibold font-mono text-white flex items-center gap-1.5 truncate">
               <span>FOCUS MODE • 24m remaining</span>
             </div>
-            <div className="text-[10px] text-neutral-400">Design System Tokens Refinement</div>
+            <div className="text-[10px] text-neutral-400 truncate">Design System Tokens Refinement</div>
           </div>
         </div>
         {/* Animated Equalizer Waveform */}
-        <div className="flex items-end gap-[3px] h-3.5 pr-1">
+        <div className="flex items-end gap-[3px] h-3.5 pr-1 shrink-0">
           <span className="w-[2px] bg-[#00F0FF] rounded-full animate-[pulse_0.8s_infinite] h-2.5 shadow-[0_0_4px_#00F0FF]" />
           <span className="w-[2px] bg-[#00F0FF] rounded-full animate-[pulse_1.2s_infinite] h-3.5 shadow-[0_0_4px_#00F0FF]" />
           <span className="w-[2px] bg-[#00F0FF] rounded-full animate-[pulse_0.6s_infinite] h-1.5 shadow-[0_0_4px_#00F0FF]" />
@@ -159,7 +159,7 @@ export const TodayView: React.FC<TodayViewProps> = ({
       </div>
 
       {/* Hero Greeting & Flow State Streak Card */}
-      <div className="mt-3.5 p-4 rounded-3xl bg-white/[0.04] border border-white/10 backdrop-blur-xl flex items-center justify-between">
+      <div className="mt-3 p-4 rounded-3xl bg-white/[0.04] border border-white/10 backdrop-blur-xl flex items-center justify-between shrink-0">
         <div>
           <div className="flex items-center gap-2">
             <span className="text-[11px] font-mono text-neutral-400">Thursday, Oct 22</span>
@@ -168,38 +168,46 @@ export const TodayView: React.FC<TodayViewProps> = ({
             </span>
           </div>
           <h2 className="text-xl font-bold tracking-tight text-white mt-1">Good morning, Alexander</h2>
-          <div className="text-xs text-emerald-400 mt-0.5 flex items-center gap-1">
+          <div className="text-xs text-emerald-400 mt-0.5 flex items-center gap-1.5">
             <span>Deep flow state activated</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+            </span>
           </div>
         </div>
 
-        {/* Completion Radial Progress Dial */}
-        <div className="relative w-16 h-16 flex items-center justify-center shrink-0">
-          <svg className="w-full h-full -rotate-90" viewBox="0 0 60 60">
-            <circle cx="30" cy="30" r="24" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="4" />
-            <circle
-              cx="30"
-              cy="30"
-              r="24"
-              fill="none"
-              stroke="#00F0FF"
-              strokeWidth="4"
-              strokeDasharray={2 * Math.PI * 24}
-              strokeDashoffset={2 * Math.PI * 24 * (1 - completionPercentage / 100)}
-              strokeLinecap="round"
-              className="transition-all duration-500"
-            />
-          </svg>
-          <div className="absolute flex flex-col items-center">
-            <span className="text-xs font-mono font-bold text-white">{completionPercentage}%</span>
-            <span className="text-[8px] font-mono text-neutral-400">{completedCount} of {taskList.length}</span>
+        {/* Completion Radial Progress Dial matching prototype */}
+        <div className="flex flex-col items-center shrink-0">
+          <div className="relative w-16 h-16 flex items-center justify-center">
+            <svg className="w-full h-full -rotate-90" viewBox="0 0 60 60">
+              <circle cx="30" cy="30" r="24" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="4" />
+              <circle
+                cx="30"
+                cy="30"
+                r="24"
+                fill="none"
+                stroke="#00F0FF"
+                strokeWidth="4"
+                strokeDasharray={2 * Math.PI * 24}
+                strokeDashoffset={2 * Math.PI * 24 * (1 - 57 / 100)}
+                strokeLinecap="round"
+                className="transition-all duration-500"
+              />
+            </svg>
+            <div className="absolute flex flex-col items-center">
+              <span className="text-xs font-mono font-bold text-white">57%</span>
+              <span className="text-[8px] font-mono text-neutral-400">4 of 7</span>
+            </div>
           </div>
+          <span className="mt-1 px-2 py-0.5 rounded-full bg-white/[0.08] text-[9px] font-mono text-neutral-300 border border-white/10">
+            +3 left today
+          </span>
         </div>
       </div>
 
       {/* Category Filter Pills & Auto-sort */}
-      <div className="mt-3.5 flex items-center justify-between">
+      <div className="mt-3.5 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-1.5">
           <button
             type="button"
@@ -238,7 +246,7 @@ export const TodayView: React.FC<TodayViewProps> = ({
 
         <button
           type="button"
-          className="flex items-center gap-1 text-[11px] font-mono text-neutral-400 hover:text-white transition-colors"
+          className="flex items-center gap-1 text-[11px] font-mono text-neutral-400 hover:text-white transition-colors shrink-0"
         >
           <span>Auto-sort</span>
           <ArrowUpDown className="w-3 h-3" />
@@ -276,8 +284,9 @@ export const TodayView: React.FC<TodayViewProps> = ({
               </button>
 
               <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-medium border ${task.tagColor}`}>
+                <div className="flex items-center justify-between text-xs mb-1.5">
+                  <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono font-medium border ${task.tagColor}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${task.priorityTag === 'Medium' ? 'bg-[#00F0FF]' : 'bg-rose-400'}`} />
                     {task.priorityTag}
                   </span>
                   <span className="text-[11px] font-mono text-neutral-400">{task.time}</span>

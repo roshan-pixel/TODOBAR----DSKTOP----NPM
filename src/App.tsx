@@ -80,21 +80,15 @@ export function App() {
     <IPhone16ProMaxFrame
       isSimulatedFrame={isSimulatedFrame}
       onToggleFrame={() => setIsSimulatedFrame(!isSimulatedFrame)}
+      islandMode={islandMode}
+      onTapIsland={() => {
+        if (currentScreen === 'focus') {
+          setIsMiniBreakOpen(true)
+        } else {
+          handleStartFocus()
+        }
+      }}
     >
-      {/* Dynamic Island Component */}
-      <DynamicIsland
-        mode={islandMode}
-        timeRemaining="24:07"
-        sprintName="Sprint 2/4"
-        onTap={() => {
-          if (currentScreen === 'focus') {
-            setIsMiniBreakOpen(true)
-          } else {
-            handleStartFocus()
-          }
-        }}
-      />
-
       {/* Main Active Screen Content */}
       <div className="flex-1 w-full h-full relative overflow-hidden">
         {currentScreen === 'today' && (

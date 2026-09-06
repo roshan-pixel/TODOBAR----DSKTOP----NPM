@@ -20,7 +20,7 @@ export const CalendarTimelineView: React.FC<CalendarTimelineViewProps> = ({ onBa
   ]
 
   return (
-    <div className="w-full h-full flex flex-col justify-between px-5 pt-12 pb-24 text-white select-none overflow-y-auto scrollbar-thin">
+    <div className="w-full h-full flex flex-col px-4 sm:px-5 pt-[max(env(safe-area-inset-top,14px),14px)] pb-36 text-white select-none overflow-y-auto scrollbar-thin max-w-[430px] mx-auto">
       {/* Top Navigation */}
       <div className="flex items-center justify-between pb-3 border-b border-white/10">
         <button

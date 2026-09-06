@@ -1,25 +1,65 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Smartphone, Monitor } from 'lucide-react'
+import { DynamicIsland, IslandMode } from './DynamicIsland'
 
 interface IPhone16ProMaxFrameProps {
   children: React.ReactNode
   isSimulatedFrame: boolean
   onToggleFrame: () => void
+  islandMode?: IslandMode
+  onTapIsland?: () => void
 }
 
 export const IPhone16ProMaxFrame: React.FC<IPhone16ProMaxFrameProps> = ({
   children,
   isSimulatedFrame,
   onToggleFrame,
+  islandMode = 'focusing',
+  onTapIsland,
 }) => {
-  if (!isSimulatedFrame) {
-    return <div className="w-full h-full relative overflow-hidden bg-[#030712]">{children}</div>
+  const [isMobileScreen, setIsMobileScreen] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth <= 768
+    }
+    return false
+  })
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobileScreen(window.innerWidth <= 768)
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  // Mobile Device or Full View: Render native full-bleed edge-to-edge layout
+  if (isMobileScreen || !isSimulatedFrame) {
+    return (
+      <div className="w-full h-full min-h-[100dvh] relative overflow-hidden bg-[#030712] flex flex-col">
+        {/* Floating toggle back to frame (only on desktop when toggled to full view) */}
+        {!isMobileScreen && !isSimulatedFrame && (
+          <div className="fixed top-4 right-4 z-50">
+            <button
+              type="button"
+              onClick={onToggleFrame}
+              className="px-3 py-1.5 rounded-full text-xs font-mono uppercase bg-white/10 hover:bg-white/20 text-[#00F0FF] border border-white/20 backdrop-blur-xl flex items-center gap-1.5 shadow-lg transition-all"
+            >
+              <Smartphone className="w-3.5 h-3.5" /> iPhone View
+            </button>
+          </div>
+        )}
+        <div className="w-full h-full flex flex-col relative overflow-hidden flex-1">
+          {children}
+        </div>
+      </div>
+    )
   }
 
+  // Desktop Simulator Frame: Matches Google Stitch Prototype with embedded Dynamic Island
   return (
-    <div className="w-full h-full min-h-screen flex flex-col items-center justify-center p-4 bg-[#070913] relative overflow-hidden select-none">
+    <div className="w-full h-full min-h-screen flex flex-col items-center justify-center p-3 sm:p-6 bg-[#070913] relative overflow-hidden select-none">
       {/* Top Toggle Bar */}
-      <div className="mb-3 flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.06] border border-white/12 backdrop-blur-xl z-50">
+      <div className="mb-2.5 flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.06] border border-white/12 backdrop-blur-xl z-50">
         <span className="text-xs font-semibold text-white/90">iPhone 16 Pro Max (430×932 pt)</span>
         <button
           type="button"
@@ -32,7 +72,7 @@ export const IPhone16ProMaxFrame: React.FC<IPhone16ProMaxFrameProps> = ({
 
       {/* Titanium iPhone 16 Pro Max Bezel Chassis */}
       <div
-        className="relative w-[430px] h-[932px] rounded-[56px] p-3 shadow-[0_0_0_2px_rgba(255,255,255,0.15),0_30px_100px_rgba(0,0,0,0.9),0_0_40px_rgba(0,240,255,0.12)] border-[3px] border-[#222432] bg-[#0c0d18] overflow-hidden"
+        className="relative w-[430px] max-w-[95vw] h-[932px] max-h-[92vh] rounded-[56px] p-3 shadow-[0_0_0_2px_rgba(255,255,255,0.15),0_30px_100px_rgba(0,0,0,0.9),0_0_40px_rgba(0,240,255,0.12)] border-[3px] border-[#222432] bg-[#0c0d18] overflow-hidden flex flex-col"
         style={{
           boxShadow:
             'inset 0 0 0 1.5px rgba(255,255,255,0.18), 0 0 0 4px #1a1c28, 0 30px 90px rgba(0,0,0,0.9)',
@@ -40,10 +80,20 @@ export const IPhone16ProMaxFrame: React.FC<IPhone16ProMaxFrameProps> = ({
       >
         {/* Inner OLED Display Container */}
         <div className="w-full h-full rounded-[48px] overflow-hidden bg-[#030712] relative flex flex-col">
-          {/* Status Bar */}
-          <div className="absolute top-0 inset-x-0 h-11 flex items-center justify-between px-7 pt-2 text-[12px] font-mono font-semibold text-white/90 z-40 pointer-events-none">
-            <span>9:41</span>
-            <div className="flex items-center gap-1.5">
+          {/* Status Bar with embedded Dynamic Island matching Google Stitch prototype */}
+          <div className="h-12 flex items-center justify-between px-7 pt-1 text-[13px] font-mono font-semibold text-white/90 z-40 shrink-0 bg-transparent">
+            <span className="shrink-0 w-12">9:41</span>
+
+            {/* Embedded Dynamic Island */}
+            <div className="pointer-events-auto flex justify-center">
+              <DynamicIsland
+                mode={islandMode}
+                onTap={onTapIsland}
+                isCompact={true}
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-1.5 shrink-0 w-12">
               {/* Cellular */}
               <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
                 <path d="M2 20h2v-4H2v4zm4 0h2v-8H6v8zm4 0h2V8h-2v12zm4 0h2V4h-2v16zm4 0h2V0h-2v20z" />
@@ -60,10 +110,10 @@ export const IPhone16ProMaxFrame: React.FC<IPhone16ProMaxFrameProps> = ({
           </div>
 
           {/* Children Screen Content */}
-          <div className="w-full h-full flex flex-col relative overflow-hidden">{children}</div>
+          <div className="w-full flex-1 flex flex-col relative overflow-hidden">{children}</div>
 
           {/* Home Indicator Bar */}
-          <div className="absolute bottom-2 inset-x-0 flex justify-center pointer-events-none z-50">
+          <div className="py-2 flex justify-center pointer-events-none z-50 shrink-0">
             <div className="w-36 h-1 rounded-full bg-white/40 backdrop-blur-md" />
           </div>
         </div>
