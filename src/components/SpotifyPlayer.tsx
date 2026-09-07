@@ -374,9 +374,10 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
     let finalTitle = query
     let finalSubtitle = 'Full-Length Song (No Login Needed)'
 
-    // 1. User pasted a Spotify link
+    // 1. User pasted a Spotify link (track, playlist, or album)
     if (parsed.source === 'spotify') {
       let resolvedYoutubeUrl = ''
+      let authorName = ''
       try {
         const cleanUrl = `https://open.spotify.com/${parsed.type}/${parsed.id}`
         const res = await fetch(`https://open.spotify.com/oembed?url=${encodeURIComponent(cleanUrl)}`)
@@ -384,15 +385,26 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
           const data = await res.json()
           if (data.title) {
             finalTitle = data.title
-            finalSubtitle = `Spotify • ${data.author_name || 'Track'}`
+            authorName = data.author_name || ''
+            finalSubtitle = `Spotify • ${authorName || 'Track'}`
           }
         }
       } catch {}
 
-      // Resolve full uninterrupted stream so user gets continuous playback without login cuts
+      // Build a better search query for YouTube resolution:
+      // For tracks: "Song Title Artist Name" gets more accurate results
+      // For playlists/albums: "Playlist Title full playlist" helps find full mixes
+      let resolveQuery = finalTitle
+      if (parsed.type === 'track' && authorName) {
+        resolveQuery = `${finalTitle} ${authorName}`
+      } else if (parsed.type === 'playlist' || parsed.type === 'album') {
+        resolveQuery = `${finalTitle} ${authorName || ''} full ${parsed.type}`.trim()
+      }
+
+      // Resolve full uninterrupted stream via YouTube so user gets 100% continuous playback
       try {
         const backendUrl = getBackendUrl()
-        const res = await fetch(`${backendUrl}/api/music/resolve?q=${encodeURIComponent(finalTitle)}`)
+        const res = await fetch(`${backendUrl}/api/music/resolve?q=${encodeURIComponent(resolveQuery)}`)
         if (res.ok) {
           const data = await res.json()
           if (data.embedUrl) {
@@ -403,16 +415,22 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
         console.warn('Music resolve error for spotify track:', err)
       }
 
+      // KEY FIX: When YouTube resolution succeeds, use source='youtube' for FULL playback.
+      // Only fall back to source='spotify' (30s preview embed) when resolution fails.
+      const hasFullPlayback = Boolean(resolvedYoutubeUrl)
+
       const newItem: MediaItem = {
         id: `spotify-${parsed.id}`,
-        source: 'spotify',
-        type: parsed.type as any,
+        source: hasFullPlayback ? 'youtube' : 'spotify',
+        type: hasFullPlayback ? 'video' : (parsed.type as any),
         embedUrl: resolvedYoutubeUrl || parsed.embedUrl,
         spotifyEmbedUrl: parsed.embedUrl,
         title: finalTitle,
-        subtitle: finalSubtitle,
-        genreTag: 'SPOTIFY',
-        color: '#1DB954',
+        subtitle: hasFullPlayback
+          ? `Full Song • ${authorName || 'Spotify'} • Zero Login`
+          : `Spotify Preview • ${authorName || 'Track'}`,
+        genreTag: hasFullPlayback ? 'FULL SONG' : 'SPOTIFY PREVIEW',
+        color: hasFullPlayback ? '#00F0FF' : '#1DB954',
         sourceUrl: `https://open.spotify.com/${parsed.type}/${parsed.id}`,
         isCustom: true,
       }
@@ -430,6 +448,22 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
         subtitle: '100% Full Playback • Zero Login',
         genreTag: 'FULL YOUTUBE',
         color: '#ef4444',
+        sourceUrl: query,
+        isCustom: true,
+      }
+      setCustomList(prev => [newItem, ...prev.filter(x => x.id !== newItem.id)])
+      setCurrentMedia(newItem)
+    } else if (parsed.source === 'audio') {
+      // 2b. Direct audio file URL
+      const newItem: MediaItem = {
+        id: `audio-${Date.now()}`,
+        source: 'radio',
+        type: 'stream',
+        streamUrl: parsed.embedUrl,
+        title: finalTitle.startsWith('http') ? 'Custom Audio Stream' : finalTitle,
+        subtitle: 'Direct Audio Stream • Full Playback',
+        genreTag: 'STREAM',
+        color: '#a855f7',
         sourceUrl: query,
         isCustom: true,
       }
@@ -455,12 +489,14 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
         id: `song-${Date.now()}`,
         source: resolvedEmbedUrl ? 'youtube' : 'radio',
         type: resolvedEmbedUrl ? 'video' : 'stream',
-        embedUrl: resolvedEmbedUrl,
+        embedUrl: resolvedEmbedUrl || undefined,
         streamUrl: resolvedEmbedUrl ? undefined : 'https://streams.ilovemusic.de/iloveradio17.mp3',
         title: finalTitle,
-        subtitle: 'Full-Length Audio (Zero Login)',
-        genreTag: 'FULL SONG',
-        color: '#00F0FF',
+        subtitle: resolvedEmbedUrl
+          ? `Full Song • ${finalTitle} • Zero Login`
+          : 'Could not resolve — playing Focus Radio instead',
+        genreTag: resolvedEmbedUrl ? 'FULL SONG' : 'FALLBACK',
+        color: resolvedEmbedUrl ? '#00F0FF' : '#f59e0b',
         sourceUrl: `https://open.spotify.com/search/${encodeURIComponent(finalTitle)}`,
         isCustom: true,
       }
@@ -815,20 +851,39 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
           </div>
         )}
 
-        {/* C. FULL SONG SEARCH / YOUTUBE EMBED (Plays 100% full song without login or preview limits) */}
+        {/* C. FULL SONG / YOUTUBE EMBED (Plays 100% full song without login or preview limits) */}
         {currentMedia.source === 'youtube' && currentMedia.embedUrl && (
-          <div className="w-full rounded-2xl overflow-hidden border border-white/10 bg-black/80 shadow-[0_8px_24px_rgba(0,0,0,0.5)] h-[152px]">
-            <iframe
-              key={currentMedia.embedUrl}
-              src={currentMedia.embedUrl}
-              width="100%"
-              height="152"
-              frameBorder="0"
-              allow="autoplay; encrypted-media; picture-in-picture"
-              loading="lazy"
-              title={currentMedia.title}
-              className="w-full h-full block"
-            />
+          <div className="w-full space-y-1.5">
+            <div className="w-full rounded-2xl overflow-hidden border border-[#00F0FF]/20 bg-black/80 shadow-[0_8px_24px_rgba(0,0,0,0.5),0_0_24px_rgba(0,240,255,0.08)] h-[152px]">
+              <iframe
+                key={currentMedia.embedUrl}
+                src={currentMedia.embedUrl}
+                width="100%"
+                height="152"
+                frameBorder="0"
+                allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                loading="lazy"
+                title={currentMedia.title}
+                className="w-full h-full block"
+              />
+            </div>
+            <div className="px-1 flex items-center justify-between text-[9px] font-mono">
+              <span className="flex items-center gap-1 text-emerald-400">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span>FULL PLAYBACK • ZERO LOGIN • NO 30s CUT</span>
+              </span>
+              {currentMedia.sourceUrl?.includes('spotify.com') && (
+                <a
+                  href={currentMedia.sourceUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[#1DB954] hover:underline flex items-center gap-1"
+                >
+                  <span>Open in Spotify</span>
+                  <ExternalLink className="w-2.5 h-2.5" />
+                </a>
+              )}
+            </div>
           </div>
         )}
       </div>
