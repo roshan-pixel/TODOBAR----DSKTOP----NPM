@@ -17,6 +17,141 @@ export interface AISubtask {
   done: boolean
 }
 
+export interface AdvancedVoiceResult {
+  text: string
+  command?: 'clear_all' | 'delete_last' | 'self_correction' | 'break_steps' | 'priority_change'
+  feedback?: string
+  priorityOverride?: 'focus' | 'normal' | 'later'
+}
+
+/**
+ * Deduplicates repeated words ("review review" -> "review")
+ * and repeated 2-4 word phrases ("call John call John" -> "call John")
+ */
+export function deduplicateRepeatedSpeech(text: string): { text: string; wasDeduplicated: boolean } {
+  let res = text
+  const initial = res
+
+  // 1. Deduplicate single repeated words (case-insensitive)
+  res = res.replace(/\b([a-zA-Z0-9_-]+)\s+\1\b/gi, (match, p1) => p1)
+
+  // 2. Deduplicate 2 to 4 word repeated phrases
+  res = res.replace(/\b([a-zA-Z0-9_-]+(?:\s+[a-zA-Z0-9_-]+){1,3})\s+\1\b/gi, (match, p1) => p1)
+
+  return {
+    text: res,
+    wasDeduplicated: res !== initial,
+  }
+}
+
+/**
+ * Detects if a speaker restarts from a beginning phrase after a stumble
+ * e.g. "Meet with Alex at meet with Alex tomorrow at 4pm" -> "meet with Alex tomorrow at 4pm"
+ */
+export function detectPrefixRestart(text: string): string {
+  const words = text.trim().split(/\s+/)
+  if (words.length < 5) return text
+
+  // Check prefixes of length 2 to 4 words
+  for (let len = Math.min(4, Math.floor(words.length / 2)); len >= 2; len--) {
+    const prefix = words.slice(0, len).join(' ').toLowerCase()
+    const remainingText = words.slice(len).join(' ')
+    const lowerRemaining = remainingText.toLowerCase()
+
+    const restartIndex = lowerRemaining.indexOf(prefix)
+    if (restartIndex !== -1) {
+      return remainingText.slice(restartIndex).trim()
+    }
+  }
+  return text
+}
+
+/**
+ * Advanced real-time voice command and self-correction processor
+ * - Handles "delete all", "clear all", "start over"
+ * - Handles "scratch that", "undo that"
+ * - Handles conversational self-correction ("actually", "no wait", "I mean", "correction")
+ * - Handles speech stutter / repeated word deduplication
+ * - Handles sentence restarts from previous stations
+ * - Handles voice priority commands ("make it urgent", "set priority high")
+ * - Handles voice subtask generation ("break into steps")
+ */
+export function processAdvancedVoiceStream(rawTranscript: string): AdvancedVoiceResult {
+  let text = rawTranscript
+  let command: AdvancedVoiceResult['command'] = undefined
+  let feedback: string | undefined = undefined
+  let priorityOverride: 'focus' | 'normal' | 'later' | undefined = undefined
+
+  // 1. Check for complete wipe commands: "delete all", "clear all", "start over", "erase all"
+  const clearMatch = text.match(/\b(?:delete\s+all|clear\s+all|clear\s+everything|erase\s+all|delete\s+everything|start\s+over|clear\s+text)\b/i)
+  if (clearMatch) {
+    const after = text.slice(clearMatch.index! + clearMatch[0].length).trim()
+    return {
+      text: after,
+      command: 'clear_all',
+      feedback: '🗑️ Cleared on voice command',
+    }
+  }
+
+  // 2. Check for undo / scratch that commands: "scratch that", "delete that", "delete last"
+  const scratchMatch = text.match(/\b(?:scratch\s+that|delete\s+that|remove\s+that|undo\s+that|delete\s+last)\b/i)
+  if (scratchMatch) {
+    const after = text.slice(scratchMatch.index! + scratchMatch[0].length).trim()
+    return {
+      text: after,
+      command: 'delete_last',
+      feedback: '↩️ Phrase removed on voice command',
+    }
+  }
+
+  // 3. Conversational Self-Correction ("actually ...", "no wait ...", "I mean ...", "correction ...")
+  const correctionMatch = text.match(/\b(?:actually|no\s+wait|no\s+i\s+mean|i\s+mean|correction|or\s+rather|make\s+that)\b[,:]?\s*(.+)$/i)
+  if (correctionMatch) {
+    text = correctionMatch[1].trim()
+    command = 'self_correction'
+    feedback = '✨ Self-correction applied'
+  }
+
+  // 4. Voice command: "break into steps" / "generate subtasks"
+  if (/\b(?:break\s+into\s+steps|generate\s+subtasks|create\s+steps|break\s+down\s+task)\b/i.test(text)) {
+    text = text.replace(/\b(?:break\s+into\s+steps|generate\s+subtasks|create\s+steps|break\s+down\s+task)\b/gi, '').trim()
+    command = 'break_steps'
+    feedback = '⚡ AI Breakdown triggered by voice'
+  }
+
+  // 5. Voice command: Priority ("make it urgent", "set priority high", "low priority")
+  if (/\b(?:make\s+it\s+(?:urgent|high\s+priority)|set\s+priority\s+high|mark\s+as\s+urgent|priority\s+high)\b/i.test(text)) {
+    priorityOverride = 'focus'
+    feedback = feedback || '🚩 High priority set by voice'
+    text = text.replace(/\b(?:make\s+it\s+(?:urgent|high\s+priority)|set\s+priority\s+high|mark\s+as\s+urgent|priority\s+high)\b/gi, '').trim()
+  } else if (/\b(?:make\s+it\s+medium|normal\s+priority|priority\s+medium)\b/i.test(text)) {
+    priorityOverride = 'normal'
+    feedback = feedback || '🟡 Medium priority set by voice'
+    text = text.replace(/\b(?:make\s+it\s+medium|normal\s+priority|priority\s+medium)\b/gi, '').trim()
+  } else if (/\b(?:make\s+it\s+low|low\s+priority|priority\s+low)\b/i.test(text)) {
+    priorityOverride = 'later'
+    feedback = feedback || '🟢 Low priority set by voice'
+    text = text.replace(/\b(?:make\s+it\s+low|low\s+priority|priority\s+low)\b/gi, '').trim()
+  }
+
+  // 6. Detect Sentence Restarts from stumbles
+  text = detectPrefixRestart(text)
+
+  // 7. Deduplicate repeated words / phrases
+  const dedup = deduplicateRepeatedSpeech(text)
+  text = dedup.text
+  if (dedup.wasDeduplicated && !feedback) {
+    feedback = '⚡ Auto-healed repeated words'
+  }
+
+  return {
+    text: text.replace(/\s+/g, ' ').trim(),
+    command,
+    feedback,
+    priorityOverride,
+  }
+}
+
 /**
  * Strips speech recognition verbal filler words and normalizes spoken tags
  */

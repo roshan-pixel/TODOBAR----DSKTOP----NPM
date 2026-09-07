@@ -24,6 +24,7 @@ import {
   generateAISubtasks,
   cleanSpokenFillers,
   getSmartSuggestedDeadlines,
+  processAdvancedVoiceStream,
   AISubtask,
 } from '../utils/nlpParser'
 import { sounds } from '../services/audio'
@@ -43,6 +44,7 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({ isOpen, onClose, o
   const [audioVolume, setAudioVolume] = useState(0)
   const [recordingSeconds, setRecordingSeconds] = useState(0)
   const [speechError, setSpeechError] = useState<string | null>(null)
+  const [voiceFeedback, setVoiceFeedback] = useState<string | null>(null)
   const [selectedDeadline, setSelectedDeadline] = useState<string | null>(null)
   const [selectedPriority, setSelectedPriority] = useState<'focus' | 'normal' | 'later' | null>(null)
   const [activeTags, setActiveTags] = useState<string[]>([])
@@ -52,6 +54,7 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({ isOpen, onClose, o
 
   const sessionRef = useRef<VoiceDictationSession | null>(null)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
   // Reset state on open; cleanup on close
@@ -63,6 +66,7 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({ isOpen, onClose, o
       setActiveTags([])
       setSubtasks([])
       setSpeechError(null)
+      setVoiceFeedback(null)
       setIsRecording(false)
       setIsProcessing(false)
       setRecordingSeconds(0)
@@ -76,10 +80,15 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({ isOpen, onClose, o
         clearInterval(timerRef.current)
         timerRef.current = null
       }
+      if (feedbackTimerRef.current) {
+        clearTimeout(feedbackTimerRef.current)
+        feedbackTimerRef.current = null
+      }
       setIsRecording(false)
       setIsProcessing(false)
       setRecordingSeconds(0)
       setSpeechError(null)
+      setVoiceFeedback(null)
     }
   }, [isOpen])
 
@@ -93,6 +102,33 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({ isOpen, onClose, o
   const effectivePriority = selectedPriority || parsedMeta.priority || 'normal'
   const combinedTags = Array.from(new Set([...parsedMeta.tags, ...activeTags]))
   const suggestedDeadlines = getSmartSuggestedDeadlines()
+
+  // Real-time voice stream processor with self-correction and voice commands
+  const handleVoiceStream = (raw: string, isFinal = false) => {
+    const result = processAdvancedVoiceStream(raw)
+    setTaskText(result.text)
+
+    if (result.priorityOverride) {
+      setSelectedPriority(result.priorityOverride)
+      sounds.playClick(true)
+    }
+
+    if (result.command === 'clear_all') {
+      sounds.playDelete(true)
+    } else if (result.command === 'break_steps') {
+      handleAIBreakdown()
+    } else if (isFinal && result.text) {
+      sounds.playClick(true)
+    }
+
+    if (result.feedback) {
+      setVoiceFeedback(result.feedback)
+      if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current)
+      feedbackTimerRef.current = setTimeout(() => {
+        setVoiceFeedback(null)
+      }, 3500)
+    }
+  }
 
   // Real-time microphone dictation handler
   const handleToggleRecord = async () => {
@@ -110,7 +146,7 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({ isOpen, onClose, o
         try {
           const finalTranscript = await sessionRef.current.stop()
           if (finalTranscript) {
-            setTaskText(finalTranscript)
+            handleVoiceStream(finalTranscript, true)
             sounds.playComplete(true)
           } else {
             sounds.playClick(true)
@@ -139,11 +175,11 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({ isOpen, onClose, o
             }, 1000)
           },
           onInterim: interim => {
-            // Real-time live typing streaming into the input!
-            setTaskText(interim)
+            // Real-time live typing streaming into the input with self-correction & deduplication!
+            handleVoiceStream(interim, false)
           },
           onFinal: final => {
-            setTaskText(final)
+            handleVoiceStream(final, true)
           },
           onVolumeChange: vol => {
             setAudioVolume(vol)
@@ -186,12 +222,16 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({ isOpen, onClose, o
     }, 250)
   }
 
-  // AI Feature: Clean speech fillers and format into executive action item
+  // AI Feature: Clean speech fillers, deduplicate, and format into executive action item
   const handleAIPolish = () => {
-    const polished = cleanSpokenFillers(taskText)
+    const processed = processAdvancedVoiceStream(taskText)
+    const polished = cleanSpokenFillers(processed.text)
     if (polished) {
       setTaskText(polished)
       sounds.playClick(true)
+      setVoiceFeedback('✨ Cleaned & polished')
+      if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current)
+      feedbackTimerRef.current = setTimeout(() => setVoiceFeedback(null), 2500)
     }
   }
 
@@ -370,6 +410,23 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({ isOpen, onClose, o
           <div className="mt-2.5 p-2.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
             <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
             <span className="leading-tight">{speechError}</span>
+          </div>
+        )}
+
+        {/* Real-Time Voice Intelligence Feedback Notification */}
+        {voiceFeedback && (
+          <div className="mt-2.5 px-3 py-1.5 rounded-xl bg-emerald-500/15 border border-emerald-500/35 text-emerald-300 text-xs font-mono flex items-center justify-between shadow-[0_0_12px_rgba(16,185,129,0.2)] animate-ios-fade-spring">
+            <div className="flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+              <span>{voiceFeedback}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setVoiceFeedback(null)}
+              className="text-neutral-400 hover:text-white text-[10px] ml-2"
+            >
+              <X className="w-3 h-3" />
+            </button>
           </div>
         )}
 
