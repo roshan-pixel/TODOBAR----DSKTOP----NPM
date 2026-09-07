@@ -7,6 +7,7 @@ import {
   Headphones,
   Users,
   Paperclip,
+  Zap,
 } from 'lucide-react'
 import { TodayTask } from '../types'
 import { sounds } from '../services/audio'
@@ -15,9 +16,11 @@ interface SwipeableTaskItemProps {
   task: TodayTask
   onToggle: (id: string) => void
   onDelete: (id: string) => void
+  onFocusTap?: (id: string) => void
   isDesignSystemTask: (task: TodayTask) => boolean
   isCompleted?: boolean
 }
+
 
 const SWIPE_THRESHOLD = 90 // px to trigger delete
 const MAX_SWIPE = 300 // px max swipe limit
@@ -26,9 +29,11 @@ export const SwipeableTaskItem: React.FC<SwipeableTaskItemProps> = ({
   task,
   onToggle,
   onDelete,
+  onFocusTap,
   isDesignSystemTask,
   isCompleted = false,
 }) => {
+
   const [offsetX, setOffsetX] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -239,7 +244,28 @@ export const SwipeableTaskItem: React.FC<SwipeableTaskItemProps> = ({
                   {task.time}
                 </span>
 
-                {/* Explicit Trash Button (Always accessible via click/hover) */}
+                {/* Focus This Task ⚡ button */}
+                {!isCompleted && onFocusTap && (
+                  <button
+                    type="button"
+                    onClick={e => {
+                      e.stopPropagation()
+                      sounds.playClick(true)
+                      onFocusTap(task.id)
+                    }}
+                    className={`p-1 -mr-0.5 rounded-lg transition-all active:scale-90 ${
+                      isHovered
+                        ? 'opacity-100 text-[#00F0FF] bg-[#00F0FF]/15 shadow-[0_0_8px_rgba(0,240,255,0.4)]'
+                        : 'opacity-0'
+                    }`}
+                    aria-label="Start focus session on this task"
+                    title="Focus on this task ⚡"
+                  >
+                    <Zap className="w-3.5 h-3.5 fill-current stroke-none" />
+                  </button>
+                )}
+
+                {/* Trash Button */}
                 <button
                   type="button"
                   onClick={e => {
@@ -255,6 +281,7 @@ export const SwipeableTaskItem: React.FC<SwipeableTaskItemProps> = ({
                   <Trash2 className="w-3.5 h-3.5 stroke-[2.2]" />
                 </button>
               </div>
+
             </div>
 
             {/* Title */}

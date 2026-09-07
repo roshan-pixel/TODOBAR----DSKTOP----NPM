@@ -24,6 +24,7 @@ interface TodayViewProps {
   onToggleTask: (id: string) => void
   onDeleteTask?: (id: string) => void
   onStartFocus: () => void
+  onFocusTask?: (taskId: string) => void
   onOpenSearch: () => void
   onOpenCalendar: () => void
   onOpenAccount: () => void
@@ -33,11 +34,13 @@ interface TodayViewProps {
   focusTaskTitle?: string
 }
 
+
 export const TodayView: React.FC<TodayViewProps> = ({
   tasks,
   onToggleTask,
   onDeleteTask = () => {},
   onStartFocus,
+  onFocusTask,
   onOpenSearch,
   onOpenCalendar,
   onOpenAccount,
@@ -46,6 +49,7 @@ export const TodayView: React.FC<TodayViewProps> = ({
   isFocusRunning = true,
   focusTaskTitle = 'Design System Tokens Refinement',
 }) => {
+
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'work' | 'design'>('all')
   const [isCompletedOpen, setIsCompletedOpen] = useState(true)
   const [sortByPriority, setSortByPriority] = useState(false)
@@ -317,6 +321,7 @@ export const TodayView: React.FC<TodayViewProps> = ({
               task={task}
               onToggle={onToggleTask}
               onDelete={onDeleteTask}
+              onFocusTap={onFocusTask}
               isDesignSystemTask={isDesignSystemTask}
             />
           ))

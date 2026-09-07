@@ -94,6 +94,29 @@ export function App() {
   // Active task for focus sprint
   const activeFocusTask = activeTasks.find(t => t.priority === 'focus') || activeTasks[0]
 
+  // Track which task was just tapped to start focus (for entry animation)
+  const [focusedTaskId, setFocusedTaskId] = useState<string | null>(null)
+  const [justStartedFromTask, setJustStartedFromTask] = useState(false)
+
+  // Tap on any task → immediately lock it as the focus target and start timer
+  const handleFocusTask = (taskId: string) => {
+    setFocusedTaskId(taskId)
+    setJustStartedFromTask(true)
+    setCurrentScreen('focus')
+    setActiveTab('focus')
+    if (!timer.isRunning) {
+      timer.resume()
+    }
+    // Clear the "just started" flag after the entry animation finishes
+    setTimeout(() => setJustStartedFromTask(false), 600)
+  }
+
+  // Get the active task: prefer the tapped one, then first focus-priority, then first active
+  const focusTask = (focusedTaskId ? activeTasks.find(t => t.id === focusedTaskId) : null)
+    ?? activeTasks.find(t => t.priority === 'focus')
+    ?? activeTasks[0]
+
+
   return (
     <IPhone16ProMaxFrame
       isSimulatedFrame={isSimulatedFrame}
@@ -116,13 +139,14 @@ export function App() {
             onToggleTask={toggleTask}
             onDeleteTask={deleteTask}
             onStartFocus={handleStartFocus}
+            onFocusTask={handleFocusTask}
             onOpenSearch={() => setIsSearchOpen(true)}
             onOpenCalendar={() => setCurrentScreen('calendar')}
             onOpenAccount={() => setCurrentScreen('account')}
             focusTimeString={timer.timeString}
             focusMinutesRemaining={timer.minutes}
             isFocusRunning={timer.isRunning}
-            focusTaskTitle={activeFocusTask?.title || 'No active focus task'}
+            focusTaskTitle={focusTask?.title || activeFocusTask?.title || 'No active focus task'}
           />
         )}
 
@@ -139,10 +163,12 @@ export function App() {
             onTogglePlayPause={timer.togglePlayPause}
             onReset={() => timer.reset()}
             onAdjust={timer.adjust}
-            activeTask={activeFocusTask}
+            activeTask={focusTask ?? activeFocusTask}
             onToggleTask={toggleTask}
+            justStartedFromTask={justStartedFromTask}
           />
         )}
+
 
         {currentScreen === 'completed' && (
           <SessionCompletedView

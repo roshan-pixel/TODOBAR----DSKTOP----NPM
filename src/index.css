@@ -456,3 +456,134 @@ body {
   overscroll-behavior-y: contain;
   scroll-behavior: smooth;
 }
+
+/* ═══════════════════════════════════════════════════
+   FOCUS SESSION — CRAZY UNIQUE CSS ANIMATIONS
+═══════════════════════════════════════════════════ */
+
+/* Plasma aura pulse — outer glow that breathes like a living thing */
+@keyframes plasmaBreath {
+  0%   { opacity: 0.3; transform: scale(0.95) rotate(0deg);   filter: hue-rotate(0deg)   blur(32px); }
+  25%  { opacity: 0.6; transform: scale(1.08) rotate(90deg);  filter: hue-rotate(45deg)  blur(24px); }
+  50%  { opacity: 0.9; transform: scale(1.02) rotate(180deg); filter: hue-rotate(90deg)  blur(28px); }
+  75%  { opacity: 0.5; transform: scale(1.12) rotate(270deg); filter: hue-rotate(135deg) blur(20px); }
+  100% { opacity: 0.3; transform: scale(0.95) rotate(360deg); filter: hue-rotate(180deg) blur(32px); }
+}
+
+/* Orbit ring — particle ring spinning around the timer */
+@keyframes orbitSpin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Counter-orbit for the second ring */
+@keyframes orbitSpinReverse {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(-360deg); }
+}
+
+/* Electric spark that erupts on play/tap */
+@keyframes sparkBurst {
+  0%   { opacity: 0;   transform: scale(0.6) rotate(0deg);   }
+  20%  { opacity: 1;   transform: scale(1.3) rotate(15deg);  }
+  60%  { opacity: 0.7; transform: scale(1.6) rotate(-8deg);  }
+  100% { opacity: 0;   transform: scale(2.2) rotate(30deg);  }
+}
+
+/* Neon ring pulse (staggered) */
+@keyframes neonRing {
+  0%   { transform: scale(1);    opacity: 0.8; box-shadow: 0 0 0   0    rgba(0,240,255,0.6); }
+  50%  { transform: scale(1.12); opacity: 0.4; box-shadow: 0 0 40px 12px rgba(0,240,255,0.3); }
+  100% { transform: scale(1.24); opacity: 0;   box-shadow: 0 0 80px 24px rgba(0,240,255,0);   }
+}
+
+/* Aurora shift — background aurora nebula that constantly drifts */
+@keyframes auroraDrift {
+  0%   { background-position: 0%   50%; filter: hue-rotate(0deg); }
+  33%  { background-position: 100% 20%; filter: hue-rotate(30deg); }
+  66%  { background-position: 50%  80%; filter: hue-rotate(-20deg); }
+  100% { background-position: 0%   50%; filter: hue-rotate(0deg); }
+}
+
+/* Particle dot float — each dot rises and fades */
+@keyframes particleFloat {
+  0%   { transform: translateY(0)   scale(1)   opacity(1); opacity: 0.9; }
+  70%  { transform: translateY(-60px) scale(1.4) opacity(0.5); opacity: 0.4; }
+  100% { transform: translateY(-90px) scale(0.5) opacity(0); opacity: 0;   }
+}
+
+/* Magnetic field warp — subtle text distortion while focused */
+@keyframes magneticWarp {
+  0%   { letter-spacing: normal; }
+  30%  { letter-spacing: 0.02em; }
+  60%  { letter-spacing: -0.01em; }
+  100% { letter-spacing: normal; }
+}
+
+/* Timer glow pulse for the digits */
+@keyframes timerGlow {
+  0%   { text-shadow: 0 0 10px rgba(0,240,255,0.3), 0 0 30px rgba(0,240,255,0.1); }
+  50%  { text-shadow: 0 0 20px rgba(0,240,255,0.8), 0 0 60px rgba(0,240,255,0.4), 0 0 100px rgba(0,240,255,0.15); }
+  100% { text-shadow: 0 0 10px rgba(0,240,255,0.3), 0 0 30px rgba(0,240,255,0.1); }
+}
+
+/* Paused amber glow */
+@keyframes timerGlowAmber {
+  0%   { text-shadow: 0 0 10px rgba(245,158,11,0.3), 0 0 30px rgba(245,158,11,0.1); }
+  50%  { text-shadow: 0 0 20px rgba(245,158,11,0.8), 0 0 60px rgba(245,158,11,0.4), 0 0 100px rgba(245,158,11,0.15); }
+  100% { text-shadow: 0 0 10px rgba(245,158,11,0.3), 0 0 30px rgba(245,158,11,0.1); }
+}
+
+/* Task focus tap entry — the card that was tapped flies into focus view */
+@keyframes taskFocusEntry {
+  0%   { opacity: 0; transform: scale(0.85) translateY(12px); }
+  60%  { opacity: 1; transform: scale(1.03) translateY(-2px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Button press ripple */
+@keyframes pressRipple {
+  0%   { transform: scale(0); opacity: 0.8; }
+  100% { transform: scale(3); opacity: 0; }
+}
+
+/* Waveform bar bounce (equalizer) */
+@keyframes eqBounce1 { 0%,100% { height: 8px;  } 50% { height: 22px; } }
+@keyframes eqBounce2 { 0%,100% { height: 18px; } 50% { height: 6px;  } }
+@keyframes eqBounce3 { 0%,100% { height: 12px; } 50% { height: 28px; } }
+@keyframes eqBounce4 { 0%,100% { height: 24px; } 50% { height: 10px; } }
+@keyframes eqBounce5 { 0%,100% { height: 16px; } 50% { height: 32px; } }
+@keyframes eqBounce6 { 0%,100% { height: 10px; } 50% { height: 20px; } }
+@keyframes eqBounce7 { 0%,100% { height: 20px; } 50% { height: 8px;  } }
+
+/* Chromatic aberration shimmer on the ring when running */
+@keyframes chromaShimmer {
+  0%   { filter: drop-shadow(0 0 8px rgba(0,240,255,0.8)) drop-shadow(-2px 0 4px rgba(255,0,128,0.4)); }
+  33%  { filter: drop-shadow(0 0 16px rgba(0,240,255,0.9)) drop-shadow(2px 0 6px rgba(0,255,128,0.5)); }
+  66%  { filter: drop-shadow(0 0 12px rgba(0,240,255,0.7)) drop-shadow(0 2px 4px rgba(128,0,255,0.4)); }
+  100% { filter: drop-shadow(0 0 8px rgba(0,240,255,0.8)) drop-shadow(-2px 0 4px rgba(255,0,128,0.4)); }
+}
+
+/* Class utilities */
+.animate-plasma-breath     { animation: plasmaBreath 5s ease-in-out infinite; }
+.animate-orbit             { animation: orbitSpin 6s linear infinite; }
+.animate-orbit-reverse     { animation: orbitSpinReverse 9s linear infinite; }
+.animate-orbit-slow        { animation: orbitSpin 14s linear infinite; }
+.animate-neon-ring         { animation: neonRing 1.8s ease-out infinite; }
+.animate-neon-ring-delay   { animation: neonRing 1.8s ease-out 0.6s infinite; }
+.animate-neon-ring-delay2  { animation: neonRing 1.8s ease-out 1.2s infinite; }
+.animate-aurora            { animation: auroraDrift 10s ease-in-out infinite; }
+.animate-timer-glow        { animation: timerGlow 2s ease-in-out infinite; }
+.animate-timer-glow-amber  { animation: timerGlowAmber 2s ease-in-out infinite; }
+.animate-task-entry        { animation: taskFocusEntry 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-chroma            { animation: chromaShimmer 3s ease-in-out infinite; }
+.animate-magnetic          { animation: magneticWarp 4s ease-in-out infinite; }
+
+.animate-eq1 { animation: eqBounce1 0.7s ease-in-out infinite; }
+.animate-eq2 { animation: eqBounce2 0.5s ease-in-out infinite; }
+.animate-eq3 { animation: eqBounce3 0.9s ease-in-out infinite; }
+.animate-eq4 { animation: eqBounce4 0.6s ease-in-out infinite; }
+.animate-eq5 { animation: eqBounce5 0.8s ease-in-out infinite; }
+.animate-eq6 { animation: eqBounce6 0.55s ease-in-out infinite; }
+.animate-eq7 { animation: eqBounce7 0.75s ease-in-out infinite; }
+
