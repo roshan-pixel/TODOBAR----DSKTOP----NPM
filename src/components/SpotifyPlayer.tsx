@@ -26,7 +26,7 @@ const YoutubeIcon: React.FC<{ className?: string }> = ({ className = 'w-3.5 h-3.
 export interface MediaItem {
   id: string
   source: 'radio' | 'spotify' | 'youtube'
-  type: 'stream' | 'track' | 'playlist' | 'video'
+  type: 'stream' | 'track' | 'playlist' | 'video' | 'album'
   title: string
   subtitle: string
   genreTag: string
@@ -111,15 +111,15 @@ const FULL_RADIO_STATIONS: MediaItem[] = [
 // ── 2. SPOTIFY CURATED FOCUS STATIONS (100% Full Continuous Audio, Zero 30s limits) ──
 const SPOTIFY_STATIONS: MediaItem[] = [
   {
-    id: 'spotify-lofi',
+    id: 'spotify-chill',
     source: 'radio',
     type: 'stream',
-    title: 'Chill Lofi Study Beats',
-    subtitle: 'Spotify Curated Lo-Fi • 100% Full Stream',
-    genreTag: 'SPOTIFY LO-FI',
+    title: 'Chill Hits Deep Flow',
+    subtitle: 'Spotify Curated Chill • 100% Full Stream',
+    genreTag: 'SPOTIFY CHILL',
     color: '#1DB954',
     streamUrl: 'https://streams.ilovemusic.de/iloveradio17.mp3',
-    sourceUrl: 'https://open.spotify.com/playlist/37i9dQZF1DX9RwfGbeGQYe',
+    sourceUrl: 'https://open.spotify.com/playlist/37i9dQZF1DX4WYpdgoIcn6',
   },
   {
     id: 'spotify-ambient',
@@ -238,8 +238,12 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
       if (saved) {
         const item = JSON.parse(saved)
         // If it was an old broken entry without streamUrl or embedUrl, fallback to focus radio
-        if (item.source === 'spotify' && !item.isCustom && !item.streamUrl && !item.embedUrl) {
-          return SPOTIFY_STATIONS[0]
+        if (
+          (item.source === 'spotify' && !item.isCustom && !item.streamUrl && !item.embedUrl) ||
+          item.id === '37i9dQZF1DX9RwfGbeGQYe' ||
+          (item.embedUrl && item.embedUrl.includes('37i9dQZF1DX9RwfGbeGQYe'))
+        ) {
+          return FULL_RADIO_STATIONS[0]
         }
         return item
       }
@@ -404,7 +408,7 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
       // Resolve full uninterrupted stream via YouTube so user gets 100% continuous playback
       try {
         const backendUrl = getBackendUrl()
-        const res = await fetch(`${backendUrl}/api/music/resolve?q=${encodeURIComponent(resolveQuery)}`)
+        const res = await fetch(`${backendUrl}/api/music/resolve?q=${encodeURIComponent(resolveQuery)}&type=${encodeURIComponent(parsed.type)}`)
         if (res.ok) {
           const data = await res.json()
           if (data.embedUrl) {
@@ -418,18 +422,19 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
       // KEY FIX: When YouTube resolution succeeds, use source='youtube' for FULL playback.
       // Only fall back to source='spotify' (30s preview embed) when resolution fails.
       const hasFullPlayback = Boolean(resolvedYoutubeUrl)
+      const isPlaylist = parsed.type === 'playlist' || parsed.type === 'album'
 
       const newItem: MediaItem = {
         id: `spotify-${parsed.id}`,
         source: hasFullPlayback ? 'youtube' : 'spotify',
-        type: hasFullPlayback ? 'video' : (parsed.type as any),
+        type: isPlaylist ? 'playlist' : (hasFullPlayback ? 'video' : 'track'),
         embedUrl: resolvedYoutubeUrl || parsed.embedUrl,
         spotifyEmbedUrl: parsed.embedUrl,
         title: finalTitle,
         subtitle: hasFullPlayback
-          ? `Full Song • ${authorName || 'Spotify'} • Zero Login`
+          ? (isPlaylist ? `Full Playlist • ${authorName || 'Spotify'} • Zero Login` : `Full Song • ${authorName || 'Spotify'} • Zero Login`)
           : `Spotify Preview • ${authorName || 'Track'}`,
-        genreTag: hasFullPlayback ? 'FULL SONG' : 'SPOTIFY PREVIEW',
+        genreTag: hasFullPlayback ? (isPlaylist ? 'FULL PLAYLIST' : 'FULL SONG') : 'SPOTIFY PREVIEW',
         color: hasFullPlayback ? '#00F0FF' : '#1DB954',
         sourceUrl: `https://open.spotify.com/${parsed.type}/${parsed.id}`,
         isCustom: true,
@@ -770,7 +775,7 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
         {/* B. SPOTIFY TRACK / PLAYLIST PLAYER (Supports Full Song No-Login & Official Widget) */}
         {currentMedia.source === 'spotify' && (
           <div className="w-full space-y-2">
-            <div className="w-full rounded-2xl overflow-hidden border border-[#1DB954]/30 bg-black/80 shadow-[0_8px_24px_rgba(0,0,0,0.5)] h-[152px]">
+            <div className={`w-full rounded-2xl overflow-hidden border border-[#1DB954]/30 bg-black/80 shadow-[0_8px_24px_rgba(0,0,0,0.5)] ${currentMedia.type === 'playlist' ? 'h-[260px]' : 'h-[152px]'}`}>
               {(() => {
                 const hasResolvedYoutube = Boolean(
                   currentMedia.embedUrl &&
@@ -787,7 +792,7 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
                     key={activeSrc}
                     src={activeSrc}
                     width="100%"
-                    height="152"
+                    height={currentMedia.type === 'playlist' ? '260' : '152'}
                     frameBorder="0"
                     allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                     loading="lazy"
@@ -831,10 +836,47 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
                   )}
                 {(!currentMedia.embedUrl ||
                   (!currentMedia.embedUrl.includes('youtube') && !currentMedia.embedUrl.includes('youtube-nocookie'))) && (
-                  <span className="flex items-center gap-1 text-emerald-400">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    <span>SPOTIFY OFFICIAL EMBED</span>
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="flex items-center gap-1 text-amber-400">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                      <span>SPOTIFY PREVIEW (30s)</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        setIsLoadingSearch(true)
+                        try {
+                          const backendUrl = getBackendUrl()
+                          const res = await fetch(`${backendUrl}/api/music/resolve?q=${encodeURIComponent(currentMedia.title)}&type=${encodeURIComponent(currentMedia.type || 'track')}`)
+                          if (res.ok) {
+                            const data = await res.json()
+                            if (data.embedUrl) {
+                              const isPl = currentMedia.type === 'playlist' || currentMedia.type === 'album'
+                              const updated: MediaItem = {
+                                ...currentMedia,
+                                source: 'youtube',
+                                type: isPl ? 'playlist' : 'video',
+                                embedUrl: data.embedUrl,
+                                subtitle: isPl ? 'Full Playlist • Zero Login' : 'Full Song • Zero Login',
+                                genreTag: isPl ? 'FULL PLAYLIST' : 'FULL SONG',
+                                color: '#00F0FF',
+                              }
+                              setCurrentMedia(updated)
+                            }
+                          }
+                        } catch (err) {
+                          console.warn('Resolve error:', err)
+                        } finally {
+                          setIsLoadingSearch(false)
+                        }
+                      }}
+                      className="px-2 py-0.5 rounded-md font-bold bg-gradient-to-r from-[#00F0FF]/25 to-[#1DB954]/25 text-[#00F0FF] border border-[#00F0FF]/40 shadow-[0_0_8px_rgba(0,240,255,0.3)] hover:brightness-110 active:scale-95 transition-all flex items-center gap-1"
+                      title="Convert Spotify Preview to 100% full song or playlist with zero logins and zero cuts"
+                    >
+                      <Zap className="w-2.5 h-2.5 fill-current" />
+                      <span>⚡ Play Full (No 30s Cut)</span>
+                    </button>
+                  </div>
                 )}
               </div>
 
@@ -854,12 +896,12 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
         {/* C. FULL SONG / YOUTUBE EMBED (Plays 100% full song without login or preview limits) */}
         {currentMedia.source === 'youtube' && currentMedia.embedUrl && (
           <div className="w-full space-y-1.5">
-            <div className="w-full rounded-2xl overflow-hidden border border-[#00F0FF]/20 bg-black/80 shadow-[0_8px_24px_rgba(0,0,0,0.5),0_0_24px_rgba(0,240,255,0.08)] h-[152px]">
+            <div className={`w-full rounded-2xl overflow-hidden border border-[#00F0FF]/20 bg-black/80 shadow-[0_8px_24px_rgba(0,0,0,0.5),0_0_24px_rgba(0,240,255,0.08)] ${currentMedia.type === 'playlist' ? 'h-[220px]' : 'h-[152px]'}`}>
               <iframe
                 key={currentMedia.embedUrl}
                 src={currentMedia.embedUrl}
                 width="100%"
-                height="152"
+                height={currentMedia.type === 'playlist' ? '220' : '152'}
                 frameBorder="0"
                 allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
                 loading="lazy"

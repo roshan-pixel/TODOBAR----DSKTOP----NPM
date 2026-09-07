@@ -20,3 +20,19 @@ services:
       - path: /assets/*
         name: Cache-Control
         value: public, max-age=31536000, immutable
+
+  - type: web
+    name: todobar-backend
+    runtime: python
+    branch: main
+    autoDeploy: true
+    buildCommand: pip install -r server/requirements.txt
+    startCommand: python server/app.py
+    envVars:
+      - key: PORT
+        value: 5050
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: VITE_GOOGLE_SHEET_ID
+        value: 1b9OitPeSDeBhtrx_bZ2ovrByLMXfmEJfcSP8S4PEAGI
+

@@ -164,6 +164,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         if path == '/api/music/resolve':
             qs = urllib.parse.parse_qs(parsed.query)
             q = qs.get('q', [''])[0]
+            media_type = qs.get('type', ['track'])[0].lower()
             if not q:
                 return self._send_json(400, {'error': 'q query parameter required'})
             try:
@@ -175,15 +176,29 @@ class RequestHandler(BaseHTTPRequestHandler):
                 })
                 with urllib.request.urlopen(req, timeout=8) as resp:
                     html = resp.read().decode('utf-8', errors='ignore')
-                    ids = list(dict.fromkeys(re.findall(r'"videoId":"([a-zA-Z0-9_-]{11})"', html)))
-                    if ids:
-                        video_id = ids[0]
+                    
+                    # If user requested a playlist or album, prioritize YouTube playlists
+                    if media_type in ('playlist', 'album'):
+                        playlist_ids = list(dict.fromkeys(re.findall(r'"playlistId":"([a-zA-Z0-9_-]{18,40})"', html)))
+                        if playlist_ids:
+                            pid = playlist_ids[0]
+                            return self._send_json(200, {
+                                'success': True,
+                                'isPlaylist': True,
+                                'playlistId': pid,
+                                'embedUrl': f"https://www.youtube-nocookie.com/embed/videoseries?list={pid}&autoplay=1&playsinline=1"
+                            })
+
+                    video_ids = list(dict.fromkeys(re.findall(r'"videoId":"([a-zA-Z0-9_-]{11})"', html)))
+                    if video_ids:
+                        video_id = video_ids[0]
                         return self._send_json(200, {
                             'success': True,
+                            'isPlaylist': False,
                             'videoId': video_id,
                             'embedUrl': f"https://www.youtube-nocookie.com/embed/{video_id}?autoplay=1&playsinline=1"
                         })
-                return self._send_json(404, {'error': 'No video found for query'})
+                return self._send_json(404, {'error': 'No audio found for query'})
             except Exception as e:
                 return self._send_json(500, {'error': str(e)})
 
