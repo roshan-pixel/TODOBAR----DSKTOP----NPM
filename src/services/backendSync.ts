@@ -30,13 +30,13 @@ export const getBackendUrl = (): string => {
     }
     // When running on HTTPS (e.g. Render), route to HTTPS tunnel to avoid Mixed Content errors
     if (isHttps) {
-      return 'https://plain-ends-appear.loca.lt'
+      return 'https://todobar-tunnel-live.loca.lt'
     }
   }
   if ((import.meta as any).env?.VITE_BACKEND_API_URL) {
     return (import.meta as any).env.VITE_BACKEND_API_URL
   }
-  return 'https://plain-ends-appear.loca.lt'
+  return 'https://todobar-tunnel-live.loca.lt'
 }
 
 export interface BackendHealthResponse {

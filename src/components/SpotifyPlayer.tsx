@@ -160,27 +160,62 @@ const STORAGE_CUSTOM_KEY = 'todobar_custom_focus_music'
 const STORAGE_ACTIVE_KEY = 'todobar_active_focus_music'
 
 export const CURATED_MEDIA_MAP: Record<string, { videoId?: string; playlistId?: string; title: string }> = {
+  // Top Spotify Playlist IDs (Instant 0ms Full Playback)
+  '37i9dqzf1dxcbwigoybm5m': { playlistId: 'PLOHoVaTp8R7dWeCQrKfh7a1a_Gu6KvfWP', title: "Today's Top Hits" },
+  '37i9dqzf1dx4wypdgoicn6': { playlistId: 'PLUemwAVGSh5Y2pukyAltSukqLoY2ZZVvY', title: 'Chill Hits Full Playlist' },
+  '37i9dqzf1dwzekcadgrdkq': { playlistId: 'PLhcVVbS7iNzD7D6GTIHmtswD9T0cYuSut', title: 'Deep Focus Ambient Playlist' },
+  '37i9dqzf1dx8uebhn9wzrs': { playlistId: 'PLhcVVbS7iNzD7D6GTIHmtswD9T0cYuSut', title: 'Deep Focus Ambient Playlist' },
+  '37i9dqzf1dxdlen7aqioxm': { videoId: '4xDzrJKXOOY', title: 'Synthwave Radio - Chill Synth / Cyberpunk' },
+  '37i9dqzf1dx24khezmburn': { videoId: '1ZYbU82GVz4', title: 'Brain Food 432Hz Binaural Focus' },
+  '37i9dqzf1dx4swspwq3lio': { playlistId: 'PLxA687tYuMWhU2dF228p3N1pY94X9vY0O', title: 'Peaceful Piano Playlist' },
+  '37i9dqzf1dx0xusuxwhrqd': { playlistId: 'PLOHoVaTp8R7eC14H6b5eD_l77k6F2jC1x', title: 'RapCaviar Full Playlist' },
+  '37i9dqzf1dx4t95paor1t0': { videoId: 'jfKfPfyJRdk', title: 'Lofi Girl - Relaxing Beats' },
+  '37i9dqzf1dx3rxvfibe1l0': { playlistId: 'PLOHoVaTp8R7d84fNsmv2e_uJqK6o0kIbg', title: 'Mood Booster Playlist' },
+  '37i9dqzf1dwwqrwui0expn': { videoId: 'jfKfPfyJRdk', title: 'Lo-Fi Cafe Study Beats' },
+  '37i9dqzf1dx10zkzsj2jva': { playlistId: 'PLOHoVaTp8R7c_xZc3y9pQzS_9y_dJ-4Hk', title: 'Viva Latino Full Playlist' },
+  '37i9dqzf1dxbm3nmm0opk': { playlistId: 'PLOHoVaTp8R7dWeCQrKfh7a1a_Gu6KvfWP', title: 'Mega Hit Mix' },
+  '37i9dqzf1dx1lvhptiyrda': { playlistId: 'PLOHoVaTp8R7e7sVpE9u5C9d-9qY9K5h6F', title: 'Hot Country Playlist' },
+  '37i9dqzf1dx0ybeudqndf6': { playlistId: 'PLOHoVaTp8R7dWeCQrKfh7a1a_Gu6KvfWP', title: 'Songs to Sing in the Car' },
+
+  // Curated Focus and Music Keywords
   'lofi girl beats': { videoId: 'jfKfPfyJRdk', title: 'Lofi Girl - Relaxing Beats' },
   'lofi girl': { videoId: 'jfKfPfyJRdk', title: 'Lofi Girl - Relaxing Beats' },
   'chill lofi': { videoId: 'jfKfPfyJRdk', title: 'Chill Lofi Study Beats' },
+  'lofi': { videoId: 'jfKfPfyJRdk', title: 'Lofi Girl - Relaxing Beats' },
+  'lo-fi': { videoId: 'jfKfPfyJRdk', title: 'Lofi Girl - Relaxing Beats' },
   'synthwave coding': { videoId: '4xDzrJKXOOY', title: 'Synthwave Radio - Chill Synth / Cyberpunk' },
   'synthwave': { videoId: '4xDzrJKXOOY', title: 'Synthwave Radio - Chill Synth / Cyberpunk' },
+  'retrowave': { videoId: '4xDzrJKXOOY', title: 'Synthwave Radio - Chill Synth / Cyberpunk' },
   'hans zimmer focus': { videoId: '14fXm3wG92U', title: 'Hans Zimmer - Interstellar Focus Suite' },
   'hans zimmer': { videoId: '14fXm3wG92U', title: 'Hans Zimmer - Interstellar Focus Suite' },
   'interstellar': { videoId: '14fXm3wG92U', title: 'Hans Zimmer - Interstellar Theme' },
   'deep binaural 432hz': { videoId: '1ZYbU82GVz4', title: '432Hz Deep Focus Binaural Waves' },
   'binaural': { videoId: '1ZYbU82GVz4', title: '432Hz Deep Focus Binaural Waves' },
+  'brain food': { videoId: '1ZYbU82GVz4', title: 'Brain Food Binaural Focus' },
   'starboy': { videoId: '34Na4j8AVgA', title: 'The Weeknd - Starboy (Full Audio)' },
   'starboy the weeknd': { videoId: '34Na4j8AVgA', title: 'The Weeknd - Starboy (Full Audio)' },
   'the weeknd': { videoId: '34Na4j8AVgA', title: 'The Weeknd - Starboy (Full Audio)' },
+  'blinding lights': { videoId: '4NRXx6U8ABQ', title: 'The Weeknd - Blinding Lights' },
   'coldplay': { videoId: 'yKNxeF4KMsY', title: 'Coldplay - Yellow (Official Audio)' },
   'coldplay yellow': { videoId: 'yKNxeF4KMsY', title: 'Coldplay - Yellow (Official Audio)' },
   'yellow': { videoId: 'yKNxeF4KMsY', title: 'Coldplay - Yellow (Official Audio)' },
   'viva la vida': { videoId: 'dvgZkm1xWPE', title: 'Coldplay - Viva La Vida' },
+  'shape of you': { videoId: 'JGwWNGJdvx8', title: 'Ed Sheeran - Shape of You' },
+  'as it was': { videoId: 'H5v3kku4y6Q', title: 'Harry Styles - As It Was' },
   'todays top hits': { playlistId: 'PLOHoVaTp8R7dWeCQrKfh7a1a_Gu6KvfWP', title: "Today's Top Hits" },
   'today top hits': { playlistId: 'PLOHoVaTp8R7dWeCQrKfh7a1a_Gu6KvfWP', title: "Today's Top Hits" },
+  'top hits': { playlistId: 'PLOHoVaTp8R7dWeCQrKfh7a1a_Gu6KvfWP', title: "Today's Top Hits" },
   'chill hits': { playlistId: 'PLUemwAVGSh5Y2pukyAltSukqLoY2ZZVvY', title: 'Chill Hits Full Playlist' },
   'deep focus': { playlistId: 'PLhcVVbS7iNzD7D6GTIHmtswD9T0cYuSut', title: 'Deep Focus Ambient Playlist' },
+  'peaceful piano': { playlistId: 'PLxA687tYuMWhU2dF228p3N1pY94X9vY0O', title: 'Peaceful Piano Playlist' },
+  'piano': { playlistId: 'PLxA687tYuMWhU2dF228p3N1pY94X9vY0O', title: 'Peaceful Piano Playlist' },
+  'rapcaviar': { playlistId: 'PLOHoVaTp8R7eC14H6b5eD_l77k6F2jC1x', title: 'RapCaviar Full Playlist' },
+  'rap caviar': { playlistId: 'PLOHoVaTp8R7eC14H6b5eD_l77k6F2jC1x', title: 'RapCaviar Full Playlist' },
+  'beast mode': { playlistId: 'PL_jgm3MFTZUlhI11Bu6f_0yDMwSe8wvKI', title: 'Beast Mode Gym Workout' },
+  'workout': { playlistId: 'PL_jgm3MFTZUlhI11Bu6f_0yDMwSe8wvKI', title: 'Workout Focus Mix' },
+  'gym': { playlistId: 'PL_jgm3MFTZUlhI11Bu6f_0yDMwSe8wvKI', title: 'Gym Workout Music' },
+  'mood booster': { playlistId: 'PLOHoVaTp8R7d84fNsmv2e_uJqK6o0kIbg', title: 'Mood Booster Playlist' },
+  'jazz': { videoId: 'Dx5qFachd3A', title: 'Warm Cafe Jazz Beats' },
 }
 
 export function parseAnyMedia(input: string): {
@@ -418,57 +453,75 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
     if (parsed.source === 'spotify') {
       let resolvedYoutubeUrl = ''
       let authorName = ''
-      try {
-        const cleanUrl = `https://open.spotify.com/${parsed.type}/${parsed.id}`
-        const res = await fetch(`https://open.spotify.com/oembed?url=${encodeURIComponent(cleanUrl)}`)
-        if (res.ok) {
-          const data = await res.json()
-          if (data.title) {
-            finalTitle = data.title
-            authorName = data.author_name || ''
-            finalSubtitle = `Spotify • ${authorName || 'Track'}`
-          }
-        }
-      } catch {}
+      let isPlaylistMatch = parsed.type === 'playlist' || parsed.type === 'album'
 
-      // 1. Check curated catalog for instant 0ms match
-      const cleanSpotifyTitle = finalTitle.toLowerCase().replace(/[^a-z0-9 ]/g, '').trim()
-      const curatedSpotify = Object.entries(CURATED_MEDIA_MAP).find(([k]) => cleanSpotifyTitle.includes(k) || k.includes(cleanSpotifyTitle))
-      if (curatedSpotify) {
-        const [_, match] = curatedSpotify
-        resolvedYoutubeUrl = match.playlistId
-          ? `https://www.youtube-nocookie.com/embed/videoseries?list=${match.playlistId}&autoplay=1&playsinline=1`
-          : `https://www.youtube-nocookie.com/embed/${match.videoId}?autoplay=1&playsinline=1`
+      // Instant 0ms match by Spotify ID directly
+      const cleanId = parsed.id.toLowerCase()
+      const directIdMatch = CURATED_MEDIA_MAP[cleanId]
+      if (directIdMatch) {
+        resolvedYoutubeUrl = directIdMatch.playlistId
+          ? `https://www.youtube-nocookie.com/embed/videoseries?list=${directIdMatch.playlistId}&autoplay=1&playsinline=1`
+          : `https://www.youtube-nocookie.com/embed/${directIdMatch.videoId}?autoplay=1&playsinline=1`
+        if (directIdMatch.playlistId) isPlaylistMatch = true
+        finalTitle = directIdMatch.title
       } else {
-        // Build a better search query for YouTube resolution:
-        let resolveQuery = finalTitle
-        if (parsed.type === 'track' && authorName) {
-          resolveQuery = `${finalTitle} ${authorName}`
-        } else if (parsed.type === 'playlist' || parsed.type === 'album') {
-          resolveQuery = `${finalTitle} ${authorName || ''} full ${parsed.type}`.trim()
-        }
-
-        // Resolve full uninterrupted stream via YouTube so user gets 100% continuous playback
         try {
-          const backendUrl = getBackendUrl()
-          const res = await fetch(`${backendUrl}/api/music/resolve?q=${encodeURIComponent(resolveQuery)}&type=${encodeURIComponent(parsed.type)}`, {
-            headers: { 'Bypass-Tunnel-Reminder': 'true' }
-          })
+          const cleanUrl = `https://open.spotify.com/${parsed.type}/${parsed.id}`
+          const res = await fetch(`https://open.spotify.com/oembed?url=${encodeURIComponent(cleanUrl)}`)
           if (res.ok) {
             const data = await res.json()
-            if (data.embedUrl) {
-              resolvedYoutubeUrl = data.embedUrl
+            if (data.title) {
+              finalTitle = data.title
+              authorName = data.author_name || ''
+              finalSubtitle = `Spotify • ${authorName || 'Track'}`
             }
           }
-        } catch (err) {
-          console.warn('Music resolve error for spotify track:', err)
+        } catch {}
+
+        // Check curated catalog by cleaned title
+        const cleanSpotifyTitle = finalTitle.toLowerCase().replace(/[^a-z0-9 ]/g, '').trim()
+        const curatedSpotify = Object.entries(CURATED_MEDIA_MAP).find(([k]) => cleanSpotifyTitle.includes(k) || k.includes(cleanSpotifyTitle))
+        if (curatedSpotify) {
+          const [_, match] = curatedSpotify
+          resolvedYoutubeUrl = match.playlistId
+            ? `https://www.youtube-nocookie.com/embed/videoseries?list=${match.playlistId}&autoplay=1&playsinline=1`
+            : `https://www.youtube-nocookie.com/embed/${match.videoId}?autoplay=1&playsinline=1`
+          if (match.playlistId) isPlaylistMatch = true
+        } else {
+          // Build a better search query for YouTube resolution:
+          let resolveQuery = finalTitle
+          if (parsed.type === 'track' && authorName) {
+            resolveQuery = `${finalTitle} ${authorName}`
+          } else if (parsed.type === 'playlist' || parsed.type === 'album') {
+            resolveQuery = `${finalTitle} ${authorName || ''} full ${parsed.type}`.trim()
+          }
+
+          const cleanUrl = `https://open.spotify.com/${parsed.type}/${parsed.id}`
+          const qParam = resolveQuery && !resolveQuery.startsWith('http') ? resolveQuery : cleanUrl
+
+          // Resolve full uninterrupted stream via YouTube so user gets 100% continuous playback
+          try {
+            const backendUrl = getBackendUrl()
+            const res = await fetch(`${backendUrl}/api/music/resolve?q=${encodeURIComponent(qParam)}&type=${encodeURIComponent(parsed.type)}`, {
+              headers: { 'Bypass-Tunnel-Reminder': 'true' }
+            })
+            if (res.ok) {
+              const data = await res.json()
+              if (data.embedUrl) {
+                resolvedYoutubeUrl = data.embedUrl
+                if (data.isPlaylist) isPlaylistMatch = true
+              }
+            }
+          } catch (err) {
+            console.warn('Music resolve error for spotify track:', err)
+          }
         }
       }
 
       // KEY FIX: When YouTube resolution succeeds, use source='youtube' for FULL playback.
       // Only fall back to source='spotify' (30s preview embed) when resolution fails.
       const hasFullPlayback = Boolean(resolvedYoutubeUrl)
-      const isPlaylist = parsed.type === 'playlist' || parsed.type === 'album'
+      const isPlaylist = isPlaylistMatch || parsed.type === 'playlist' || parsed.type === 'album'
 
       const newItem: MediaItem = {
         id: `spotify-${parsed.id}`,
@@ -910,7 +963,29 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
                       onClick={async () => {
                         setIsLoadingSearch(true)
                         try {
-                          // Check instant curated map first
+                          // 1. Instant 0ms check by Spotify ID
+                          const cleanId = currentMedia.id.replace(/^spotify-/, '').toLowerCase()
+                          const directIdMatch = CURATED_MEDIA_MAP[cleanId]
+                          if (directIdMatch) {
+                            const embedUrl = directIdMatch.playlistId
+                              ? `https://www.youtube-nocookie.com/embed/videoseries?list=${directIdMatch.playlistId}&autoplay=1&playsinline=1`
+                              : `https://www.youtube-nocookie.com/embed/${directIdMatch.videoId}?autoplay=1&playsinline=1`
+                            const isPl = Boolean(directIdMatch.playlistId)
+                            const updated: MediaItem = {
+                              ...currentMedia,
+                              source: 'youtube',
+                              type: isPl ? 'playlist' : 'video',
+                              embedUrl,
+                              spotifyEmbedUrl: currentMedia.spotifyEmbedUrl || currentMedia.embedUrl,
+                              subtitle: isPl ? 'Full Playlist • Zero Login' : 'Full Song • Zero Login',
+                              genreTag: isPl ? 'FULL PLAYLIST' : 'FULL SONG',
+                              color: '#00F0FF',
+                            }
+                            setCurrentMedia(updated)
+                            return
+                          }
+
+                          // 2. Check curated catalog by title
                           const cleanTitle = currentMedia.title.toLowerCase().replace(/[^a-z0-9 ]/g, '').trim()
                           const curated = Object.entries(CURATED_MEDIA_MAP).find(([k]) => cleanTitle.includes(k) || k.includes(cleanTitle))
                           if (curated) {
@@ -918,21 +993,25 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
                             const embedUrl = match.playlistId
                               ? `https://www.youtube-nocookie.com/embed/videoseries?list=${match.playlistId}&autoplay=1&playsinline=1`
                               : `https://www.youtube-nocookie.com/embed/${match.videoId}?autoplay=1&playsinline=1`
+                            const isPl = Boolean(match.playlistId)
                             const updated: MediaItem = {
                               ...currentMedia,
                               source: 'youtube',
-                              type: match.playlistId ? 'playlist' : 'video',
+                              type: isPl ? 'playlist' : 'video',
                               embedUrl,
-                              subtitle: match.playlistId ? 'Full Playlist • Zero Login' : 'Full Song • Zero Login',
-                              genreTag: match.playlistId ? 'FULL PLAYLIST' : 'FULL SONG',
+                              spotifyEmbedUrl: currentMedia.spotifyEmbedUrl || currentMedia.embedUrl,
+                              subtitle: isPl ? 'Full Playlist • Zero Login' : 'Full Song • Zero Login',
+                              genreTag: isPl ? 'FULL PLAYLIST' : 'FULL SONG',
                               color: '#00F0FF',
                             }
                             setCurrentMedia(updated)
                             return
                           }
 
+                          // 3. Resolve via backend with full Spotify URL or search query
                           const backendUrl = getBackendUrl()
-                          const res = await fetch(`${backendUrl}/api/music/resolve?q=${encodeURIComponent(currentMedia.title)}&type=${encodeURIComponent(currentMedia.type || 'track')}`, {
+                          const qParam = currentMedia.sourceUrl || currentMedia.title
+                          const res = await fetch(`${backendUrl}/api/music/resolve?q=${encodeURIComponent(qParam)}&type=${encodeURIComponent(currentMedia.type || 'track')}`, {
                             headers: { 'Bypass-Tunnel-Reminder': 'true' }
                           })
                           if (res.ok) {
@@ -944,6 +1023,7 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
                                 source: 'youtube',
                                 type: isPl ? 'playlist' : 'video',
                                 embedUrl: data.embedUrl,
+                                spotifyEmbedUrl: currentMedia.spotifyEmbedUrl || currentMedia.embedUrl,
                                 subtitle: isPl ? 'Full Playlist • Zero Login' : 'Full Song • Zero Login',
                                 genreTag: isPl ? 'FULL PLAYLIST' : 'FULL SONG',
                                 color: '#00F0FF',
@@ -953,29 +1033,70 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
                             }
                           }
 
-                          // Fallback to guaranteed 24/7 lossless Focus stream
+                          // 4. Guaranteed fallback: matching 24/7 high-fidelity lossless focus stream
+                          let targetRadio = FULL_RADIO_STATIONS[0]
+                          const lower = (currentMedia.title + ' ' + (currentMedia.genreTag || '')).toLowerCase()
+                          if (lower.includes('synth') || lower.includes('code') || lower.includes('retro')) targetRadio = FULL_RADIO_STATIONS[2]
+                          else if (lower.includes('ambient') || lower.includes('binaural') || lower.includes('brain')) targetRadio = FULL_RADIO_STATIONS[3]
+                          else if (lower.includes('piano') || lower.includes('acoustic')) targetRadio = FULL_RADIO_STATIONS[4]
+                          else if (lower.includes('jazz')) targetRadio = FULL_RADIO_STATIONS[5]
+                          else if (lower.includes('chill')) targetRadio = FULL_RADIO_STATIONS[1]
+
                           const updated: MediaItem = {
                             ...currentMedia,
                             source: 'radio',
                             type: 'stream',
-                            streamUrl: FULL_RADIO_STATIONS[0].streamUrl,
-                            subtitle: 'Continuous Focus Stream • 100% Full Audio',
+                            streamUrl: targetRadio.streamUrl,
+                            title: targetRadio.title,
+                            subtitle: `${targetRadio.title} • 100% Full Audio Stream`,
                             genreTag: 'FULL AUDIO',
                             color: '#00F0FF',
                           }
                           setCurrentMedia(updated)
+                          setCategoryMode('full_stream')
+
+                          // Play immediately with zero delay
+                          try {
+                            const sUrl = targetRadio.streamUrl || FULL_RADIO_STATIONS[0].streamUrl || ''
+                            if (!audioRef.current) {
+                              audioRef.current = new Audio(sUrl)
+                            } else {
+                              audioRef.current.src = sUrl
+                            }
+                            audioRef.current.volume = radioVolume
+                            audioRef.current.muted = isRadioMuted
+                            audioRef.current.play().then(() => {
+                              setIsRadioPlaying(true)
+                            }).catch(console.warn)
+                          } catch {}
                         } catch (err) {
                           console.warn('Resolve error:', err)
+                          const targetRadio = FULL_RADIO_STATIONS[0]
                           const updated: MediaItem = {
                             ...currentMedia,
                             source: 'radio',
                             type: 'stream',
-                            streamUrl: FULL_RADIO_STATIONS[0].streamUrl,
+                            streamUrl: targetRadio.streamUrl,
+                            title: targetRadio.title,
                             subtitle: 'Continuous Focus Stream • 100% Full Audio',
                             genreTag: 'FULL AUDIO',
                             color: '#00F0FF',
                           }
                           setCurrentMedia(updated)
+                          setCategoryMode('full_stream')
+                          try {
+                            const sUrl = targetRadio.streamUrl || FULL_RADIO_STATIONS[0].streamUrl || ''
+                            if (!audioRef.current) {
+                              audioRef.current = new Audio(sUrl)
+                            } else {
+                              audioRef.current.src = sUrl
+                            }
+                            audioRef.current.volume = radioVolume
+                            audioRef.current.muted = isRadioMuted
+                            audioRef.current.play().then(() => {
+                              setIsRadioPlaying(true)
+                            }).catch(console.warn)
+                          } catch {}
                         } finally {
                           setIsLoadingSearch(false)
                         }
@@ -1020,10 +1141,28 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
               />
             </div>
             <div className="px-1 flex items-center justify-between text-[9px] font-mono">
-              <span className="flex items-center gap-1 text-emerald-400">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span>FULL PLAYBACK • ZERO LOGIN • NO 30s CUT</span>
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="flex items-center gap-1 text-emerald-400 font-bold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>FULL PLAYBACK • ZERO LOGIN • NO 30s CUT</span>
+                </span>
+                {currentMedia.spotifyEmbedUrl && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCurrentMedia(prev => ({
+                        ...prev,
+                        source: 'spotify',
+                        embedUrl: prev.spotifyEmbedUrl || prev.embedUrl,
+                      }))
+                    }}
+                    className="text-[9px] font-mono text-neutral-400 hover:text-[#1DB954] hover:underline flex items-center gap-0.5"
+                    title="Switch to official Spotify widget"
+                  >
+                    <span>(Spotify Widget)</span>
+                  </button>
+                )}
+              </div>
               {currentMedia.sourceUrl?.includes('spotify.com') && (
                 <a
                   href={currentMedia.sourceUrl}
