@@ -8,6 +8,7 @@ import {
   Zap,
   Target,
   CheckCircle2,
+  Cloud,
 } from 'lucide-react'
 import { TodayTask } from '../types'
 import { SpotifyPlayer } from './SpotifyPlayer'
@@ -35,6 +36,8 @@ interface FocusModeViewProps {
   onSelectTask?: (taskId: string) => void
   onToggleTask?: (id: string) => void
   justStartedFromTask?: boolean
+  isCloudSynced?: boolean
+  syncStatus?: 'idle' | 'syncing' | 'restored' | 'error'
 }
 
 
@@ -70,6 +73,8 @@ export const FocusModeView: React.FC<FocusModeViewProps> = ({
   onSelectTask,
   onToggleTask,
   justStartedFromTask = false,
+  isCloudSynced = false,
+  syncStatus = 'idle',
 }) => {
 
   const mins = Math.floor(secondsRemaining / 60)
@@ -172,16 +177,27 @@ export const FocusModeView: React.FC<FocusModeViewProps> = ({
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>TODAY</span>
           </button>
-          <span
-            className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono tracking-wider uppercase border transition-all ${
-              isRunning
-                ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30 shadow-[0_0_12px_rgba(16,185,129,0.3)]'
-                : 'bg-amber-500/20 text-amber-300 border-amber-500/30'
-            }`}
-          >
-            <span className={`w-1.5 h-1.5 rounded-full ${isRunning ? 'bg-emerald-400 animate-ping' : 'bg-amber-400'}`} />
-            {isRunning ? 'FLOW STATE • ACTIVE' : 'SESSION PAUSED'}
-          </span>
+          <div className="flex items-center gap-1.5">
+            {isCloudSynced && (
+              <span
+                className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] font-mono tracking-wider bg-cyan-950/60 text-[#00F0FF] border border-cyan-500/30 shadow-[0_0_10px_rgba(0,240,255,0.2)]"
+                title="Synced with Google Sheets backend"
+              >
+                <Cloud className={`w-2.5 h-2.5 ${syncStatus === 'syncing' ? 'animate-bounce' : ''}`} />
+                <span>{syncStatus === 'restored' ? 'RESTORED' : syncStatus === 'syncing' ? 'SYNCING' : 'SHEETS SYNC'}</span>
+              </span>
+            )}
+            <span
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono tracking-wider uppercase border transition-all ${
+                isRunning
+                  ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30 shadow-[0_0_12px_rgba(16,185,129,0.3)]'
+                  : 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+              }`}
+            >
+              <span className={`w-1.5 h-1.5 rounded-full ${isRunning ? 'bg-emerald-400 animate-ping' : 'bg-amber-400'}`} />
+              {isRunning ? 'FLOW STATE' : 'PAUSED'}
+            </span>
+          </div>
         </div>
 
         {/* Task Card */}

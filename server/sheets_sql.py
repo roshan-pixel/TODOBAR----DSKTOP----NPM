@@ -53,10 +53,20 @@ class SheetsSQLEngine:
                 mode TEXT
             )
         ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS timer_state (
+                device_id TEXT PRIMARY KEY,
+                seconds_remaining INTEGER,
+                total_seconds INTEGER,
+                is_running INTEGER DEFAULT 0,
+                task_id TEXT,
+                updated_at TEXT
+            )
+        ''')
         self.db.commit()
 
     def ensure_sheet_tabs(self):
-        """Ensure 'tasks' and 'focus_sessions' sheets exist in Google Spreadsheet"""
+        """Ensure 'tasks', 'focus_sessions', and 'timer_state' sheets exist"""
         meta = self.service.spreadsheets().get(spreadsheetId=self.spreadsheet_id).execute()
         existing_sheets = [s['properties']['title'] for s in meta.get('sheets', [])]
         
@@ -65,6 +75,8 @@ class SheetsSQLEngine:
             requests.append({'addSheet': {'properties': {'title': 'tasks'}}})
         if 'focus_sessions' not in existing_sheets:
             requests.append({'addSheet': {'properties': {'title': 'focus_sessions'}}})
+        if 'timer_state' not in existing_sheets:
+            requests.append({'addSheet': {'properties': {'title': 'timer_state'}}})
             
         if requests:
             self.service.spreadsheets().batchUpdate(
@@ -75,6 +87,7 @@ class SheetsSQLEngine:
         # Write headers if empty
         self._ensure_headers('tasks', ['id', 'title', 'notes', 'priority', 'category', 'due_date', 'completed', 'created_at', 'updated_at'])
         self._ensure_headers('focus_sessions', ['id', 'task_id', 'duration_minutes', 'started_at', 'completed_at', 'mode'])
+        self._ensure_headers('timer_state', ['device_id', 'seconds_remaining', 'total_seconds', 'is_running', 'task_id', 'updated_at'])
 
     def _ensure_headers(self, sheet_name: str, headers: List[str]):
         res = self.service.spreadsheets().values().get(
@@ -172,3 +185,84 @@ class SheetsSQLEngine:
         else:
             rows = cursor.fetchall()
             return [dict(r) for r in rows]
+
+    # ── Timer State Sync ──────────────────────────────────────────────────────
+
+    def get_latest_timer_state(self) -> Optional[Dict[str, Any]]:
+        """Read the most recently updated timer row from Google Sheets directly."""
+        try:
+            res = self.service.spreadsheets().values().get(
+                spreadsheetId=self.spreadsheet_id,
+                range='timer_state!A1:F1000'
+            ).execute()
+            rows = res.get('values') or []
+            if len(rows) < 2:
+                return None
+            headers = [h.strip().lower() for h in rows[0]]
+            records = [dict(zip(headers, row + [''] * (len(headers) - len(row)))) for row in rows[1:]]
+            # Return newest by updated_at
+            records.sort(key=lambda r: r.get('updated_at', ''), reverse=True)
+            r = records[0]
+            return {
+                'device_id':        r.get('device_id', ''),
+                'seconds_remaining': int(r.get('seconds_remaining', 0) or 0),
+                'total_seconds':     int(r.get('total_seconds', 2700) or 2700),
+                'is_running':        str(r.get('is_running', '0')).lower() in ('1', 'true'),
+                'task_id':           r.get('task_id', ''),
+                'updated_at':        r.get('updated_at', ''),
+            }
+        except Exception as e:
+            print(f'[Timer] get_latest_timer_state error: {e}')
+            return None
+
+    def save_timer_state(self, device_id: str, seconds_remaining: int,
+                         total_seconds: int, is_running: bool,
+                         task_id: str, updated_at: str):
+        """Upsert this device's timer row in Google Sheets."""
+        try:
+            # Read current rows
+            res = self.service.spreadsheets().values().get(
+                spreadsheetId=self.spreadsheet_id,
+                range='timer_state!A1:F1000'
+            ).execute()
+            rows = res.get('values') or []
+
+            headers = ['device_id', 'seconds_remaining', 'total_seconds', 'is_running', 'task_id', 'updated_at']
+            new_row = [device_id, str(seconds_remaining), str(total_seconds),
+                       '1' if is_running else '0', task_id, updated_at]
+
+            if not rows:
+                # Write headers + first row
+                self.service.spreadsheets().values().update(
+                    spreadsheetId=self.spreadsheet_id,
+                    range='timer_state!A1',
+                    valueInputOption='RAW',
+                    body={'values': [headers, new_row]}
+                ).execute()
+                return
+
+            # Find existing row index for this device_id (column A)
+            row_index = None
+            for i, row in enumerate(rows[1:], start=2):
+                if row and row[0] == device_id:
+                    row_index = i
+                    break
+
+            if row_index is not None:
+                self.service.spreadsheets().values().update(
+                    spreadsheetId=self.spreadsheet_id,
+                    range=f'timer_state!A{row_index}',
+                    valueInputOption='RAW',
+                    body={'values': [new_row]}
+                ).execute()
+            else:
+                # Append new row
+                self.service.spreadsheets().values().append(
+                    spreadsheetId=self.spreadsheet_id,
+                    range='timer_state!A1',
+                    valueInputOption='RAW',
+                    insertDataOption='INSERT_ROWS',
+                    body={'values': [new_row]}
+                ).execute()
+        except Exception as e:
+            print(f'[Timer] save_timer_state error: {e}')

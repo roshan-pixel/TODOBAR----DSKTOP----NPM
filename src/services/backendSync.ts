@@ -26,6 +26,10 @@ export const getBackendUrl = (): string => {
     if (host === 'localhost' || host === '127.0.0.1') {
       return 'http://127.0.0.1:5050'
     }
+    // If accessing via local network IP on mobile/other device
+    if (/^(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)/.test(host)) {
+      return `http://${host}:5050`
+    }
   }
   return 'https://todobar-backend.onrender.com'
 }

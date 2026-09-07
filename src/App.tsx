@@ -12,6 +12,7 @@ import { GlobalSearchModal } from './components/GlobalSearchModal'
 import { AccountProfileView } from './components/AccountProfileView'
 import { useTodayTasks } from './hooks/useTodayTasks'
 import { useFocusTimer } from './hooks/useFocusTimer'
+import { useTimerSync } from './hooks/useTimerSync'
 
 export type PrototypeScreen = 'today' | 'focus' | 'completed' | 'calendar' | 'account'
 
@@ -116,6 +117,19 @@ export function App() {
     ?? activeTasks.find(t => t.priority === 'focus')
     ?? activeTasks[0]
 
+  // Cross-device Timer Sync via Google Sheets Backend
+  const timerSync = useTimerSync({
+    secondsRemaining: timer.secondsRemaining,
+    totalSeconds: timer.totalSeconds,
+    isRunning: timer.isRunning,
+    taskId: focusTask?.id,
+    onRestore: ({ secondsRemaining, totalSeconds, isRunning, taskId }) => {
+      timer.restoreTimerState(secondsRemaining, totalSeconds, isRunning)
+      if (taskId) {
+        setFocusedTaskId(taskId)
+      }
+    },
+  })
 
   return (
     <IPhone16ProMaxFrame
@@ -169,6 +183,8 @@ export function App() {
             onSelectTask={(id) => setFocusedTaskId(id)}
             onToggleTask={toggleTask}
             justStartedFromTask={justStartedFromTask}
+            isCloudSynced={timerSync.isSynced}
+            syncStatus={timerSync.syncStatus}
           />
         )}
 

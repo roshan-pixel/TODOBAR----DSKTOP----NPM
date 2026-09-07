@@ -96,6 +96,18 @@ class RequestHandler(BaseHTTPRequestHandler):
             except Exception as e:
                 return self._send_json(500, {'error': str(e)})
 
+        if path == '/api/timer':
+            eng = get_engine()
+            if not eng:
+                return self._send_json(503, {'error': 'Backend not connected.'})
+            try:
+                state = eng.get_latest_timer_state()
+                if state:
+                    return self._send_json(200, state)
+                return self._send_json(404, {'error': 'No timer state saved yet'})
+            except Exception as e:
+                return self._send_json(500, {'error': str(e)})
+
         self._send_json(404, {'error': 'Endpoint not found'})
 
     def do_POST(self):
@@ -152,6 +164,25 @@ class RequestHandler(BaseHTTPRequestHandler):
                     data.get('updated_at', '')
                 ))
                 return self._send_json(201, {'success': True, 'task': data})
+            except Exception as e:
+                return self._send_json(500, {'error': str(e)})
+
+        if path == '/api/timer':
+            eng = get_engine()
+            if not eng:
+                return self._send_json(503, {'error': 'Backend not connected.'})
+            try:
+                device_id = data.get('device_id', 'default')
+                seconds_remaining = int(data.get('seconds_remaining', 0))
+                total_seconds = int(data.get('total_seconds', 2700))
+                is_running = bool(data.get('is_running', False))
+                task_id = data.get('task_id', '')
+                updated_at = data.get('updated_at', '')
+                if not updated_at:
+                    from datetime import datetime, timezone
+                    updated_at = datetime.now(timezone.utc).isoformat()
+                eng.save_timer_state(device_id, seconds_remaining, total_seconds, is_running, task_id, updated_at)
+                return self._send_json(200, {'success': True})
             except Exception as e:
                 return self._send_json(500, {'error': str(e)})
 
