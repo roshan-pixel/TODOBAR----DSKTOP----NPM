@@ -18,11 +18,9 @@ import {
 export { GOOGLE_SHEET_ID }
 
 export const getBackendUrl = (): string => {
-  if ((import.meta as any).env?.VITE_BACKEND_API_URL) {
-    return (import.meta as any).env.VITE_BACKEND_API_URL
-  }
   if (typeof window !== 'undefined') {
     const host = window.location.hostname
+    const isHttps = window.location.protocol === 'https:'
     if (host === 'localhost' || host === '127.0.0.1') {
       return 'http://127.0.0.1:5050'
     }
@@ -30,8 +28,15 @@ export const getBackendUrl = (): string => {
     if (/^(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)/.test(host)) {
       return `http://${host}:5050`
     }
+    // When running on HTTPS (e.g. Render), route to HTTPS tunnel to avoid Mixed Content errors
+    if (isHttps) {
+      return 'https://plain-ends-appear.loca.lt'
+    }
   }
-  return 'https://todobar-backend.onrender.com'
+  if ((import.meta as any).env?.VITE_BACKEND_API_URL) {
+    return (import.meta as any).env.VITE_BACKEND_API_URL
+  }
+  return 'https://plain-ends-appear.loca.lt'
 }
 
 export interface BackendHealthResponse {
