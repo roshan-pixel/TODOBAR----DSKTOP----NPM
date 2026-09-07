@@ -456,7 +456,7 @@ export const FocusModeView: React.FC<FocusModeViewProps> = ({
         </div>
 
         {/* ══ SPOTIFY MUSIC PLAYER ══ */}
-        <SpotifyPlayer />
+        <SpotifyPlayer isRunning={isRunning} />
 
 
         {/* Stats */}
