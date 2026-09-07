@@ -10,6 +10,7 @@ import {
   CheckCircle2,
 } from 'lucide-react'
 import { TodayTask } from '../types'
+import { SpotifyPlayer } from './SpotifyPlayer'
 
 const DURATION_PRESETS = [
   { label: '15m',  minutes: 15,  emoji: '⚡' },
@@ -438,26 +439,9 @@ export const FocusModeView: React.FC<FocusModeViewProps> = ({
           </button>
         </div>
 
-        {/* Animated EQ Soundscape */}
-        <div className="p-3.5 rounded-2xl bg-white/[0.04] border border-white/10 backdrop-blur-md mb-3">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-mono text-white/80 font-medium tracking-wide">SOUNDSCAPE</span>
-            <span className="text-[10px] font-mono text-[#00F0FF] bg-cyan-950/40 px-2 py-0.5 rounded-full border border-cyan-500/30">Binaural 432Hz</span>
-          </div>
-          <div className="flex items-end gap-[3px] h-8">
-            {[0,1,2,3,4,5,6].map(i => (
-              <span
-                key={i}
-                className={`rounded-full flex-1 ${
-                  isRunning
-                    ? `bg-gradient-to-t from-[#00F0FF] to-[#a78bfa] shadow-[0_0_4px_#00F0FF] animate-eq${i+1}`
-                    : 'bg-white/20'
-                }`}
-                style={{ height: isRunning ? undefined : `${[8,16,10,22,12,18,8][i]}px` }}
-              />
-            ))}
-          </div>
-        </div>
+        {/* ══ SPOTIFY MUSIC PLAYER ══ */}
+        <SpotifyPlayer />
+
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-2">
