@@ -25,6 +25,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "vite",
+    "server": "python server/app.py",
     "build": "tsc && vite build",
     "preview": "vite preview"
   },

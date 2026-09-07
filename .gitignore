@@ -27,3 +27,9 @@ dist-ssr
 verify*.png
 screenshot*.png
 .tempmediaStorage
+
+# Secrets & Environment Credentials
+service-account*.json
+*.pem
+.env
+.env.local
