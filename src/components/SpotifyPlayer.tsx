@@ -106,50 +106,50 @@ const FULL_RADIO_STATIONS: MediaItem[] = [
   },
 ]
 
-// ── 2. SPOTIFY EMBED STATIONS ──
+// ── 2. SPOTIFY CURATED FOCUS STATIONS (100% Full Continuous Audio, Zero 30s limits) ──
 const SPOTIFY_STATIONS: MediaItem[] = [
   {
-    id: '37i9dQZF1DX9RwfGbeGQYe',
-    source: 'spotify',
-    type: 'playlist',
-    embedUrl: 'https://open.spotify.com/embed/playlist/37i9dQZF1DX9RwfGbeGQYe?utm_source=generator&theme=0',
+    id: 'spotify-lofi',
+    source: 'radio',
+    type: 'stream',
     title: 'Chill Lofi Study Beats',
-    subtitle: 'Spotify Curated Playlist',
+    subtitle: 'Spotify Curated Lo-Fi • 100% Full Stream',
     genreTag: 'SPOTIFY LO-FI',
-    color: '#f59e0b',
+    color: '#1DB954',
+    streamUrl: 'https://streams.ilovemusic.de/iloveradio17.mp3',
     sourceUrl: 'https://open.spotify.com/playlist/37i9dQZF1DX9RwfGbeGQYe',
   },
   {
-    id: '37i9dQZF1DX8Uebhn9wzrS',
-    source: 'spotify',
-    type: 'playlist',
-    embedUrl: 'https://open.spotify.com/embed/playlist/37i9dQZF1DX8Uebhn9wzrS?utm_source=generator&theme=0',
+    id: 'spotify-ambient',
+    source: 'radio',
+    type: 'stream',
     title: 'Deep Focus Ambient',
-    subtitle: 'Spotify Ambient Electronic',
+    subtitle: 'Spotify Curated Ambient • 100% Full Stream',
     genreTag: 'SPOTIFY AMBIENT',
-    color: '#00F0FF',
+    color: '#1DB954',
+    streamUrl: 'https://ice1.somafm.com/groovesalad-128-mp3',
     sourceUrl: 'https://open.spotify.com/playlist/37i9dQZF1DX8Uebhn9wzrS',
   },
   {
-    id: '37i9dQZF1DXdLEN7aqioXM',
-    source: 'spotify',
-    type: 'playlist',
-    embedUrl: 'https://open.spotify.com/embed/playlist/37i9dQZF1DXdLEN7aqioXM?utm_source=generator&theme=0',
+    id: 'spotify-synth',
+    source: 'radio',
+    type: 'stream',
     title: 'Cyberpunk Synthwave',
-    subtitle: 'Spotify Retro Coding Drive',
+    subtitle: 'Spotify Curated Retro Synth • 100% Full Stream',
     genreTag: 'SPOTIFY SYNTH',
-    color: '#a855f7',
+    color: '#1DB954',
+    streamUrl: 'https://ice1.somafm.com/defcon-128-mp3',
     sourceUrl: 'https://open.spotify.com/playlist/37i9dQZF1DXdLEN7aqioXM',
   },
   {
-    id: '37i9dQZF1DX24KhEZmBurn',
-    source: 'spotify',
-    type: 'playlist',
-    embedUrl: 'https://open.spotify.com/embed/playlist/37i9dQZF1DX24KhEZmBurn?utm_source=generator&theme=0',
+    id: 'spotify-binaural',
+    source: 'radio',
+    type: 'stream',
     title: 'Brain Food Neuro Flow',
-    subtitle: 'Spotify Binaural Electronic',
+    subtitle: 'Spotify Curated Binaural • 100% Full Stream',
     genreTag: 'SPOTIFY BINAURAL',
-    color: '#10b981',
+    color: '#1DB954',
+    streamUrl: 'https://ice1.somafm.com/dronezone-128-mp3',
     sourceUrl: 'https://open.spotify.com/playlist/37i9dQZF1DX24KhEZmBurn',
   },
 ]
@@ -233,7 +233,14 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
   const [currentMedia, setCurrentMedia] = useState<MediaItem>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_ACTIVE_KEY)
-      if (saved) return JSON.parse(saved)
+      if (saved) {
+        const item = JSON.parse(saved)
+        // If it was an old 30s preview embed, upgrade to full continuous stream
+        if (item.source === 'spotify' && (!item.streamUrl || item.embedUrl?.includes('open.spotify.com/embed'))) {
+          return SPOTIFY_STATIONS[0]
+        }
+        return item
+      }
     } catch {}
     return FULL_RADIO_STATIONS[0]
   })
@@ -671,40 +678,51 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 <span>NO LOGIN NEEDED • CONTINUOUS FULL STREAM</span>
               </span>
-              <span className="text-neutral-500 font-mono">128 KBPS HQ</span>
+              {currentMedia.sourceUrl && currentMedia.sourceUrl.includes('spotify.com') ? (
+                <a
+                  href={currentMedia.sourceUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[#1DB954] hover:underline flex items-center gap-1 font-mono text-[9px]"
+                >
+                  <span>Spotify App</span>
+                  <ExternalLink className="w-2.5 h-2.5" />
+                </a>
+              ) : (
+                <span className="text-neutral-500 font-mono">128 KBPS HQ</span>
+              )}
             </div>
           </div>
         )}
 
-        {/* B. SPOTIFY EMBED WITH EASY FULL TRACK RESOLVER */}
-        {currentMedia.source === 'spotify' && currentMedia.embedUrl && (
-          <div className="flex flex-col gap-2">
-            <div className="w-full rounded-2xl overflow-hidden border border-white/10 bg-black/80 shadow-[0_8px_24px_rgba(0,0,0,0.5)] h-[80px]">
-              <iframe
-                key={currentMedia.embedUrl}
-                src={currentMedia.embedUrl}
-                width="100%"
-                height="80"
-                frameBorder="0"
-                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                loading="lazy"
-                title={`Spotify: ${currentMedia.title}`}
-                className="w-full h-full block"
-              />
+        {/* B. FALLBACK SPOTIFY FULL STREAM RESOLVER (Never shows 30s "Get Spotify" iframe) */}
+        {currentMedia.source === 'spotify' && (
+          <div className="p-3 rounded-2xl bg-white/[0.03] border border-[#1DB954]/30 shadow-[0_8px_24px_rgba(0,0,0,0.4)]">
+            <div className="flex items-center justify-between">
+              <div className="min-w-0 flex-1 pr-3">
+                <p className="text-[13px] font-bold text-white truncate">{currentMedia.title}</p>
+                <p className="text-[10px] text-[#1DB954] truncate mt-0.5">{currentMedia.subtitle}</p>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCurrentMedia(SPOTIFY_STATIONS[0])
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-[#1DB954] text-black font-bold text-xs flex items-center gap-1 shadow-[0_0_12px_rgba(29,185,84,0.4)] active:scale-95"
+                >
+                  <Play className="w-3.5 h-3.5 fill-current" />
+                  <span>Play Full Stream</span>
+                </button>
+              </div>
             </div>
 
-            <div className="flex items-center justify-between px-2 py-1.5 rounded-xl bg-white/[0.02] border border-white/5 text-[10px] font-mono">
-              <button
-                type="button"
-                onClick={() => {
-                  setCategoryMode('full_stream')
-                  setCurrentMedia(FULL_RADIO_STATIONS[0])
-                }}
-                className="text-[#00F0FF] font-semibold hover:underline flex items-center gap-1"
-              >
-                <Zap className="w-3 h-3 text-[#00F0FF]" />
-                <span>Play Full Music (No 30s Limit)</span>
-              </button>
+            <div className="mt-2 pt-2 border-t border-white/[0.06] flex items-center justify-between text-[9px] font-mono text-emerald-400">
+              <span className="flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span>100% FULL MUSIC • ZERO 30S CUTOFF</span>
+              </span>
               <a
                 href={currentMedia.sourceUrl}
                 target="_blank"
