@@ -147,7 +147,8 @@ export function App() {
     >
       {/* Main Active Screen Content */}
       <div className="flex-1 w-full h-full relative overflow-hidden">
-        {currentScreen === 'today' && (
+        {/* Today Screen */}
+        <div className={`w-full h-full absolute inset-0 transition-opacity duration-200 ${currentScreen === 'today' ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'}`}>
           <TodayView
             tasks={tasks}
             onToggleTask={toggleTask}
@@ -162,9 +163,10 @@ export function App() {
             isFocusRunning={timer.isRunning}
             focusTaskTitle={focusTask?.title || activeFocusTask?.title || 'No active focus task'}
           />
-        )}
+        </div>
 
-        {currentScreen === 'focus' && (
+        {/* Focus Mode Screen — Persistent in DOM so background music/streams never stop */}
+        <div className={`w-full h-full absolute inset-0 transition-opacity duration-200 ${currentScreen === 'focus' ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'}`}>
           <FocusModeView
             onBack={() => {
               setCurrentScreen('today')
@@ -186,34 +188,39 @@ export function App() {
             isCloudSynced={timerSync.isSynced}
             syncStatus={timerSync.syncStatus}
           />
-        )}
-
+        </div>
 
         {currentScreen === 'completed' && (
-          <SessionCompletedView
-            onReturnToToday={handleReturnToToday}
-            completedTasks={completedTasks}
-            focusMinutesElapsed={Math.max(1, Math.round((timer.totalSeconds - timer.secondsRemaining) / 60)) || 45}
-          />
+          <div className="w-full h-full absolute inset-0 z-20">
+            <SessionCompletedView
+              onReturnToToday={handleReturnToToday}
+              completedTasks={completedTasks}
+              focusMinutesElapsed={Math.max(1, Math.round((timer.totalSeconds - timer.secondsRemaining) / 60)) || 45}
+            />
+          </div>
         )}
 
         {currentScreen === 'calendar' && (
-          <CalendarTimelineView
-            tasks={tasks}
-            onBack={() => {
-              setCurrentScreen('today')
-              setActiveTab('today')
-            }}
-          />
+          <div className="w-full h-full absolute inset-0 z-20">
+            <CalendarTimelineView
+              tasks={tasks}
+              onBack={() => {
+                setCurrentScreen('today')
+                setActiveTab('today')
+              }}
+            />
+          </div>
         )}
 
         {currentScreen === 'account' && (
-          <AccountProfileView
-            onBack={() => {
-              setCurrentScreen('today')
-              setActiveTab('today')
-            }}
-          />
+          <div className="w-full h-full absolute inset-0 z-20">
+            <AccountProfileView
+              onBack={() => {
+                setCurrentScreen('today')
+                setActiveTab('today')
+              }}
+            />
+          </div>
         )}
       </div>
 
