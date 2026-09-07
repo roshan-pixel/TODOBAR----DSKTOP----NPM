@@ -31,6 +31,7 @@ export function App() {
     completedTasks,
     toggleTask,
     addTask,
+    deleteTask,
   } = useTodayTasks()
 
   // Sprints & Centralized Focus Stopwatch - Ticks down in real time across tabs
@@ -113,6 +114,7 @@ export function App() {
           <TodayView
             tasks={tasks}
             onToggleTask={toggleTask}
+            onDeleteTask={deleteTask}
             onStartFocus={handleStartFocus}
             onOpenSearch={() => setIsSearchOpen(true)}
             onOpenCalendar={() => setCurrentScreen('calendar')}

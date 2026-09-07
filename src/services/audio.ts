@@ -82,6 +82,32 @@ class SoundEngine {
   }
 
   /**
+   * Play swoosh / dismiss tone when deleting a task
+   */
+  playDelete(enabled = true) {
+    if (!enabled) return
+    const ctx = this.getContext()
+    if (!ctx) return
+
+    const now = ctx.currentTime
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+
+    osc.type = 'sine'
+    osc.frequency.setValueAtTime(320, now)
+    osc.frequency.exponentialRampToValueAtTime(80, now + 0.14)
+
+    gain.gain.setValueAtTime(0.12, now)
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.14)
+
+    osc.connect(gain)
+    gain.connect(ctx.destination)
+
+    osc.start(now)
+    osc.stop(now + 0.14)
+  }
+
+  /**
    * Play urgent alert bell for reminders
    */
   playReminder(enabled = true) {

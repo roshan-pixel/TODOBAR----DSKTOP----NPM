@@ -17,10 +17,12 @@ import {
 } from 'lucide-react'
 import { TodayTask } from '../types'
 import { isWorkTask, isDesignSystemTask } from '../hooks/useTodayTasks'
+import { SwipeableTaskItem } from './SwipeableTaskItem'
 
 interface TodayViewProps {
   tasks: TodayTask[]
   onToggleTask: (id: string) => void
+  onDeleteTask?: (id: string) => void
   onStartFocus: () => void
   onOpenSearch: () => void
   onOpenCalendar: () => void
@@ -34,6 +36,7 @@ interface TodayViewProps {
 export const TodayView: React.FC<TodayViewProps> = ({
   tasks,
   onToggleTask,
+  onDeleteTask = () => {},
   onStartFocus,
   onOpenSearch,
   onOpenCalendar,
@@ -309,91 +312,13 @@ export const TodayView: React.FC<TodayViewProps> = ({
           </div>
         ) : (
           filteredActiveTasks.map(task => (
-            <div
+            <SwipeableTaskItem
               key={task.id}
-              className="w-full shrink-0 p-4 rounded-[22px] border transition-all duration-300 bg-white/[0.08] border-white/18 hover:border-white/30 hover:bg-white/[0.11] shadow-[0_8px_32px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.2)]"
-            >
-              <div className="flex items-start gap-3.5">
-                {/* Checkbox Squircle */}
-                <button
-                  type="button"
-                  onClick={() => onToggleTask(task.id)}
-                  className="w-6 h-6 rounded-xl flex items-center justify-center transition-all mt-0.5 shrink-0 border-2 border-white/25 hover:border-[#00F0FF] bg-white/5 hover:bg-[#00F0FF]/10 active:scale-90"
-                  aria-label={`Mark ${task.title} as completed`}
-                >
-                  {task.done && <Check className="w-4 h-4 stroke-[3.2] text-[#00F0FF]" />}
-                </button>
-
-                <div className="flex-1 min-w-0">
-                  {/* Priority Badge & Time */}
-                  <div className="flex items-center justify-between text-xs mb-1.5">
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold border ${
-                        task.tagColor || 'bg-rose-500/20 text-rose-300 border-rose-500/35'
-                      }`}
-                    >
-                      <span className={`w-1.5 h-1.5 rounded-full ${task.dotColor || 'bg-rose-400'}`} />
-                      {task.priorityTag || 'Priority'}
-                    </span>
-                    <span className="text-xs font-mono font-bold text-neutral-200">{task.time}</span>
-                  </div>
-
-                  {/* Title (Crisp, readable, bold white, NO strikethrough!) */}
-                  <h3 className="text-[15px] font-bold text-white leading-snug">
-                    {task.title}
-                  </h3>
-
-                  {/* Subtasks Progress Bar if available */}
-                  {task.subtaskProgress && (
-                    <div className="mt-2.5 flex items-center gap-2.5">
-                      <div className="flex items-center gap-1 text-[11px] font-mono text-neutral-400 shrink-0">
-                        <ListTodo className="w-3.5 h-3.5 text-neutral-400" />
-                        <span>{task.subtasksCount}</span>
-                      </div>
-                      <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-gradient-to-r from-[#00F0FF] to-emerald-400 rounded-full shadow-[0_0_8px_#00F0FF]"
-                          style={{ width: `${task.subtaskProgress}%` }}
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Footer Project & Team Avatars / Attachments */}
-                  <div className="mt-3 flex items-center justify-between text-xs text-neutral-400 pt-1 border-t border-white/[0.06]">
-                    <div className="flex items-center gap-1.5 font-medium text-neutral-300 text-xs">
-                      {isDesignSystemTask(task) && <Palette className="w-3.5 h-3.5 text-neutral-400" />}
-                      {!isDesignSystemTask(task) && task.title.toLowerCase().includes('audio') && (
-                        <Headphones className="w-3.5 h-3.5 text-neutral-400" />
-                      )}
-                      {!isDesignSystemTask(task) && !task.title.toLowerCase().includes('audio') && (
-                        <Users className="w-3.5 h-3.5 text-neutral-400" />
-                      )}
-                      <span>{task.category}</span>
-                    </div>
-
-                    {task.avatars && (
-                      <div className="flex -space-x-1.5 shrink-0">
-                        {task.avatars.map((av, idx) => (
-                          <span
-                            key={idx}
-                            className={`w-5 h-5 rounded-full border border-[#0c0d18] text-[9px] flex items-center justify-center shadow-md ${av.bg}`}
-                          >
-                            {av.initials}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-
-                    {task.attachments && (
-                      <span className="flex items-center gap-1 text-[11px] font-mono bg-white/10 px-2.5 py-0.5 rounded-full text-neutral-200 border border-white/10">
-                        <Paperclip className="w-3 h-3" /> {task.attachments}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
+              task={task}
+              onToggle={onToggleTask}
+              onDelete={onDeleteTask}
+              isDesignSystemTask={isDesignSystemTask}
+            />
           ))
         )}
       </div>
@@ -429,34 +354,14 @@ export const TodayView: React.FC<TodayViewProps> = ({
               </div>
             ) : (
               filteredCompletedTasks.map(task => (
-                <div
+                <SwipeableTaskItem
                   key={task.id}
-                  className="w-full shrink-0 group p-3.5 sm:p-4 rounded-[20px] bg-gradient-to-b from-white/[0.04] to-white/[0.015] border border-white/[0.08] backdrop-blur-2xl flex items-start gap-3.5 hover:bg-white/[0.045] hover:border-white/15 transition-all shadow-[0_4px_16px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.08)]"
-                >
-                  {/* Jewel-like Minimalist Squircle Checkbox */}
-                  <button
-                    type="button"
-                    onClick={() => onToggleTask(task.id)}
-                    className="w-5 h-5 rounded-[7px] flex items-center justify-center transition-all mt-0.5 shrink-0 bg-emerald-400/20 border border-emerald-400/45 text-emerald-300 hover:bg-emerald-400/30 shadow-[0_0_10px_rgba(52,211,153,0.25)] active:scale-90"
-                    aria-label={`Uncheck ${task.title}`}
-                  >
-                    <Check className="w-3.5 h-3.5 stroke-[3]" />
-                  </button>
-
-                  {/* Title & Metadata */}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[13px] leading-snug transition-all text-neutral-400/85 line-through decoration-neutral-500/50 font-normal">
-                      {task.title}
-                    </p>
-                    <div className="flex items-center gap-2 mt-1 text-[11px] text-neutral-400">
-                      <span className="font-mono text-neutral-300">
-                        {task.completedAt || task.time}
-                      </span>
-                      <span className="w-1 h-1 rounded-full bg-neutral-600" />
-                      <span className="truncate text-neutral-400">{task.category}</span>
-                    </div>
-                  </div>
-                </div>
+                  task={task}
+                  onToggle={onToggleTask}
+                  onDelete={onDeleteTask}
+                  isDesignSystemTask={isDesignSystemTask}
+                  isCompleted={true}
+                />
               ))
             )}
           </div>
