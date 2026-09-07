@@ -1,14 +1,21 @@
 /**
  * Backend Sync Service for Todobar
- * Connects the Todobar frontend to the Google Sheets SQL backend server
- * with direct Google Sheets reader fallback and local offline outbox.
+ * Connects the Todobar frontend directly to Google Sheets using the service account:
+ * todobar-sheets-backend@utility-melody-390608.iam.gserviceaccount.com
+ * with local SQLite / Python backend support and offline outbox.
  */
 
 import { Task, TodayTask } from '../types'
+import {
+  GOOGLE_SHEET_ID,
+  appendTaskToSheet,
+  updateTaskInSheet,
+  deleteTaskFromSheet,
+  readTasksFromSheetAPI,
+  getGoogleAccessToken,
+} from './googleSheetsClient'
 
-export const GOOGLE_SHEET_ID =
-  (import.meta as any).env?.VITE_GOOGLE_SHEET_ID ||
-  '1b9OitPeSDeBhtrx_bZ2ovrByLMXfmEJfcSP8S4PEAGI'
+export { GOOGLE_SHEET_ID }
 
 export const getBackendUrl = (): string => {
   if ((import.meta as any).env?.VITE_BACKEND_API_URL) {
@@ -31,6 +38,18 @@ export interface BackendHealthResponse {
 }
 
 export async function checkBackendHealth(): Promise<BackendHealthResponse | null> {
+  // Check if service account is active directly
+  const token = await getGoogleAccessToken().catch(() => null)
+  if (token) {
+    return {
+      status: 'online',
+      service_account: 'todobar-sheets-backend@utility-melody-390608.iam.gserviceaccount.com',
+      spreadsheet_id: GOOGLE_SHEET_ID,
+      connected: true,
+    }
+  }
+
+  // Fallback check localhost / backend
   try {
     const res = await fetch(`${getBackendUrl()}/api/health`, {
       method: 'GET',
@@ -102,9 +121,28 @@ export async function fetchTasksFromGoogleSheets(): Promise<TodayTask[]> {
 }
 
 /**
- * Fetch tasks trying backend API first, then Google Sheets direct endpoint.
+ * Fetch tasks trying direct Google Sheets API first, then gviz public endpoint, then local backend.
  */
 export async function fetchTasksFromBackend(): Promise<TodayTask[]> {
+  // 1. Direct Service Account API fetch
+  try {
+    const apiTasks = await readTasksFromSheetAPI()
+    if (apiTasks && apiTasks.length > 0) {
+      return apiTasks
+    }
+  } catch (e) {
+    console.warn('[Google Sheets] Direct API read error, trying fallback:', e)
+  }
+
+  // 2. Direct Google Sheets gviz read
+  try {
+    const gvizTasks = await fetchTasksFromGoogleSheets()
+    if (gvizTasks && gvizTasks.length > 0) {
+      return gvizTasks
+    }
+  } catch {}
+
+  // 3. Fallback to local server if running
   try {
     const res = await fetch(`${getBackendUrl()}/api/tasks`)
     if (res.ok) {
@@ -127,18 +165,15 @@ export async function fetchTasksFromBackend(): Promise<TodayTask[]> {
         }))
       }
     }
-  } catch (e) {
-    // Backend API is not available (e.g. running statically without server)
-  }
+  } catch (e) {}
 
-  // Fallback to direct Google Sheets read
-  return await fetchTasksFromGoogleSheets()
+  return []
 }
 
 // Offline outbox queue key
 const OUTBOX_KEY = 'todobar.sync.outbox.v1'
 
-function getOutbox(): any[] {
+function getOutbox(): TodayTask[] {
   try {
     const saved = localStorage.getItem(OUTBOX_KEY)
     return saved ? JSON.parse(saved) : []
@@ -147,71 +182,95 @@ function getOutbox(): any[] {
   }
 }
 
-function saveOutbox(items: any[]): void {
+function saveOutbox(items: TodayTask[]): void {
   try {
     localStorage.setItem(OUTBOX_KEY, JSON.stringify(items))
   } catch {}
 }
 
 export async function syncTaskToBackend(task: Task | TodayTask): Promise<boolean> {
-  const payload = {
+  const isTodayTask = 'done' in task
+  const todayTask: TodayTask = {
     id: task.id,
     title: task.title,
-    completed: task.done,
     priority: task.priority,
-    category: 'category' in task ? task.category : ('tags' in task ? task.tags?.[0] : 'General'),
-    notes: 'description' in task ? (task as any).description : '',
-    due_date: 'time' in task ? (task as any).time : ('dueDate' in task ? (task as any).dueDate : 'Today'),
-    created_at: 'createdAt' in task ? (task as any).createdAt : new Date().toISOString(),
-    updated_at: new Date().toISOString(),
+    done: isTodayTask ? (task as TodayTask).done : false,
+    category: 'category' in task ? (task as any).category : ('tags' in task ? (task as any).tags?.[0] : 'General'),
+    time: 'time' in task ? (task as any).time : ('dueDate' in task ? (task as any).dueDate : 'Today'),
+    dotColor: task.priority === 'focus' ? 'bg-rose-400' : 'bg-[#00F0FF]',
+    priorityTag: task.priority === 'focus' ? 'High Priority' : 'Normal',
+    tagColor: task.priority === 'focus' ? 'bg-rose-500/20 text-rose-300 border-rose-500/35' : 'bg-cyan-500/20 text-[#00F0FF] border-cyan-500/35',
   }
 
+  let synced = false
+
+  // 1. Direct Service Account write to Google Sheets
   try {
+    synced = await updateTaskInSheet(todayTask)
+  } catch (err) {
+    console.warn('[Google Sheets] Direct write error:', err)
+  }
+
+  // 2. Also forward to local backend if running on localhost
+  try {
+    const payload = {
+      id: task.id,
+      title: task.title,
+      completed: isTodayTask ? (task as TodayTask).done : false,
+      priority: task.priority,
+      category: todayTask.category,
+      notes: 'description' in task ? (task as any).description : '',
+      due_date: todayTask.time,
+      created_at: 'createdAt' in task ? (task as any).createdAt : new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
     const res = await fetch(`${getBackendUrl()}/api/tasks`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     })
-    if (res.ok) {
-      // Drain any pending outbox items
-      drainOutbox()
-      return true
-    }
-  } catch (e) {
-    // If backend unreachable, queue in outbox
-    const outbox = getOutbox().filter(item => item.id !== payload.id)
-    outbox.push(payload)
-    saveOutbox(outbox)
+    if (res.ok) synced = true
+  } catch {}
+
+  if (synced) {
+    drainOutbox()
+    return true
   }
+
+  // Queue in offline outbox if both failed
+  const outbox = getOutbox().filter(item => item.id !== todayTask.id)
+  outbox.push(todayTask)
+  saveOutbox(outbox)
   return false
 }
 
 export async function deleteTaskFromBackend(taskId: string): Promise<boolean> {
+  let deleted = false
+  try {
+    deleted = await deleteTaskFromSheet(taskId)
+  } catch {}
+
   try {
     const res = await fetch(`${getBackendUrl()}/api/tasks/delete`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: taskId }),
     })
-    return res.ok
-  } catch {
-    return false
-  }
+    if (res.ok) deleted = true
+  } catch {}
+
+  return deleted
 }
 
 export async function drainOutbox(): Promise<void> {
   const outbox = getOutbox()
   if (outbox.length === 0) return
 
-  const remaining: any[] = []
+  const remaining: TodayTask[] = []
   for (const item of outbox) {
     try {
-      const res = await fetch(`${getBackendUrl()}/api/tasks`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(item),
-      })
-      if (!res.ok) remaining.push(item)
+      const ok = await updateTaskInSheet(item)
+      if (!ok) remaining.push(item)
     } catch {
       remaining.push(item)
     }
