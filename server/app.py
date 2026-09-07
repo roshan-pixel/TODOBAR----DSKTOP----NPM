@@ -10,7 +10,7 @@ import time
 import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from typing import Any
 from sheets_sql import SheetsSQLEngine
 
@@ -169,7 +169,34 @@ class RequestHandler(BaseHTTPRequestHandler):
                 return self._send_json(400, {'error': 'q query parameter required'})
             try:
                 import re
-                yt_url = f"https://www.youtube.com/results?search_query={urllib.parse.quote(q)}"
+
+                # Handle direct Spotify URLs / URIs by resolving metadata first
+                if 'spotify.com' in q or 'spotify:' in q:
+                    sp_match = re.search(r'open\.spotify\.com\/(track|playlist|album)\/([a-zA-Z0-9]+)', q) or re.search(r'spotify:(track|playlist|album):([a-zA-Z0-9]+)', q)
+                    if sp_match:
+                        sp_type = sp_match.group(1).lower()
+                        sp_id = sp_match.group(2)
+                        media_type = sp_type
+                        clean_url = f"https://open.spotify.com/{sp_type}/{sp_id}"
+                        try:
+                            oembed_url = f"https://open.spotify.com/oembed?url={urllib.parse.quote(clean_url)}"
+                            o_req = urllib.request.Request(oembed_url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
+                            with urllib.request.urlopen(o_req, timeout=5) as o_resp:
+                                o_data = json.loads(o_resp.read().decode('utf-8'))
+                                sp_title = o_data.get('title', '')
+                                sp_author = o_data.get('author_name', '')
+                                if sp_type in ('playlist', 'album'):
+                                    q = f"{sp_title} full playlist"
+                                else:
+                                    q = f"{sp_title} {sp_author}".strip()
+                        except Exception as o_err:
+                            print(f"[MusicResolve] Spotify oembed error: {o_err}")
+
+                search_query = q
+                if media_type in ('playlist', 'album') and 'playlist' not in search_query.lower():
+                    search_query = f"{search_query} full playlist"
+
+                yt_url = f"https://www.youtube.com/results?search_query={urllib.parse.quote(search_query)}"
                 req = urllib.request.Request(yt_url, headers={
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                     'Accept-Language': 'en-US,en;q=0.9'
@@ -341,9 +368,17 @@ class RequestHandler(BaseHTTPRequestHandler):
 def run_server(port=None):
     if port is None:
         port = int(os.environ.get('PORT', 5050))
-    server = HTTPServer(('0.0.0.0', port), RequestHandler)
+    server = ThreadingHTTPServer(('0.0.0.0', port), RequestHandler)
+    server.daemon_threads = True
     print(f"Todobar Sheets SQL Server running on 0.0.0.0:{port}")
-    server.serve_forever()
+    while True:
+        try:
+            server.serve_forever()
+        except (KeyboardInterrupt, SystemExit):
+            break
+        except Exception as e:
+            print(f"[Server Warning] Recovering from connection error: {e}")
+            time.sleep(0.5)
 
 if __name__ == '__main__':
     run_server()
