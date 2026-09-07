@@ -37,6 +37,7 @@ export const SwipeableTaskItem: React.FC<SwipeableTaskItemProps> = ({
   const startXRef = useRef(0)
   const startYRef = useRef(0)
   const currentXRef = useRef(0)
+  const isDraggingRef = useRef(false)
   const isHorizontalDragRef = useRef(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -65,6 +66,7 @@ export const SwipeableTaskItem: React.FC<SwipeableTaskItemProps> = ({
     startYRef.current = e.clientY
     currentXRef.current = e.clientX
     isHorizontalDragRef.current = false
+    isDraggingRef.current = true
     setIsDragging(true)
 
     // Capture pointer
@@ -74,7 +76,7 @@ export const SwipeableTaskItem: React.FC<SwipeableTaskItemProps> = ({
   }
 
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!isDragging || isDeleting) return
+    if (!isDraggingRef.current || isDeleting) return
 
     const deltaX = e.clientX - startXRef.current
     const deltaY = e.clientY - startYRef.current
@@ -83,6 +85,7 @@ export const SwipeableTaskItem: React.FC<SwipeableTaskItemProps> = ({
     if (!isHorizontalDragRef.current) {
       if (Math.abs(deltaY) > 8 && Math.abs(deltaY) > Math.abs(deltaX)) {
         // Vertical scroll - release drag
+        isDraggingRef.current = false
         setIsDragging(false)
         setOffsetX(0)
         return
@@ -110,7 +113,8 @@ export const SwipeableTaskItem: React.FC<SwipeableTaskItemProps> = ({
   }
 
   const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!isDragging) return
+    if (!isDraggingRef.current) return
+    isDraggingRef.current = false
     setIsDragging(false)
     try {
       e.currentTarget.releasePointerCapture(e.pointerId)
@@ -134,6 +138,8 @@ export const SwipeableTaskItem: React.FC<SwipeableTaskItemProps> = ({
   return (
     <div
       ref={containerRef}
+      data-testid="swipeable-task-item"
+      data-task-id={task.id}
       className={`relative w-full overflow-hidden transition-all duration-300 ease-out select-none ${
         isDeleting ? 'max-h-0 opacity-0 mb-0 pointer-events-none scale-95' : 'max-h-[300px] opacity-100'
       }`}
@@ -241,10 +247,10 @@ export const SwipeableTaskItem: React.FC<SwipeableTaskItemProps> = ({
                     triggerDelete()
                   }}
                   className={`p-1 -mr-1 rounded-lg text-neutral-400 hover:text-red-400 hover:bg-red-500/15 active:scale-90 transition-all ${
-                    isHovered ? 'opacity-100' : 'opacity-0 sm:opacity-0'
+                    isHovered ? 'opacity-100 text-red-300' : 'opacity-40 sm:opacity-50 hover:opacity-100'
                   }`}
                   aria-label="Delete task"
-                  title="Delete task (or slide right)"
+                  title="Delete task (or slide right to delete)"
                 >
                   <Trash2 className="w-3.5 h-3.5 stroke-[2.2]" />
                 </button>
