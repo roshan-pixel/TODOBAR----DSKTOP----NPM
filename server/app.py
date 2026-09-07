@@ -161,6 +161,32 @@ class RequestHandler(BaseHTTPRequestHandler):
             except Exception as e:
                 return self._send_json(500, {'error': str(e)})
 
+        if path == '/api/music/resolve':
+            qs = urllib.parse.parse_qs(parsed.query)
+            q = qs.get('q', [''])[0]
+            if not q:
+                return self._send_json(400, {'error': 'q query parameter required'})
+            try:
+                import re
+                yt_url = f"https://www.youtube.com/results?search_query={urllib.parse.quote(q)}"
+                req = urllib.request.Request(yt_url, headers={
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Accept-Language': 'en-US,en;q=0.9'
+                })
+                with urllib.request.urlopen(req, timeout=8) as resp:
+                    html = resp.read().decode('utf-8', errors='ignore')
+                    ids = list(dict.fromkeys(re.findall(r'"videoId":"([a-zA-Z0-9_-]{11})"', html)))
+                    if ids:
+                        video_id = ids[0]
+                        return self._send_json(200, {
+                            'success': True,
+                            'videoId': video_id,
+                            'embedUrl': f"https://www.youtube-nocookie.com/embed/{video_id}?autoplay=1&playsinline=1"
+                        })
+                return self._send_json(404, {'error': 'No video found for query'})
+            except Exception as e:
+                return self._send_json(500, {'error': str(e)})
+
         self._send_json(404, {'error': 'Endpoint not found'})
 
     def do_POST(self):
