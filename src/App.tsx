@@ -190,6 +190,8 @@ export function App() {
             title: taskData.title,
             priority: taskData.priority,
             category: taskData.tags?.[0] ? taskData.tags.join(' • ') : undefined,
+            time: taskData.time,
+            categoryType: taskData.tags?.[0]?.toLowerCase().includes('design') ? 'design' : 'work',
           })
         }}
       />

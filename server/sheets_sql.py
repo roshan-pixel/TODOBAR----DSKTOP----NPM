@@ -81,7 +81,7 @@ class SheetsSQLEngine:
             spreadsheetId=self.spreadsheet_id,
             range=f'{sheet_name}!A1:Z1'
         ).execute()
-        values = res.get('values', [])
+        values = res.get('values') or []
         if not values or not values[0]:
             self.service.spreadsheets().values().update(
                 spreadsheetId=self.spreadsheet_id,
@@ -96,7 +96,7 @@ class SheetsSQLEngine:
             spreadsheetId=self.spreadsheet_id,
             range='tasks!A1:Z1000'
         ).execute()
-        rows = res.get('values', [])
+        rows = res.get('values') or []
         if len(rows) > 1:
             headers = [h.strip().lower() for h in rows[0]]
             cursor = self.db.cursor()
@@ -121,6 +121,7 @@ class SheetsSQLEngine:
                     item.get('updated_at', '')
                 ))
             self.db.commit()
+        return self.execute_sql('SELECT * FROM tasks')
 
     def push_tasks_to_sheet(self):
         """Overwrite Google Sheets tasks tab with SQLite state"""

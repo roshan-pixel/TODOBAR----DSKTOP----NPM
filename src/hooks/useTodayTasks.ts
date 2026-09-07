@@ -1,6 +1,12 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { TodayTask } from '../types'
 import { sounds } from '../services/audio'
+import {
+  fetchTasksFromBackend,
+  syncTaskToBackend,
+  deleteTaskFromBackend,
+  drainOutbox,
+} from '../services/backendSync'
 
 const STORAGE_KEY = 'todobar.prototype.tasks.v5'
 
@@ -34,9 +40,10 @@ export function useTodayTasks() {
       const saved = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null
       if (saved) {
         const parsed = JSON.parse(saved)
-        if (Array.isArray(parsed)) {
+        if (Array.isArray(parsed) && parsed.length > 0) {
           const mockIds = new Set(['task-1', 'task-2', 'task-3', 'comp-1', 'comp-2', 'comp-3', 'comp-4'])
-          return parsed.filter((t: TodayTask) => !mockIds.has(t.id))
+          const filtered = parsed.filter((t: TodayTask) => !mockIds.has(t.id))
+          if (filtered.length > 0) return filtered
         }
       }
     } catch (e) {
@@ -44,6 +51,9 @@ export function useTodayTasks() {
     }
     return INITIAL_TODAY_TASKS
   })
+
+  const [isLoading, setIsLoading] = useState(false)
+  const isSyncingRef = useRef(false)
 
   // Sync to localStorage
   useEffect(() => {
@@ -54,9 +64,62 @@ export function useTodayTasks() {
     }
   }, [tasks])
 
+  // Hydrate from Google Sheets / Backend on mount and periodically
+  const loadTasksFromRemote = useCallback(async () => {
+    if (isSyncingRef.current) return
+    try {
+      isSyncingRef.current = true
+      setIsLoading(true)
+
+      // First drain any pending offline outbox items
+      await drainOutbox()
+
+      const remoteTasks = await fetchTasksFromBackend()
+      if (Array.isArray(remoteTasks) && remoteTasks.length > 0) {
+        setTasks(prev => {
+          // Merge by ID: keep local tasks, append any new remote tasks
+          const localMap = new Map(prev.map(t => [t.id, t]))
+          const merged = [...prev]
+
+          for (const remote of remoteTasks) {
+            if (!localMap.has(remote.id)) {
+              merged.push(remote)
+              localMap.set(remote.id, remote)
+            } else {
+              // Update completion status if changed in sheet
+              const idx = merged.findIndex(t => t.id === remote.id)
+              if (idx !== -1 && merged[idx].done !== remote.done) {
+                merged[idx] = {
+                  ...merged[idx],
+                  done: remote.done,
+                  completedAt: remote.completedAt || merged[idx].completedAt,
+                }
+              }
+            }
+          }
+          return merged
+        })
+      }
+    } catch (err) {
+      console.warn('[Todobar] Error fetching tasks from backend:', err)
+    } finally {
+      setIsLoading(false)
+      isSyncingRef.current = false
+    }
+  }, [])
+
+  useEffect(() => {
+    loadTasksFromRemote()
+
+    // Periodically re-sync with Google Sheets every 20 seconds
+    const interval = setInterval(loadTasksFromRemote, 20000)
+    return () => clearInterval(interval)
+  }, [loadTasksFromRemote])
+
   const toggleTask = useCallback((taskId: string) => {
-    setTasks(prev =>
-      prev.map(task => {
+    setTasks(prev => {
+      let updatedTask: TodayTask | null = null
+      const next = prev.map(task => {
         if (task.id === taskId) {
           const nextDone = !task.done
           if (nextDone) {
@@ -64,17 +127,25 @@ export function useTodayTasks() {
           } else {
             sounds.playClick(true)
           }
-          return {
+          updatedTask = {
             ...task,
             done: nextDone,
             completedAt: nextDone
               ? new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
               : undefined,
           }
+          return updatedTask
         }
         return task
       })
-    )
+
+      if (updatedTask) {
+        syncTaskToBackend(updatedTask).catch(err => {
+          console.warn('[Todobar] Backend sync toggle failed:', err)
+        })
+      }
+      return next
+    })
   }, [])
 
   const addTask = useCallback((taskData: {
@@ -106,7 +177,21 @@ export function useTodayTasks() {
 
     setTasks(prev => [newTask, ...prev])
     sounds.playClick(true)
+
+    // Trigger backend and Google Sheets synchronization
+    syncTaskToBackend(newTask).catch(err => {
+      console.warn('[Todobar] Backend sync add failed, queued in offline outbox:', err)
+    })
+
     return newTask
+  }, [])
+
+  const deleteTask = useCallback((taskId: string) => {
+    setTasks(prev => prev.filter(t => t.id !== taskId))
+    sounds.playClick(true)
+    deleteTaskFromBackend(taskId).catch(err => {
+      console.warn('[Todobar] Backend delete failed:', err)
+    })
   }, [])
 
   const resetTasksToDefault = useCallback(() => {
@@ -133,7 +218,10 @@ export function useTodayTasks() {
     completedTasks,
     toggleTask,
     addTask,
+    deleteTask,
     resetTasksToDefault,
+    refreshTasks: loadTasksFromRemote,
+    isLoading,
     totalCount,
     completedCount,
     completionPercentage,

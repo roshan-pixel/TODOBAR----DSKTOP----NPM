@@ -32,9 +32,20 @@ engine = None
 
 def get_engine():
     global engine
-    if engine is None and os.path.exists(KEY_PATH):
+    if engine is None:
         try:
-            engine = SheetsSQLEngine(KEY_PATH, SHEET_ID)
+            env_json = os.environ.get('SERVICE_ACCOUNT_JSON')
+            if env_json:
+                import tempfile
+                with tempfile.NamedTemporaryFile('w', delete=False, suffix='.json') as tmp:
+                    tmp.write(env_json)
+                    tmp_path = tmp.name
+                engine = SheetsSQLEngine(tmp_path, SHEET_ID)
+            elif os.path.exists(KEY_PATH):
+                engine = SheetsSQLEngine(KEY_PATH, SHEET_ID)
+            else:
+                print(f"[Sheets SQL Backend] No credentials found at {KEY_PATH} or in SERVICE_ACCOUNT_JSON")
+                return None
             engine.ensure_sheet_tabs()
             engine.pull_from_sheets()
             print(f"[Sheets SQL Backend] Connected to Google Sheet: {SHEET_ID}")
@@ -107,6 +118,19 @@ class RequestHandler(BaseHTTPRequestHandler):
             except Exception as e:
                 return self._send_json(400, {'error': str(e)})
 
+        if path == '/api/tasks/delete' or (path == '/api/tasks' and data.get('action') == 'delete'):
+            eng = get_engine()
+            if not eng:
+                return self._send_json(503, {'error': 'Backend not connected.'})
+            try:
+                task_id = data.get('id')
+                if not task_id:
+                    return self._send_json(400, {'error': 'Task id required'})
+                eng.execute_sql('DELETE FROM tasks WHERE id = ?', (task_id,))
+                return self._send_json(200, {'success': True, 'deleted': task_id})
+            except Exception as e:
+                return self._send_json(500, {'error': str(e)})
+
         if path == '/api/tasks':
             eng = get_engine()
             if not eng:
@@ -133,9 +157,11 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         self._send_json(404, {'error': 'Endpoint not found'})
 
-def run_server(port=5050):
-    server = HTTPServer(('127.0.0.1', port), RequestHandler)
-    print(f"Todobar Sheets SQL Server running at http://127.0.0.1:{port}")
+def run_server(port=None):
+    if port is None:
+        port = int(os.environ.get('PORT', 5050))
+    server = HTTPServer(('0.0.0.0', port), RequestHandler)
+    print(f"Todobar Sheets SQL Server running on 0.0.0.0:{port}")
     server.serve_forever()
 
 if __name__ == '__main__':

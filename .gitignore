@@ -33,3 +33,7 @@ service-account*.json
 *.pem
 .env
 .env.local
+
+# Python Cache
+__pycache__/
+*.py[cod]
