@@ -69,6 +69,15 @@ export function useFocusTimer({
     })
   }, [])
 
+  // One-tap: set a completely new duration and restart the timer running
+  const setDuration = useCallback((minutes: number) => {
+    const newTotal = minutes * 60
+    setTotalSeconds(newTotal)
+    setSecondsRemaining(newTotal)
+    setIsRunning(true)
+    sounds.playClick(true)
+  }, [])
+
   const mins = Math.floor(secondsRemaining / 60)
   const secs = secondsRemaining % 60
   const timeString = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
@@ -91,5 +100,6 @@ export function useFocusTimer({
     reset,
     adjust,
     setSecondsRemaining,
+    setDuration,
   }
 }

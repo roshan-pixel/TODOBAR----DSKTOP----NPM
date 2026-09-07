@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import {
   ArrowLeft,
   Play,
@@ -7,8 +7,17 @@ import {
   SkipForward,
   Zap,
   Target,
+  CheckCircle2,
 } from 'lucide-react'
 import { TodayTask } from '../types'
+
+const DURATION_PRESETS = [
+  { label: '15m',  minutes: 15,  emoji: '⚡' },
+  { label: '30m',  minutes: 30,  emoji: '🔥' },
+  { label: '45m',  minutes: 45,  emoji: '💎' },
+  { label: '1h',   minutes: 60,  emoji: '🚀' },
+  { label: '2h',   minutes: 120, emoji: '🌊' },
+]
 
 interface FocusModeViewProps {
   onBack: () => void
@@ -19,10 +28,14 @@ interface FocusModeViewProps {
   onTogglePlayPause: () => void
   onReset: () => void
   onAdjust: (deltaMinutes: number) => void
+  onSetDuration: (minutes: number) => void
   activeTask?: TodayTask
+  allTasks?: TodayTask[]
+  onSelectTask?: (taskId: string) => void
   onToggleTask?: (id: string) => void
   justStartedFromTask?: boolean
 }
+
 
 function Particle({ delay, x, color }: { delay: number; x: number; color: string }) {
   return (
@@ -50,10 +63,14 @@ export const FocusModeView: React.FC<FocusModeViewProps> = ({
   onTogglePlayPause,
   onReset,
   onAdjust,
+  onSetDuration,
   activeTask,
+  allTasks = [],
+  onSelectTask,
   onToggleTask,
   justStartedFromTask = false,
 }) => {
+
   const mins = Math.floor(secondsRemaining / 60)
   const secs = secondsRemaining % 60
   const timeStr = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
@@ -69,12 +86,42 @@ export const FocusModeView: React.FC<FocusModeViewProps> = ({
   const [sparking, setSparking] = useState(false)
   const sparkTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  // Tap-timer: track which preset is active — purely local, driven by user taps
+  const [selectedPresetMinutes, setSelectedPresetMinutes] = useState<number>(() => {
+    // Find closest matching preset on mount
+    const mins = Math.round(totalSeconds / 60)
+    return [15, 30, 45, 60, 120].includes(mins) ? mins : 45
+  })
+
+  // Task picker: local selected task id (syncs with activeTask)
+  const [selectedTaskId, setSelectedTaskId] = useState<string>(activeTask?.id || '')
+
+  useEffect(() => {
+    if (activeTask?.id) {
+      setSelectedTaskId(activeTask.id)
+    }
+  }, [activeTask?.id])
+
   const handleToggle = () => {
     setSparking(true)
     onTogglePlayPause()
     if (sparkTimer.current) clearTimeout(sparkTimer.current)
     sparkTimer.current = setTimeout(() => setSparking(false), 700)
   }
+
+  const handleSetDuration = (minutes: number) => {
+    setSelectedPresetMinutes(minutes)
+    setSparking(true)
+    onSetDuration(minutes)
+    if (sparkTimer.current) clearTimeout(sparkTimer.current)
+    sparkTimer.current = setTimeout(() => setSparking(false), 600)
+  }
+
+  const handlePickTask = (task: TodayTask) => {
+    setSelectedTaskId(task.id)
+    onSelectTask?.(task.id)
+  }
+
 
   const particles = [
     { x: 15,  delay: 0,    color: '#00F0FF' },
@@ -171,8 +218,97 @@ export const FocusModeView: React.FC<FocusModeViewProps> = ({
           )}
         </div>
 
+        {/* ══ TAP TIMER — one-tap duration presets ══ */}
+        <div className="mt-3 mb-1">
+          <div className="flex items-center gap-1.5 mb-2 px-0.5">
+            <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">Sprint Duration</span>
+            <span className="text-[10px] font-mono text-neutral-600">• tap to set</span>
+          </div>
+          <div className="flex gap-2">
+            {DURATION_PRESETS.map(preset => {
+              const isActive = selectedPresetMinutes === preset.minutes
+              return (
+                <button
+                  key={preset.minutes}
+                  type="button"
+                  onClick={() => handleSetDuration(preset.minutes)}
+                  className={`flex-1 flex flex-col items-center gap-0.5 py-2.5 rounded-2xl border font-bold text-xs transition-all active:scale-90 relative overflow-hidden ${
+                    isActive
+                      ? 'bg-gradient-to-b from-[#00F0FF]/20 to-[#a78bfa]/15 border-[#00F0FF]/60 text-white shadow-[0_0_16px_rgba(0,240,255,0.35),inset_0_1px_0_rgba(0,240,255,0.3)]'
+                      : 'bg-white/[0.04] border-white/10 text-neutral-400 hover:border-white/25 hover:text-white hover:bg-white/[0.07]'
+                  }`}
+                >
+                  {/* Active glow pulse layer */}
+                  {isActive && (
+                    <span
+                      className="absolute inset-0 rounded-2xl pointer-events-none"
+                      style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(0,240,255,0.18) 0%, transparent 70%)' }}
+                    />
+                  )}
+                  <span className="text-base leading-none">{preset.emoji}</span>
+                  <span className={`font-mono text-[11px] font-black ${isActive ? 'text-[#00F0FF]' : ''}`}>
+                    {preset.label}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* ══ TASK PICKER — horizontal scroll to pick focus target ══ */}
+        {allTasks.filter(t => !t.done).length > 0 && (
+          <div className="mt-3 mb-1">
+            <div className="flex items-center gap-1.5 mb-2 px-0.5">
+              <Target className="w-3 h-3 text-neutral-500" />
+              <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">Focus Target</span>
+              <span className="text-[10px] font-mono text-neutral-600">• tap to switch</span>
+            </div>
+            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none -mx-1 px-1">
+              {allTasks.filter(t => !t.done).map(task => {
+                const isSelected = selectedTaskId === task.id || (!selectedTaskId && task.id === activeTask?.id)
+                const isHigh = task.priority === 'focus'
+                return (
+                  <button
+                    key={task.id}
+                    type="button"
+                    onClick={() => handlePickTask(task)}
+                    className={`shrink-0 flex flex-col gap-1 p-3 rounded-2xl border text-left transition-all active:scale-95 w-[148px] relative overflow-hidden ${
+                      isSelected
+                        ? 'bg-gradient-to-br from-[#00F0FF]/18 to-[#a78bfa]/12 border-[#00F0FF]/50 shadow-[0_0_18px_rgba(0,240,255,0.25),inset_0_1px_0_rgba(0,240,255,0.2)]'
+                        : 'bg-white/[0.05] border-white/10 hover:border-white/25 hover:bg-white/[0.08]'
+                    }`}
+                  >
+                    {/* Selected shimmer */}
+                    {isSelected && (
+                      <span className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#00F0FF]/60 to-transparent pointer-events-none" />
+                    )}
+                    <div className="flex items-center justify-between w-full">
+                      <span className={`text-[9px] font-mono uppercase tracking-wider font-bold ${
+                        isHigh ? 'text-rose-400' : 'text-neutral-500'
+                      }`}>
+                        {isHigh ? '🔴 URGENT' : '● TASK'}
+                      </span>
+                      {isSelected && (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#00F0FF]" style={{ filter: 'drop-shadow(0 0 4px #00F0FF)' }} />
+                      )}
+                    </div>
+                    <p className={`text-[11px] font-semibold leading-tight line-clamp-2 ${
+                      isSelected ? 'text-white' : 'text-neutral-300'
+                    }`}>
+                      {task.title}
+                    </p>
+                    {task.time && (
+                      <span className="text-[9px] font-mono text-neutral-500">{task.time}</span>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
         {/* ═══ HERO TIMER with Orbit Rings ═══ */}
-        <div className="my-6 flex flex-col items-center justify-center relative">
+        <div className="my-4 flex flex-col items-center justify-center relative">
           <div className="relative w-64 h-64 flex items-center justify-center">
 
             {/* Plasma aura blob */}

@@ -253,10 +253,8 @@ export const SwipeableTaskItem: React.FC<SwipeableTaskItemProps> = ({
                       sounds.playClick(true)
                       onFocusTap(task.id)
                     }}
-                    className={`p-1 -mr-0.5 rounded-lg transition-all active:scale-90 ${
-                      isHovered
-                        ? 'opacity-100 text-[#00F0FF] bg-[#00F0FF]/15 shadow-[0_0_8px_rgba(0,240,255,0.4)]'
-                        : 'opacity-0'
+                    className={`p-1 -mr-0.5 rounded-lg transition-all active:scale-90 text-[#00F0FF]/70 hover:text-[#00F0FF] hover:bg-[#00F0FF]/15 hover:shadow-[0_0_8px_rgba(0,240,255,0.4)] ${
+                      isHovered ? 'opacity-100 text-[#00F0FF] bg-[#00F0FF]/15' : 'opacity-60'
                     }`}
                     aria-label="Start focus session on this task"
                     title="Focus on this task ⚡"

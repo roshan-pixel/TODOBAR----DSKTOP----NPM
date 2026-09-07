@@ -163,7 +163,10 @@ export function App() {
             onTogglePlayPause={timer.togglePlayPause}
             onReset={() => timer.reset()}
             onAdjust={timer.adjust}
+            onSetDuration={timer.setDuration}
             activeTask={focusTask ?? activeFocusTask}
+            allTasks={tasks}
+            onSelectTask={(id) => setFocusedTaskId(id)}
             onToggleTask={toggleTask}
             justStartedFromTask={justStartedFromTask}
           />
