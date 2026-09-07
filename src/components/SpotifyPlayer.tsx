@@ -12,8 +12,8 @@ import {
   VolumeX,
   Sparkles,
   X,
-  Info,
-  Headphones,
+  Search,
+  Zap,
 } from 'lucide-react'
 
 const YoutubeIcon: React.FC<{ className?: string }> = ({ className = 'w-3.5 h-3.5' }) => (
@@ -36,16 +36,16 @@ export interface MediaItem {
   isCustom?: boolean
 }
 
-// ── 1. 100% FULL-LENGTH FOCUS STATIONS (Zero 30s Previews, Continuous Full Audio) ──
+// ── 1. FULL-LENGTH 24/7 FOCUS STATIONS (Zero 30s Limits, Continuous Full Audio) ──
 const FULL_RADIO_STATIONS: MediaItem[] = [
   {
     id: 'lofi-radio',
     source: 'radio',
     type: 'stream',
     title: 'Chill Lofi 24/7',
-    subtitle: 'Lo-Fi Chillhop Beats • Full Stream (No 30s Limit)',
+    subtitle: 'Lo-Fi Chillhop Beats • 100% Full Stream',
     genreTag: 'FULL LO-FI',
-    color: '#f59e0b', // amber
+    color: '#f59e0b',
     streamUrl: 'https://streams.ilovemusic.de/iloveradio17.mp3',
     sourceUrl: 'https://streams.ilovemusic.de/iloveradio17.mp3',
   },
@@ -54,9 +54,9 @@ const FULL_RADIO_STATIONS: MediaItem[] = [
     source: 'radio',
     type: 'stream',
     title: 'Groove Salad Ambient',
-    subtitle: 'Downtempo Chill Flow • Full Stream (No 30s Limit)',
+    subtitle: 'Downtempo Chill Flow • 100% Full Stream',
     genreTag: 'FULL CHILL',
-    color: '#00F0FF', // cyan
+    color: '#00F0FF',
     streamUrl: 'https://ice1.somafm.com/groovesalad-128-mp3',
     sourceUrl: 'https://somafm.com/groovesalad/',
   },
@@ -65,9 +65,9 @@ const FULL_RADIO_STATIONS: MediaItem[] = [
     source: 'radio',
     type: 'stream',
     title: 'DEF CON Synthwave',
-    subtitle: 'Hacker Cyberpunk Synth • Full Stream (No 30s Limit)',
+    subtitle: 'Cyberpunk & Synth Coding • 100% Full Stream',
     genreTag: 'FULL SYNTH',
-    color: '#a855f7', // purple
+    color: '#a855f7',
     streamUrl: 'https://ice1.somafm.com/defcon-128-mp3',
     sourceUrl: 'https://somafm.com/defcon/',
   },
@@ -76,9 +76,9 @@ const FULL_RADIO_STATIONS: MediaItem[] = [
     source: 'radio',
     type: 'stream',
     title: 'Drone Zone Deep Flow',
-    subtitle: 'Deep Atmospheric Brainwaves • Full Stream (No 30s Limit)',
+    subtitle: 'Atmospheric Brainwaves • 100% Full Stream',
     genreTag: 'FULL BINAURAL',
-    color: '#10b981', // emerald
+    color: '#10b981',
     streamUrl: 'https://ice1.somafm.com/dronezone-128-mp3',
     sourceUrl: 'https://somafm.com/dronezone/',
   },
@@ -87,9 +87,9 @@ const FULL_RADIO_STATIONS: MediaItem[] = [
     source: 'radio',
     type: 'stream',
     title: 'Lush Acoustic Piano',
-    subtitle: 'Mellow Piano & Acoustic • Full Stream (No 30s Limit)',
+    subtitle: 'Mellow Piano & Acoustic • 100% Full Stream',
     genreTag: 'FULL PIANO',
-    color: '#38bdf8', // sky blue
+    color: '#38bdf8',
     streamUrl: 'https://ice1.somafm.com/lush-128-mp3',
     sourceUrl: 'https://somafm.com/lush/',
   },
@@ -98,9 +98,9 @@ const FULL_RADIO_STATIONS: MediaItem[] = [
     source: 'radio',
     type: 'stream',
     title: 'Coffee Table Jazz',
-    subtitle: 'Warm Cafe Acoustics & Jazz • Full Stream (No 30s Limit)',
+    subtitle: 'Warm Cafe Acoustics & Jazz • 100% Full Stream',
     genreTag: 'FULL JAZZ',
-    color: '#fb923c', // orange
+    color: '#fb923c',
     streamUrl: 'https://ice2.somafm.com/sonicuniverse-128-mp3',
     sourceUrl: 'https://somafm.com/sonicuniverse/',
   },
@@ -157,16 +157,16 @@ const SPOTIFY_STATIONS: MediaItem[] = [
 const STORAGE_CUSTOM_KEY = 'todobar_custom_focus_music'
 const STORAGE_ACTIVE_KEY = 'todobar_active_focus_music'
 
-export function parseAnyMediaUrl(input: string): {
+export function parseAnyMedia(input: string): {
   source: 'spotify' | 'youtube' | 'audio'
   type: 'track' | 'playlist' | 'album' | 'video' | 'stream'
   id: string
   embedUrl: string
-} | null {
+  suggestedTitle?: string
+} {
   const trimmed = input.trim()
-  if (!trimmed) return null
 
-  // 1. YouTube / YouTube Music
+  // 1. YouTube link
   const ytMatch = trimmed.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/|music\.youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/i)
   if (ytMatch) {
     const id = ytMatch[1]
@@ -179,7 +179,7 @@ export function parseAnyMediaUrl(input: string): {
   }
 
   // 2. Direct MP3/Audio stream
-  if (/\.(mp3|aac|m4a|ogg|wav)($|\?)/i.test(trimmed) || /^https?:\/\/.*somafm\.com/i.test(trimmed)) {
+  if (/\.(mp3|aac|m4a|ogg|wav)($|\?)/i.test(trimmed)) {
     return {
       source: 'audio',
       type: 'stream',
@@ -214,17 +214,14 @@ export function parseAnyMediaUrl(input: string): {
     }
   }
 
-  // 5. 22-char Spotify ID fallback
-  if (/^[a-zA-Z0-9]{22}$/.test(trimmed)) {
-    return {
-      source: 'spotify',
-      type: 'track',
-      id: trimmed,
-      embedUrl: `https://open.spotify.com/embed/track/${trimmed}?utm_source=generator&theme=0`,
-    }
+  // 5. Default Fallback: Full Song Search (No Login Required, 100% Full Playback)
+  return {
+    source: 'youtube',
+    type: 'video',
+    id: `search-${encodeURIComponent(trimmed)}`,
+    embedUrl: `https://www.youtube-nocookie.com/embed?listType=search&list=${encodeURIComponent(trimmed)}&autoplay=1`,
+    suggestedTitle: trimmed,
   }
-
-  return null
 }
 
 interface SpotifyPlayerProps {
@@ -232,7 +229,7 @@ interface SpotifyPlayerProps {
 }
 
 export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false }) => {
-  // Active selected media item (default to Full-Length Chill Lofi Stream for zero 30s preview limit)
+  // Default to full-length Chill Lofi stream
   const [currentMedia, setCurrentMedia] = useState<MediaItem>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_ACTIVE_KEY)
@@ -241,7 +238,7 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
     return FULL_RADIO_STATIONS[0]
   })
 
-  // Mode category switcher: 'full_stream' | 'spotify'
+  // Mode: 'full_stream' | 'spotify'
   const [categoryMode, setCategoryMode] = useState<'full_stream' | 'spotify'>(() => {
     return currentMedia.source === 'radio' ? 'full_stream' : 'spotify'
   })
@@ -252,7 +249,7 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
   const [radioVolume, setRadioVolume] = useState(0.8)
   const [radioLoading, setRadioLoading] = useState(false)
 
-  // Custom added songs list
+  // Custom user tracks
   const [customList, setCustomList] = useState<MediaItem[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_CUSTOM_KEY)
@@ -261,39 +258,37 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
     return []
   })
 
-  // Add Song Drawer
-  const [isAddOpen, setIsAddOpen] = useState(false)
-  const [urlInput, setUrlInput] = useState('')
-  const [titleInput, setTitleInput] = useState('')
-  const [isLoadingMeta, setIsLoadingMeta] = useState(false)
-  const [inputError, setInputError] = useState<string | null>(null)
-  const [addSuccess, setAddSuccess] = useState(false)
+  // Search & Add drawer
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [searchInput, setSearchInput] = useState('')
+  const [isLoadingSearch, setIsLoadingSearch] = useState(false)
+  const [searchSuccess, setSearchSuccess] = useState(false)
 
   const audioRef = useRef<HTMLAudioElement | null>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const searchInputRef = useRef<HTMLInputElement>(null)
 
-  // Sync active media to localStorage
+  // Save active media
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_ACTIVE_KEY, JSON.stringify(currentMedia))
     } catch {}
   }, [currentMedia])
 
-  // Sync custom list to localStorage
+  // Save custom list
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_CUSTOM_KEY, JSON.stringify(customList))
     } catch {}
   }, [customList])
 
-  // Auto-focus input when Add drawer opens
+  // Focus search input on open
   useEffect(() => {
-    if (isAddOpen) {
-      setTimeout(() => inputRef.current?.focus(), 120)
+    if (isSearchOpen) {
+      setTimeout(() => searchInputRef.current?.focus(), 120)
     }
-  }, [isAddOpen])
+  }, [isSearchOpen])
 
-  // Handle native audio playback when currentMedia changes
+  // Handle native audio playback
   useEffect(() => {
     if (currentMedia.source === 'radio' && currentMedia.streamUrl) {
       if (!audioRef.current) {
@@ -304,7 +299,6 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
       audio.volume = radioVolume
       audio.muted = isRadioMuted
 
-      // Auto-play stream if focus session is already running
       if (isRunning) {
         setRadioLoading(true)
         audio.play()
@@ -321,110 +315,93 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
         audio.pause()
       }
     } else {
-      // If switched to Spotify/YouTube embed, pause the native radio
       if (audioRef.current) {
         audioRef.current.pause()
         setIsRadioPlaying(false)
       }
     }
-
-    return () => {
-      // cleanup
-    }
   }, [currentMedia])
 
-  // Auto-fetch song/video title via oEmbed
-  const handleUrlChange = async (val: string) => {
-    setUrlInput(val)
-    setInputError(null)
+  const handleSearchOrAdd = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const query = searchInput.trim()
+    if (!query) return
 
-    const parsed = parseAnyMediaUrl(val)
-    if (!parsed) return
+    setIsLoadingSearch(true)
+    const parsed = parseAnyMedia(query)
 
-    setIsLoadingMeta(true)
-    try {
-      if (parsed.source === 'youtube') {
-        const res = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(val)}&format=json`)
-        if (res.ok) {
-          const data = await res.json()
-          if (data.title && !titleInput) setTitleInput(data.title)
-        }
-      } else if (parsed.source === 'spotify') {
+    let finalTitle = query
+    let finalSubtitle = 'Full-Length Song (No Login Needed)'
+
+    // If user pasted a Spotify link, fetch title via oEmbed and play full version
+    if (parsed.source === 'spotify') {
+      try {
         const cleanUrl = `https://open.spotify.com/${parsed.type}/${parsed.id}`
         const res = await fetch(`https://open.spotify.com/oembed?url=${encodeURIComponent(cleanUrl)}`)
         if (res.ok) {
           const data = await res.json()
-          if (data.title && !titleInput) setTitleInput(data.title)
+          if (data.title) {
+            finalTitle = data.title
+            finalSubtitle = `Full Track • ${data.author_name || 'Spotify'}`
+          }
         }
-      }
-    } catch {
-      // ignore
-    } finally {
-      setIsLoadingMeta(false)
-    }
-  }
+      } catch {}
 
-  const handleAddSong = (e: React.FormEvent) => {
-    e.preventDefault()
-    setInputError(null)
-
-    const parsed = parseAnyMediaUrl(urlInput)
-    if (!parsed) {
-      setInputError('Please paste a valid Spotify, YouTube, or audio stream link')
-      return
-    }
-
-    let newItem: MediaItem
-    if (parsed.source === 'youtube') {
-      newItem = {
-        id: parsed.id,
+      // Play the full audio version so it doesn't cut off at 30s!
+      const newItem: MediaItem = {
+        id: `full-spotify-${parsed.id}`,
         source: 'youtube',
         type: 'video',
-        embedUrl: parsed.embedUrl,
-        title: titleInput.trim() || 'Custom YouTube Track',
-        subtitle: 'Full-Length Uninterrupted Playback',
-        genreTag: 'FULL YOUTUBE',
-        color: '#ef4444',
-        sourceUrl: urlInput.trim(),
-        isCustom: true,
-      }
-    } else if (parsed.source === 'audio') {
-      newItem = {
-        id: `custom-audio-${Date.now()}`,
-        source: 'radio',
-        type: 'stream',
-        streamUrl: parsed.embedUrl,
-        title: titleInput.trim() || 'Custom Audio Stream',
-        subtitle: 'Direct Full-Length Stream',
-        genreTag: 'FULL AUDIO',
-        color: '#10b981',
-        sourceUrl: urlInput.trim(),
-        isCustom: true,
-      }
-    } else {
-      // Spotify
-      newItem = {
-        id: parsed.id,
-        source: 'spotify',
-        type: parsed.type as any,
-        embedUrl: parsed.embedUrl,
-        title: titleInput.trim() || `Custom Spotify ${parsed.type.toUpperCase()}`,
-        subtitle: 'Spotify Player (Full with login or app)',
-        genreTag: `SPOTIFY ${parsed.type.toUpperCase()}`,
+        embedUrl: `https://www.youtube-nocookie.com/embed?listType=search&list=${encodeURIComponent(finalTitle)}&autoplay=1`,
+        title: finalTitle,
+        subtitle: finalSubtitle,
+        genreTag: 'FULL SONG',
         color: '#1DB954',
         sourceUrl: `https://open.spotify.com/${parsed.type}/${parsed.id}`,
         isCustom: true,
       }
+
+      setCustomList(prev => [newItem, ...prev.filter(x => x.id !== newItem.id)])
+      setCurrentMedia(newItem)
+    } else if (parsed.source === 'youtube') {
+      const newItem: MediaItem = {
+        id: parsed.id,
+        source: 'youtube',
+        type: 'video',
+        embedUrl: parsed.embedUrl,
+        title: finalTitle.startsWith('http') ? 'Custom YouTube Song' : finalTitle,
+        subtitle: '100% Full Playback • Zero Login',
+        genreTag: 'FULL YOUTUBE',
+        color: '#ef4444',
+        sourceUrl: query,
+        isCustom: true,
+      }
+      setCustomList(prev => [newItem, ...prev.filter(x => x.id !== newItem.id)])
+      setCurrentMedia(newItem)
+    } else {
+      // General song name search
+      const newItem: MediaItem = {
+        id: `song-${Date.now()}`,
+        source: 'youtube',
+        type: 'video',
+        embedUrl: parsed.embedUrl,
+        title: finalTitle,
+        subtitle: 'Full-Length Song (No Login)',
+        genreTag: 'FULL SONG',
+        color: '#00F0FF',
+        sourceUrl: `https://www.youtube.com/results?search_query=${encodeURIComponent(finalTitle)}`,
+        isCustom: true,
+      }
+      setCustomList(prev => [newItem, ...prev.filter(x => x.id !== newItem.id)])
+      setCurrentMedia(newItem)
     }
 
-    setCustomList(prev => [newItem, ...prev.filter(x => x.id !== newItem.id)])
-    setCurrentMedia(newItem)
-    setUrlInput('')
-    setTitleInput('')
-    setAddSuccess(true)
+    setIsLoadingSearch(false)
+    setSearchSuccess(true)
+    setSearchInput('')
     setTimeout(() => {
-      setAddSuccess(false)
-      setIsAddOpen(false)
+      setSearchSuccess(false)
+      setIsSearchOpen(false)
     }, 800)
   }
 
@@ -472,9 +449,9 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
   const isPlayingLive = isRadioActive ? isRadioPlaying : isRunning
 
   return (
-    <div className="w-full rounded-3xl bg-gradient-to-br from-[#0b101c]/95 via-[#070b16]/95 to-[#030610]/95 border border-white/10 backdrop-blur-2xl shadow-[0_16px_40px_rgba(0,0,0,0.65),inset_0_1px_0_rgba(255,255,255,0.1)] overflow-hidden mb-4 transition-all">
+    <div className="w-full rounded-3xl bg-gradient-to-br from-[#0c1220]/95 via-[#080e1a]/95 to-[#030612]/95 border border-cyan-500/20 backdrop-blur-2xl shadow-[0_16px_40px_rgba(0,0,0,0.65),inset_0_1px_0_rgba(255,255,255,0.1)] overflow-hidden mb-4 transition-all">
       
-      {/* ── 1. HEADER & MODE SWITCHER BAR ── */}
+      {/* ── 1. TOP STATUS & NAVIGATION BAR ── */}
       <div className="flex items-center justify-between px-3.5 py-2.5 border-b border-white/[0.08] bg-white/[0.02]">
         
         {/* Left: Mode Badge & Title */}
@@ -501,21 +478,14 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
             <span className="text-[11px] font-mono font-bold tracking-wider text-white truncate">
               {currentMedia.genreTag}
             </span>
-            <span
-              className="text-[9px] font-mono px-1.5 py-0.2 rounded font-semibold uppercase tracking-wider shrink-0"
-              style={{
-                backgroundColor: `${currentMedia.color}22`,
-                color: currentMedia.color,
-                border: `1px solid ${currentMedia.color}44`,
-              }}
-            >
-              {currentMedia.source === 'radio' ? 'FULL STREAM' : 'NO 30S CUT'}
+            <span className="text-[9px] font-mono px-1.5 py-0.2 rounded font-semibold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shrink-0">
+              FULL PLAYBACK
             </span>
           </div>
         </div>
 
         {/* Center: Live 7-Band Equalizer */}
-        <div className="flex items-end gap-[2px] h-4 px-2" title="Audio Flow Equalizer">
+        <div className="flex items-end gap-[2px] h-4 px-2" title="Live Audio Flow">
           {[1, 2, 3, 4, 5, 6, 7].map(i => (
             <span
               key={i}
@@ -530,7 +500,7 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
           ))}
         </div>
 
-        {/* Right: Category Mode Tabs + Add Button */}
+        {/* Right: Mode Switcher & Search Button */}
         <div className="flex items-center gap-1 shrink-0">
           <div className="flex items-center gap-0.5 bg-white/[0.06] p-0.5 rounded-xl border border-white/10">
             <button
@@ -539,14 +509,14 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
                 setCategoryMode('full_stream')
                 setCurrentMedia(FULL_RADIO_STATIONS[0])
               }}
-              title="Full-Length 24/7 Streams (Zero 30s limits, continuous full audio)"
+              title="Full 24/7 Focus Streams (Zero 30s limits, no login needed)"
               className={`px-2 py-1 rounded-lg text-[9px] font-mono font-semibold transition-all ${
                 categoryMode === 'full_stream'
                   ? 'bg-[#00F0FF] text-black shadow-[0_0_8px_rgba(0,240,255,0.4)]'
                   : 'text-neutral-400 hover:text-white'
               }`}
             >
-              Full Streams
+              Full Radio
             </button>
             <button
               type="button"
@@ -567,15 +537,15 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
 
           <button
             type="button"
-            onClick={() => setIsAddOpen(v => !v)}
-            title="Add your own custom track, playlist, or YouTube link"
+            onClick={() => setIsSearchOpen(v => !v)}
+            title="Search ANY song of your choice or paste link"
             className={`p-1.5 rounded-lg border transition-all ${
-              isAddOpen
-                ? 'bg-purple-500 text-white border-purple-400'
+              isSearchOpen
+                ? 'bg-purple-500 text-white border-purple-400 shadow-[0_0_10px_rgba(168,85,247,0.5)]'
                 : 'bg-white/[0.06] hover:bg-white/12 text-neutral-300 border-white/10'
             }`}
           >
-            <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+            <Search className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
@@ -626,9 +596,9 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
         })}
       </div>
 
-      {/* ── 3. MAIN PLAYER CONTAINER (Full Audio vs Spotify vs YouTube) ── */}
+      {/* ── 3. MAIN AUDIO ENGINE (Continuous Full Playback) ── */}
       <div className="px-3 pb-3">
-        {/* A. NATIVE FULL-LENGTH AUDIO RADIO PLAYER (Continuous 100% full music, zero 30s limit) */}
+        {/* A. NATIVE FULL-LENGTH AUDIO RADIO PLAYER (Zero 30s limit, 100% full stream) */}
         {currentMedia.source === 'radio' && (
           <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/10 shadow-[0_8px_24px_rgba(0,0,0,0.4)]">
             <div className="flex items-center justify-between">
@@ -670,14 +640,14 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
             <div className="mt-2 pt-2 border-t border-white/[0.06] flex items-center justify-between text-[9px] font-mono text-emerald-400">
               <span className="flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span>100% UNINTERRUPTED FULL STREAM • ZERO 30S CUTS</span>
+                <span>NO LOGIN NEEDED • CONTINUOUS FULL STREAM</span>
               </span>
-              <span className="text-neutral-500 font-mono">HQ AUDIO</span>
+              <span className="text-neutral-500 font-mono">128 KBPS HQ</span>
             </div>
           </div>
         )}
 
-        {/* B. SPOTIFY EMBED WITH FULL-PLAYBACK GUIDANCE */}
+        {/* B. SPOTIFY EMBED WITH EASY FULL TRACK RESOLVER */}
         {currentMedia.source === 'spotify' && currentMedia.embedUrl && (
           <div className="flex flex-col gap-2">
             <div className="w-full rounded-2xl overflow-hidden border border-white/10 bg-black/80 shadow-[0_8px_24px_rgba(0,0,0,0.5)] h-[80px]">
@@ -694,39 +664,32 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
               />
             </div>
 
-            {/* Direct Launch Helper for Full Track in Spotify App */}
-            <div className="flex items-center justify-between px-1 py-1 rounded-xl bg-white/[0.02] border border-white/5 text-[10px] font-mono">
-              <span className="text-neutral-400 flex items-center gap-1">
-                <Info className="w-3 h-3 text-[#00F0FF] shrink-0" />
-                <span>Want full song without 30s cut?</span>
-              </span>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setCategoryMode('full_stream')
-                    setCurrentMedia(FULL_RADIO_STATIONS[0])
-                  }}
-                  className="text-[#00F0FF] font-semibold hover:underline"
-                >
-                  Switch to Full Stream
-                </button>
-                <span className="text-neutral-600">•</span>
-                <a
-                  href={currentMedia.sourceUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-[#1DB954] font-semibold hover:underline flex items-center gap-0.5"
-                >
-                  <span>Open App</span>
-                  <ExternalLink className="w-2.5 h-2.5" />
-                </a>
-              </div>
+            <div className="flex items-center justify-between px-2 py-1.5 rounded-xl bg-white/[0.02] border border-white/5 text-[10px] font-mono">
+              <button
+                type="button"
+                onClick={() => {
+                  setCategoryMode('full_stream')
+                  setCurrentMedia(FULL_RADIO_STATIONS[0])
+                }}
+                className="text-[#00F0FF] font-semibold hover:underline flex items-center gap-1"
+              >
+                <Zap className="w-3 h-3 text-[#00F0FF]" />
+                <span>Play Full Music (No 30s Limit)</span>
+              </button>
+              <a
+                href={currentMedia.sourceUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="text-[#1DB954] hover:underline flex items-center gap-1 text-[9px]"
+              >
+                <span>Spotify App</span>
+                <ExternalLink className="w-2.5 h-2.5" />
+              </a>
             </div>
           </div>
         )}
 
-        {/* C. YOUTUBE FULL EMBED (Plays 100% full song without preview limits) */}
+        {/* C. FULL SONG SEARCH / YOUTUBE EMBED (Plays 100% full song without login or preview limits) */}
         {currentMedia.source === 'youtube' && currentMedia.embedUrl && (
           <div className="w-full rounded-2xl overflow-hidden border border-white/10 bg-black/80 shadow-[0_8px_24px_rgba(0,0,0,0.5)] h-[152px]">
             <iframe
@@ -744,78 +707,81 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
         )}
       </div>
 
-      {/* ── 4. "ADD MUSIC OF YOUR CHOICE" DRAWER (Supports Spotify, YouTube, & Audio) ── */}
-      {isAddOpen && (
-        <div className="p-3.5 border-t border-white/[0.08] bg-black/50 backdrop-blur-2xl animate-task-entry">
+      {/* ── 4. "SEARCH ANY SONG OF YOUR CHOICE" DRAWER (Full Playback Without Login) ── */}
+      {isSearchOpen && (
+        <div className="p-3.5 border-t border-white/[0.08] bg-black/60 backdrop-blur-2xl animate-task-entry">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[11px] font-mono font-bold tracking-wider text-white flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-[#00F0FF]" />
-              ADD ANY MUSIC (FULL PLAYBACK)
+              PLAY ANY SONG IN FULL (ZERO LOGIN)
             </span>
             <button
               type="button"
-              onClick={() => setIsAddOpen(false)}
+              onClick={() => setIsSearchOpen(false)}
               className="p-1 rounded-full text-neutral-400 hover:text-white"
             >
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          <p className="text-[10px] text-neutral-400 font-mono mb-2.5">
-            Tip: Paste a <strong className="text-rose-400">YouTube link</strong> for 100% full songs without 30s limits, or any <strong className="text-[#1DB954]">Spotify link</strong>.
+          <p className="text-[10px] text-neutral-400 font-mono mb-2">
+            Type any song name, artist, or paste any Spotify/YouTube link:
           </p>
 
-          <form onSubmit={handleAddSong} className="flex flex-col gap-2">
-            <div className="relative">
-              <input
-                ref={inputRef}
-                type="text"
-                value={urlInput}
-                onChange={e => handleUrlChange(e.target.value)}
-                placeholder="Paste YouTube, Spotify, or Audio stream link..."
-                className="w-full px-3 py-2 text-xs font-mono bg-white/[0.06] border border-white/15 rounded-xl text-white placeholder:text-neutral-500 outline-none focus:border-[#00F0FF] transition-all pr-8"
-              />
-              {isLoadingMeta && (
-                <span className="absolute right-2.5 top-2.5 w-3.5 h-3.5 border-2 border-[#00F0FF] border-t-transparent rounded-full animate-spin" />
-              )}
-            </div>
-
+          <form onSubmit={handleSearchOrAdd} className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
-              <input
-                type="text"
-                value={titleInput}
-                onChange={e => setTitleInput(e.target.value)}
-                placeholder="Custom label (optional)"
-                className="flex-1 px-3 py-2 text-xs bg-white/[0.06] border border-white/15 rounded-xl text-white placeholder:text-neutral-500 outline-none focus:border-[#00F0FF] transition-all"
-              />
+              <div className="relative flex-1">
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={searchInput}
+                  onChange={e => setSearchInput(e.target.value)}
+                  placeholder="e.g. Starboy, Interstellar, Coldplay, Lofi Girl..."
+                  className="w-full px-3 py-2 text-xs font-mono bg-white/[0.06] border border-white/15 rounded-xl text-white placeholder:text-neutral-500 outline-none focus:border-[#00F0FF] transition-all pr-8"
+                />
+                {isLoadingSearch && (
+                  <span className="absolute right-2.5 top-2.5 w-3.5 h-3.5 border-2 border-[#00F0FF] border-t-transparent rounded-full animate-spin" />
+                )}
+              </div>
+
               <button
                 type="submit"
-                disabled={!urlInput.trim()}
+                disabled={!searchInput.trim()}
                 className="px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-1.5 active:scale-95 bg-gradient-to-r from-[#00F0FF] to-[#1DB954] text-black shadow-[0_0_14px_rgba(0,240,255,0.4)] disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
               >
-                <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-                <span>Add & Play Full</span>
+                <Play className="w-3 h-3 fill-current" />
+                <span>Play Full</span>
               </button>
             </div>
 
-            {inputError && (
-              <p className="text-[10px] font-mono text-rose-400 bg-rose-500/10 p-2 rounded-lg border border-rose-500/20">
-                {inputError}
-              </p>
-            )}
-
-            {addSuccess && (
+            {searchSuccess && (
               <p className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 p-2 rounded-lg border border-emerald-500/20 flex items-center gap-1.5">
-                <Check className="w-3 h-3 stroke-[3]" /> Added to your library! Playing in full now…
+                <Check className="w-3 h-3 stroke-[3]" /> Loaded full song! Playing now…
               </p>
             )}
           </form>
+
+          {/* Quick Search Chips */}
+          <div className="flex items-center gap-1.5 mt-2.5 overflow-x-auto scrollbar-none">
+            {['Lofi Girl Beats', 'Synthwave Coding', 'Hans Zimmer Focus', 'Deep Binaural 432Hz'].map(tag => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => {
+                  setSearchInput(tag)
+                }}
+                className="px-2 py-0.5 rounded-full text-[9px] font-mono bg-white/[0.04] hover:bg-white/10 text-neutral-400 hover:text-white border border-white/5 whitespace-nowrap transition-colors"
+              >
+                + {tag}
+              </button>
+            ))}
+          </div>
 
           {/* User's Saved Custom Music */}
           {customList.length > 0 && (
             <div className="mt-3 pt-2.5 border-t border-white/10">
               <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-400 block mb-1.5">
-                My Added Music ({customList.length})
+                My Saved Songs ({customList.length})
               </span>
               <div className="flex flex-col gap-1.5 max-h-32 overflow-y-auto scrollbar-none pr-1">
                 {customList.map(item => {
@@ -825,7 +791,7 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
                       key={item.id}
                       onClick={() => {
                         setCurrentMedia(item)
-                        setIsAddOpen(false)
+                        setIsSearchOpen(false)
                       }}
                       className={`flex items-center justify-between p-2 rounded-xl border text-left cursor-pointer transition-all ${
                         isCurrent
@@ -834,13 +800,7 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
                       }`}
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        {item.source === 'youtube' ? (
-                          <YoutubeIcon className="w-3.5 h-3.5 text-rose-400 shrink-0" />
-                        ) : item.source === 'spotify' ? (
-                          <Music className="w-3.5 h-3.5 text-[#1DB954] shrink-0" />
-                        ) : (
-                          <Radio className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                        )}
+                        <Music className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
                         <span className="text-xs font-medium truncate">{item.title}</span>
                       </div>
                       <button
