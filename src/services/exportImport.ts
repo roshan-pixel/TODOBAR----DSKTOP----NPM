@@ -27,70 +27,7 @@ export const INITIAL_CUSTOM_LISTS: CustomList[] = [
   },
 ]
 
-export const INITIAL_TASKS: Task[] = [
-  {
-    id: 'task-1',
-    title: 'Ship Todobar Pro dockable sidebar',
-    description: 'Finalize keyboard shortcuts, responsive layout and sleek theme switching',
-    priority: 'focus',
-    listId: 'today',
-    dueDate: new Date().toISOString().split('T')[0],
-    dueTime: '18:00',
-    estimatedMinutes: 45,
-    tags: ['code', 'release'],
-    done: false,
-    createdAt: new Date().toISOString(),
-    isPinned: true,
-    subtasks: [
-      { id: 'sub-1', title: 'Verify dock edge transitions', done: true },
-      { id: 'sub-2', title: 'Test reminder alert snoozing', done: true },
-      { id: 'sub-3', title: 'Review custom theme palettes', done: false },
-    ],
-  },
-  {
-    id: 'task-2',
-    title: 'Review team pull requests & security audit',
-    description: 'Check OWASP checks and dependency updates',
-    priority: 'focus',
-    listId: 'work',
-    dueDate: new Date().toISOString().split('T')[0],
-    estimatedMinutes: 30,
-    tags: ['review', 'security'],
-    done: false,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'task-3',
-    title: 'Plan tomorrow sprint milestones',
-    description: 'Break down tickets and assign story points',
-    priority: 'normal',
-    listId: 'today',
-    dueDate: new Date().toISOString().split('T')[0],
-    tags: ['planning'],
-    done: false,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'task-4',
-    title: 'Hydrate & 15-minute mobility stretch',
-    priority: 'normal',
-    listId: 'personal',
-    dueDate: new Date().toISOString().split('T')[0],
-    tags: ['wellness'],
-    done: true,
-    createdAt: new Date().toISOString(),
-    completedAt: new Date().toISOString(),
-  },
-  {
-    id: 'task-5',
-    title: 'Explore LLM tool-calling agent patterns',
-    priority: 'later',
-    listId: 'ideas',
-    tags: ['ai', 'research'],
-    done: false,
-    createdAt: new Date().toISOString(),
-  },
-]
+export const INITIAL_TASKS: Task[] = []
 
 export function exportDataAsJson(tasks: Task[], lists: CustomList[], settings: SidebarSettings): void {
   const exportPayload = {

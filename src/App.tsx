@@ -120,7 +120,7 @@ export function App() {
             focusTimeString={timer.timeString}
             focusMinutesRemaining={timer.minutes}
             isFocusRunning={timer.isRunning}
-            focusTaskTitle={activeFocusTask?.title || 'Design System Tokens Refinement'}
+            focusTaskTitle={activeFocusTask?.title || 'No active focus task'}
           />
         )}
 
@@ -152,6 +152,7 @@ export function App() {
 
         {currentScreen === 'calendar' && (
           <CalendarTimelineView
+            tasks={tasks}
             onBack={() => {
               setCurrentScreen('today')
               setActiveTab('today')
@@ -203,6 +204,7 @@ export function App() {
       {/* Global Search & Omnibox Modal */}
       <GlobalSearchModal
         isOpen={isSearchOpen}
+        tasks={tasks}
         onClose={() => setIsSearchOpen(false)}
       />
     </IPhone16ProMaxFrame>

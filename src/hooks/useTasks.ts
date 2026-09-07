@@ -4,12 +4,19 @@ import { scheduleLocalStorageWrite, getFromStorage } from '../services/storage'
 import { INITIAL_TASKS, INITIAL_CUSTOM_LISTS } from '../services/exportImport'
 import { sounds } from '../services/audio'
 
-const TASKS_STORAGE_KEY = 'todobar.v2.tasks'
+const TASKS_STORAGE_KEY = 'todobar.v3.tasks'
 const LISTS_STORAGE_KEY = 'todobar.v2.lists'
 
 export function useTasks(playSounds = true) {
   const [tasks, setTasks] = useState<Task[]>(() => {
-    return getFromStorage<Task[]>(TASKS_STORAGE_KEY, INITIAL_TASKS)
+    if (typeof window !== 'undefined' && window.localStorage) {
+      if (localStorage.getItem('todobar.v2.tasks')) {
+        localStorage.removeItem('todobar.v2.tasks')
+      }
+    }
+    const raw = getFromStorage<Task[]>(TASKS_STORAGE_KEY, INITIAL_TASKS)
+    const mockIds = new Set(['task-1', 'task-2', 'task-3', 'task-4', 'task-5'])
+    return Array.isArray(raw) ? raw.filter(t => !mockIds.has(t.id)) : []
   })
 
   const [lists, setLists] = useState<CustomList[]>(() => {

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { TodayTask } from '../types'
 import { sounds } from '../services/audio'
 
-const STORAGE_KEY = 'todobar.prototype.tasks.v4'
+const STORAGE_KEY = 'todobar.prototype.tasks.v5'
 
 export const isDesignSystemTask = (task: TodayTask): boolean => {
   if (task.categoryType) return task.categoryType === 'design'
@@ -20,111 +20,24 @@ export const isWorkTask = (task: TodayTask): boolean => {
   return !isDesignSystemTask(task)
 }
 
-export const INITIAL_TODAY_TASKS: TodayTask[] = [
-  {
-    id: 'task-1',
-    title: 'Finalize Apple 2026 Liquid Glass spec & token exports',
-    priority: 'focus',
-    done: false,
-    time: '11:30 AM',
-    category: 'Figma Design System',
-    categoryType: 'design',
-    subtasksCount: '3/4 subtasks',
-    subtaskProgress: 75,
-    avatars: [
-      { initials: 'JD', bg: 'bg-[#3b49df] text-white' },
-      { initials: 'AL', bg: 'bg-[#10b981] text-neutral-950 font-bold' },
-    ],
-    priorityTag: 'High Priority',
-    dotColor: 'bg-rose-400',
-    tagColor: 'bg-rose-500/20 text-rose-300 border-rose-500/35',
-  },
-  {
-    id: 'task-2',
-    title: 'Review spatial sound design for Todobar micro-haptics',
-    priority: 'normal',
-    done: false,
-    time: '2:00 PM',
-    category: 'Audio Labs • Haptics v2',
-    categoryType: 'work',
-    attachments: '2 files',
-    priorityTag: 'Medium',
-    dotColor: 'bg-[#00F0FF]',
-    tagColor: 'bg-cyan-500/20 text-[#00F0FF] border-cyan-500/35',
-  },
-  {
-    id: 'task-3',
-    title: 'Executive pitch deck for iOS Liquid Glass redesign',
-    priority: 'focus',
-    done: false,
-    time: '4:15 PM',
-    category: 'With Tim & Alan • Keynote v4',
-    categoryType: 'work',
-    priorityTag: 'High Priority',
-    dotColor: 'bg-rose-400',
-    tagColor: 'bg-rose-500/20 text-rose-300 border-rose-500/35',
-  },
-  {
-    id: 'comp-1',
-    title: 'Morning alignment with Core OS engineering',
-    priority: 'normal',
-    time: '9:15 AM',
-    category: 'Room 4B',
-    categoryType: 'work',
-    done: true,
-    priorityTag: 'Normal',
-    dotColor: 'bg-emerald-400',
-    tagColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/35',
-    completedAt: '9:15 AM',
-  },
-  {
-    id: 'comp-2',
-    title: 'Review token exports for SwiftUI Liquid Glass',
-    priority: 'normal',
-    time: '8:45 AM',
-    category: 'Design Tokens',
-    categoryType: 'design',
-    done: true,
-    priorityTag: 'Normal',
-    dotColor: 'bg-emerald-400',
-    tagColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/35',
-    completedAt: '8:45 AM',
-  },
-  {
-    id: 'comp-3',
-    title: 'Sync with Alan on Keynote v4 outline',
-    priority: 'normal',
-    time: '8:15 AM',
-    category: 'Keynote v4',
-    categoryType: 'work',
-    done: true,
-    priorityTag: 'Normal',
-    dotColor: 'bg-emerald-400',
-    tagColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/35',
-    completedAt: '8:15 AM',
-  },
-  {
-    id: 'comp-4',
-    title: 'Daily standup & backlog triage',
-    priority: 'normal',
-    time: '8:00 AM',
-    category: 'Sprint 3',
-    categoryType: 'work',
-    done: true,
-    priorityTag: 'Normal',
-    dotColor: 'bg-emerald-400',
-    tagColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/35',
-    completedAt: '8:00 AM',
-  },
-]
+export const INITIAL_TODAY_TASKS: TodayTask[] = []
 
 export function useTodayTasks() {
   const [tasks, setTasks] = useState<TodayTask[]>(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY)
+      // Clean up legacy mock storage if found
+      if (typeof window !== 'undefined' && window.localStorage) {
+        if (localStorage.getItem('todobar.prototype.tasks.v4')) {
+          localStorage.removeItem('todobar.prototype.tasks.v4')
+        }
+      }
+      const saved = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null
       if (saved) {
         const parsed = JSON.parse(saved)
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed
+        if (Array.isArray(parsed)) {
+          const mockIds = new Set(['task-1', 'task-2', 'task-3', 'comp-1', 'comp-2', 'comp-3', 'comp-4'])
+          return parsed.filter((t: TodayTask) => !mockIds.has(t.id))
+        }
       }
     } catch (e) {
       console.warn('Failed to load tasks from storage', e)

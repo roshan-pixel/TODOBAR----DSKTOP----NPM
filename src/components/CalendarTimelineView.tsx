@@ -1,12 +1,14 @@
 import React, { useState } from 'react'
-import { ArrowLeft, ChevronLeft, ChevronRight, CheckCircle2, Clock, Flame } from 'lucide-react'
+import { ArrowLeft, ChevronLeft, ChevronRight, CheckCircle2, Clock, Flame, Calendar as CalendarIcon } from 'lucide-react'
+import { TodayTask } from '../types'
 
 interface CalendarTimelineViewProps {
   onBack: () => void
   onSelectTask?: (taskId: string) => void
+  tasks?: TodayTask[]
 }
 
-export const CalendarTimelineView: React.FC<CalendarTimelineViewProps> = ({ onBack, onSelectTask }) => {
+export const CalendarTimelineView: React.FC<CalendarTimelineViewProps> = ({ onBack, onSelectTask, tasks = [] }) => {
   const [selectedDay, setSelectedDay] = useState(22)
 
   const days = [
@@ -67,67 +69,53 @@ export const CalendarTimelineView: React.FC<CalendarTimelineViewProps> = ({ onBa
       {/* Time-Blocked Schedule Cards */}
       <div className="flex-1 space-y-3">
         <div className="text-[10px] font-mono uppercase tracking-wider text-neutral-400">
-          SCHEDULED FOR THU, OCT 22
+          SCHEDULED FOR TODAY
         </div>
 
-        {/* 09:00 - 10:30 Completed Item */}
-        <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 opacity-70 flex items-start justify-between">
-          <div className="flex items-start gap-3">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" />
-            <div>
-              <div className="text-[11px] font-mono text-emerald-400 font-semibold">09:00 - 10:30 • COMPLETED</div>
-              <div className="text-xs font-semibold text-white/90 line-through mt-0.5">
-                Core OS Engineering Architecture Sync
-              </div>
-              <div className="text-[10px] text-neutral-500 mt-0.5">Room 4B • Audio Labs Sync</div>
-            </div>
+        {tasks.length === 0 ? (
+          <div className="p-6 rounded-[22px] bg-white/[0.03] border border-white/10 text-center flex flex-col items-center justify-center mt-2">
+            <CalendarIcon className="w-7 h-7 text-[#00F0FF]/70 mb-2.5" />
+            <p className="text-sm font-semibold text-neutral-200">No scheduled tasks</p>
+            <p className="text-xs text-neutral-400 mt-1">
+              Add your own tasks with times to populate the timeline.
+            </p>
           </div>
-        </div>
-
-        {/* 11:30 - 12:45 Active Focus Sprint (Glowing) */}
-        <div className="p-3.5 rounded-2xl bg-[#00F0FF]/10 border border-[#00F0FF]/40 shadow-[0_0_20px_rgba(0,240,255,0.2)] flex items-start justify-between">
-          <div className="flex items-start gap-3">
-            <span className="relative flex h-3 w-3 mt-1">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00F0FF] opacity-75" />
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-[#00F0FF]" />
-            </span>
-            <div>
-              <div className="text-[11px] font-mono text-[#00F0FF] font-semibold">11:30 - 12:45 • ACTIVE SPRINT</div>
-              <div className="text-xs font-semibold text-white mt-0.5">
-                Finalize Apple 2026 Liquid Glass Spec & Token Exports
+        ) : (
+          tasks.map(task => (
+            <div
+              key={task.id}
+              onClick={() => onSelectTask?.(task.id)}
+              className={`p-3.5 rounded-2xl border transition-all cursor-pointer ${
+                task.done
+                  ? 'bg-white/[0.03] border-white/10 opacity-70'
+                  : task.priority === 'focus'
+                  ? 'bg-[#00F0FF]/10 border-[#00F0FF]/40 shadow-[0_0_20px_rgba(0,240,255,0.2)]'
+                  : 'bg-white/[0.04] border-white/10 hover:bg-white/[0.08]'
+              }`}
+            >
+              <div className="flex items-start gap-3">
+                {task.done ? (
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" />
+                ) : (
+                  <Clock className={`w-4 h-4 mt-0.5 shrink-0 ${task.priority === 'focus' ? 'text-[#00F0FF]' : 'text-neutral-400'}`} />
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className={`text-[11px] font-mono font-semibold ${
+                    task.done ? 'text-emerald-400' : task.priority === 'focus' ? 'text-[#00F0FF]' : 'text-neutral-400'
+                  }`}>
+                    {task.time || 'Today'} • {task.done ? 'COMPLETED' : task.priority === 'focus' ? 'ACTIVE SPRINT' : 'UPCOMING'}
+                  </div>
+                  <div className={`text-xs font-semibold mt-0.5 truncate ${task.done ? 'text-white/90 line-through' : 'text-white'}`}>
+                    {task.title}
+                  </div>
+                  {task.category && (
+                    <div className="text-[10px] text-neutral-400 mt-0.5 truncate">{task.category}</div>
+                  )}
+                </div>
               </div>
-              <div className="text-[10px] text-neutral-400 mt-0.5">Sprint 2/4 • 3 of 4 subtasks done</div>
             </div>
-          </div>
-        </div>
-
-        {/* 14:00 - 15:00 Upcoming */}
-        <div className="p-3.5 rounded-2xl bg-white/[0.04] border border-white/10 flex items-start justify-between">
-          <div className="flex items-start gap-3">
-            <Clock className="w-4 h-4 text-neutral-400 mt-0.5 shrink-0" />
-            <div>
-              <div className="text-[11px] font-mono text-neutral-400">14:00 - 15:00 • UPCOMING</div>
-              <div className="text-xs font-semibold text-white mt-0.5">
-                Review spatial sound design for Todobar micro-haptics
-              </div>
-              <div className="text-[10px] text-neutral-500 mt-0.5">Audio Labs • Haptics v2 • 2 files</div>
-            </div>
-          </div>
-        </div>
-
-        {/* 16:15 - 17:00 Upcoming */}
-        <div className="p-3.5 rounded-2xl bg-white/[0.04] border border-white/10 flex items-start justify-between">
-          <div className="flex items-start gap-3">
-            <Clock className="w-4 h-4 text-neutral-400 mt-0.5 shrink-0" />
-            <div>
-              <div className="text-[11px] font-mono text-neutral-400">16:15 - 17:00 • UPCOMING</div>
-              <div className="text-xs font-semibold text-white mt-0.5">
-                Executive pitch deck for iOS Liquid Glass redesign
-              </div>
-              <div className="text-[10px] text-neutral-500 mt-0.5">With Tim & Alan • Keynote v4</div>
-            </div>
-          </div>
-        </div>
+          ))
+        )}
       </div>
     </div>
   )

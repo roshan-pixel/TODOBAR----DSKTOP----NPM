@@ -46,8 +46,8 @@ export const FocusModeView: React.FC<FocusModeViewProps> = ({
     Math.max(0, Math.round(((totalSeconds - secondsRemaining) / totalSeconds) * 100))
   )
 
-  const taskTitle = activeTask?.title || 'Finalize Apple 2026 Liquid Glass Spec & Design Tokens'
-  const taskCategory = activeTask?.category || 'FIGMA DESIGN SYSTEM'
+  const taskTitle = activeTask?.title || 'No active focus task'
+  const taskCategory = activeTask?.category || 'FOCUS SESSION'
   const isUrgent = activeTask?.priority === 'focus'
 
   return (
