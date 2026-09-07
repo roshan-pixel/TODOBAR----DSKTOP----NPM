@@ -37,3 +37,5 @@ service-account*.json
 # Python Cache
 __pycache__/
 *.py[cod]
+*.db
+

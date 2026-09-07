@@ -288,17 +288,43 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
     }
   }, [isSearchOpen])
 
-  // Handle native audio playback
+  // Handle native audio playback source change
   useEffect(() => {
     if (currentMedia.source === 'radio' && currentMedia.streamUrl) {
       if (!audioRef.current) {
         audioRef.current = new Audio()
       }
       const audio = audioRef.current
-      audio.src = currentMedia.streamUrl
-      audio.volume = radioVolume
-      audio.muted = isRadioMuted
+      if (audio.src !== currentMedia.streamUrl) {
+        audio.src = currentMedia.streamUrl
+        audio.volume = radioVolume
+        audio.muted = isRadioMuted
+        audio.load()
+        if (isRunning || isRadioPlaying) {
+          setRadioLoading(true)
+          audio.play()
+            .then(() => {
+              setIsRadioPlaying(true)
+              setRadioLoading(false)
+            })
+            .catch(() => {
+              setIsRadioPlaying(false)
+              setRadioLoading(false)
+            })
+        }
+      }
+    } else {
+      if (audioRef.current) {
+        audioRef.current.pause()
+        setIsRadioPlaying(false)
+      }
+    }
+  }, [currentMedia])
 
+  // Sync playback with timer running state
+  useEffect(() => {
+    const audio = audioRef.current
+    if (currentMedia.source === 'radio' && audio) {
       if (isRunning) {
         setRadioLoading(true)
         audio.play()
@@ -314,13 +340,16 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
         setIsRadioPlaying(false)
         audio.pause()
       }
-    } else {
-      if (audioRef.current) {
-        audioRef.current.pause()
-        setIsRadioPlaying(false)
-      }
     }
-  }, [currentMedia])
+  }, [isRunning])
+
+  // Volume & mute controls
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = radioVolume
+      audioRef.current.muted = isRadioMuted
+    }
+  }, [radioVolume, isRadioMuted])
 
   const handleSearchOrAdd = async (e: React.FormEvent) => {
     e.preventDefault()

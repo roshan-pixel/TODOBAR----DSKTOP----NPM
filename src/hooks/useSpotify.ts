@@ -44,6 +44,17 @@ export function useSpotify() {
     }
   }, [])
 
+  // Auto-authenticate on mount if token is saved in Google Sheets
+  useEffect(() => {
+    if (!isAuthenticated) {
+      getValidToken().then(token => {
+        if (token) {
+          setIsAuthenticated(true)
+        }
+      })
+    }
+  }, [isAuthenticated])
+
   useEffect(() => {
     if (!isAuthenticated) return
     fetchPlayback()

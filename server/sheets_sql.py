@@ -63,10 +63,21 @@ class SheetsSQLEngine:
                 updated_at TEXT
             )
         ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS spotify_tokens (
+                key TEXT PRIMARY KEY,
+                access_token TEXT,
+                refresh_token TEXT,
+                token_type TEXT,
+                expires_at INTEGER,
+                scope TEXT,
+                updated_at TEXT
+            )
+        ''')
         self.db.commit()
 
     def ensure_sheet_tabs(self):
-        """Ensure 'tasks', 'focus_sessions', and 'timer_state' sheets exist"""
+        """Ensure 'tasks', 'focus_sessions', 'timer_state', and 'spotify_tokens' sheets exist"""
         meta = self.service.spreadsheets().get(spreadsheetId=self.spreadsheet_id).execute()
         existing_sheets = [s['properties']['title'] for s in meta.get('sheets', [])]
         
@@ -77,6 +88,8 @@ class SheetsSQLEngine:
             requests.append({'addSheet': {'properties': {'title': 'focus_sessions'}}})
         if 'timer_state' not in existing_sheets:
             requests.append({'addSheet': {'properties': {'title': 'timer_state'}}})
+        if 'spotify_tokens' not in existing_sheets:
+            requests.append({'addSheet': {'properties': {'title': 'spotify_tokens'}}})
             
         if requests:
             self.service.spreadsheets().batchUpdate(
@@ -88,6 +101,7 @@ class SheetsSQLEngine:
         self._ensure_headers('tasks', ['id', 'title', 'notes', 'priority', 'category', 'due_date', 'completed', 'created_at', 'updated_at'])
         self._ensure_headers('focus_sessions', ['id', 'task_id', 'duration_minutes', 'started_at', 'completed_at', 'mode'])
         self._ensure_headers('timer_state', ['device_id', 'seconds_remaining', 'total_seconds', 'is_running', 'task_id', 'updated_at'])
+        self._ensure_headers('spotify_tokens', ['key', 'access_token', 'refresh_token', 'token_type', 'expires_at', 'scope', 'updated_at'])
 
     def _ensure_headers(self, sheet_name: str, headers: List[str]):
         res = self.service.spreadsheets().values().get(
@@ -266,3 +280,121 @@ class SheetsSQLEngine:
                 ).execute()
         except Exception as e:
             print(f'[Timer] save_timer_state error: {e}')
+
+    # ── Spotify Token Persistence & Auto-Refresh ─────────────────────────────
+
+    def get_spotify_token(self) -> Optional[Dict[str, Any]]:
+        """Read saved Spotify token row from Google Sheets tab."""
+        try:
+            res = self.service.spreadsheets().values().get(
+                spreadsheetId=self.spreadsheet_id,
+                range='spotify_tokens!A1:G10'
+            ).execute()
+            rows = res.get('values') or []
+            if len(rows) < 2:
+                return None
+            headers = [h.strip().lower() for h in rows[0]]
+            record = dict(zip(headers, rows[1] + [''] * (len(headers) - len(rows[1]))))
+            return {
+                'key': record.get('key', 'default'),
+                'access_token': record.get('access_token', ''),
+                'refresh_token': record.get('refresh_token', ''),
+                'token_type': record.get('token_type', 'Bearer'),
+                'expires_at': int(record.get('expires_at', 0) or 0),
+                'scope': record.get('scope', ''),
+                'updated_at': record.get('updated_at', ''),
+            }
+        except Exception as e:
+            print(f'[Spotify Sheets] get_spotify_token error: {e}')
+            return None
+
+    def save_spotify_token(self, access_token: str, refresh_token: str = '',
+                           token_type: str = 'Bearer', expires_in: int = 3600,
+                           scope: str = '', key: str = 'default') -> bool:
+        """Upsert Spotify token permanently into Google Sheets tab."""
+        try:
+            import time
+            from datetime import datetime, timezone
+            expires_at = int(time.time()) + expires_in
+            updated_at = datetime.now(timezone.utc).isoformat()
+            headers = ['key', 'access_token', 'refresh_token', 'token_type', 'expires_at', 'scope', 'updated_at']
+            row = [key, access_token, refresh_token, token_type, str(expires_at), scope, updated_at]
+
+            self.service.spreadsheets().values().update(
+                spreadsheetId=self.spreadsheet_id,
+                range='spotify_tokens!A1:G2',
+                valueInputOption='RAW',
+                body={'values': [headers, row]}
+            ).execute()
+            print(f'[Spotify Sheets] Token saved successfully (expires_at={expires_at})')
+            return True
+        except Exception as e:
+            print(f'[Spotify Sheets] save_spotify_token error: {e}')
+            return False
+
+    def get_valid_spotify_token(self, client_id: str, client_secret: str) -> Optional[str]:
+        """
+        Get valid Spotify access token from Google Sheets.
+        If expired, automatically refreshes via refresh_token or Client Credentials,
+        updates Google Sheets, and returns fresh access token with ZERO user login required.
+        """
+        import time
+        import base64
+        import urllib.request
+        import urllib.parse
+        now = int(time.time())
+
+        # 1. Check if token in Google Sheets is still valid (60s buffer)
+        saved = self.get_spotify_token()
+        if saved and saved.get('access_token') and saved.get('expires_at', 0) > now + 60:
+            return saved['access_token']
+
+        # 2. If we have a refresh_token, refresh the session
+        if saved and saved.get('refresh_token'):
+            try:
+                auth = base64.b64encode(f"{client_id}:{client_secret}".encode()).decode()
+                body = urllib.parse.urlencode({
+                    'grant_type': 'refresh_token',
+                    'refresh_token': saved['refresh_token']
+                }).encode()
+                req = urllib.request.Request(
+                    'https://accounts.spotify.com/api/token',
+                    data=body,
+                    headers={
+                        'Authorization': f'Basic {auth}',
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                )
+                with urllib.request.urlopen(req, timeout=10) as resp:
+                    data = json.loads(resp.read().decode())
+                    new_access = data.get('access_token')
+                    new_refresh = data.get('refresh_token', saved['refresh_token'])
+                    exp_in = data.get('expires_in', 3600)
+                    if new_access:
+                        self.save_spotify_token(new_access, new_refresh, expires_in=exp_in)
+                        return new_access
+            except Exception as e:
+                print(f'[Spotify Sheets] Refresh token failed: {e}')
+
+        # 3. Fallback: Client Credentials flow using Client ID & Secret
+        try:
+            auth = base64.b64encode(f"{client_id}:{client_secret}".encode()).decode()
+            req = urllib.request.Request(
+                'https://accounts.spotify.com/api/token',
+                data=b'grant_type=client_credentials',
+                headers={
+                    'Authorization': f'Basic {auth}',
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            )
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                data = json.loads(resp.read().decode())
+                token = data.get('access_token')
+                exp_in = data.get('expires_in', 3600)
+                if token:
+                    self.save_spotify_token(token, refresh_token='', expires_in=exp_in)
+                    return token
+        except Exception as e:
+            print(f'[Spotify Sheets] Client credentials token fetch error: {e}')
+
+        return None

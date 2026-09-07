@@ -5,7 +5,11 @@ Provides /api/tasks, /api/sql, and /api/health endpoints.
 
 import os
 import json
+import base64
+import time
 import urllib.parse
+import urllib.request
+from datetime import datetime, timezone
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from typing import Any
 from sheets_sql import SheetsSQLEngine
@@ -27,7 +31,20 @@ def load_sheet_id():
     # Default fallback to newly created sheet
     return sheet_id or '1b9OitPeSDeBhtrx_bZ2ovrByLMXfmEJfcSP8S4PEAGI'
 
+def load_spotify_creds():
+    client_id = os.environ.get('SPOTIFY_CLIENT_ID') or '00c3442807f34300852ec58da893a4be'
+    client_secret = os.environ.get('SPOTIFY_CLIENT_SECRET') or '7043c47f641c456b878800484f037380'
+    if os.path.exists(ENV_PATH):
+        with open(ENV_PATH, 'r', encoding='utf-8') as f:
+            for line in f:
+                if line.startswith('SPOTIFY_CLIENT_ID='):
+                    client_id = line.strip().split('=', 1)[1].strip('"\' ')
+                elif line.startswith('SPOTIFY_CLIENT_SECRET='):
+                    client_secret = line.strip().split('=', 1)[1].strip('"\' ')
+    return client_id, client_secret
+
 SHEET_ID = load_sheet_id()
+SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET = load_spotify_creds()
 engine = None
 
 def get_engine():
@@ -108,6 +125,42 @@ class RequestHandler(BaseHTTPRequestHandler):
             except Exception as e:
                 return self._send_json(500, {'error': str(e)})
 
+        if path == '/api/spotify/token':
+            eng = get_engine()
+            if not eng:
+                return self._send_json(503, {'error': 'Backend not connected.'})
+            token = eng.get_valid_spotify_token(SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET)
+            if token:
+                saved = eng.get_spotify_token() or {}
+                return self._send_json(200, {
+                    'access_token': token,
+                    'token_type': 'Bearer',
+                    'saved_in_sheets': True,
+                    'expires_at': saved.get('expires_at'),
+                    'updated_at': saved.get('updated_at')
+                })
+            return self._send_json(500, {'error': 'Failed to obtain Spotify token'})
+
+        if path == '/api/spotify/search':
+            eng = get_engine()
+            if not eng:
+                return self._send_json(503, {'error': 'Backend not connected.'})
+            qs = urllib.parse.parse_qs(parsed.query)
+            q = qs.get('q', [''])[0]
+            if not q:
+                return self._send_json(400, {'error': 'q query parameter required'})
+            token = eng.get_valid_spotify_token(SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET)
+            if not token:
+                return self._send_json(500, {'error': 'No Spotify token available'})
+            try:
+                search_url = f"https://api.spotify.com/v1/search?q={urllib.parse.quote(q)}&type=track&limit=10"
+                req = urllib.request.Request(search_url, headers={'Authorization': f'Bearer {token}'})
+                with urllib.request.urlopen(req, timeout=10) as resp:
+                    data = json.loads(resp.read().decode('utf-8'))
+                    return self._send_json(200, data)
+            except Exception as e:
+                return self._send_json(500, {'error': str(e)})
+
         self._send_json(404, {'error': 'Endpoint not found'})
 
     def do_POST(self):
@@ -183,6 +236,62 @@ class RequestHandler(BaseHTTPRequestHandler):
                     updated_at = datetime.now(timezone.utc).isoformat()
                 eng.save_timer_state(device_id, seconds_remaining, total_seconds, is_running, task_id, updated_at)
                 return self._send_json(200, {'success': True})
+            except Exception as e:
+                return self._send_json(500, {'error': str(e)})
+
+        if path == '/api/spotify/token':
+            eng = get_engine()
+            if not eng:
+                return self._send_json(503, {'error': 'Backend not connected.'})
+            try:
+                access_token = data.get('access_token', '')
+                refresh_token = data.get('refresh_token', '')
+                expires_in = int(data.get('expires_in', 3600))
+                scope = data.get('scope', '')
+                if not access_token:
+                    return self._send_json(400, {'error': 'access_token required'})
+                ok = eng.save_spotify_token(access_token, refresh_token, expires_in=expires_in, scope=scope)
+                return self._send_json(200, {'success': ok, 'saved_in_sheets': True})
+            except Exception as e:
+                return self._send_json(500, {'error': str(e)})
+
+        if path == '/api/spotify/exchange':
+            eng = get_engine()
+            if not eng:
+                return self._send_json(503, {'error': 'Backend not connected.'})
+            try:
+                code = data.get('code', '')
+                redirect_uri = data.get('redirect_uri', '')
+                if not code or not redirect_uri:
+                    return self._send_json(400, {'error': 'code and redirect_uri required'})
+                auth = base64.b64encode(f"{SPOTIFY_CLIENT_ID}:{SPOTIFY_CLIENT_SECRET}".encode()).decode()
+                payload = urllib.parse.urlencode({
+                    'grant_type': 'authorization_code',
+                    'code': code,
+                    'redirect_uri': redirect_uri
+                }).encode()
+                req = urllib.request.Request(
+                    'https://accounts.spotify.com/api/token',
+                    data=payload,
+                    headers={
+                        'Authorization': f'Basic {auth}',
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                )
+                with urllib.request.urlopen(req, timeout=10) as resp:
+                    tokens = json.loads(resp.read().decode('utf-8'))
+                    acc = tokens.get('access_token')
+                    ref = tokens.get('refresh_token', '')
+                    exp = int(tokens.get('expires_in', 3600))
+                    sc = tokens.get('scope', '')
+                    if acc:
+                        eng.save_spotify_token(acc, ref, expires_in=exp, scope=sc)
+                        return self._send_json(200, {
+                            'success': True,
+                            'access_token': acc,
+                            'saved_in_sheets': True
+                        })
+                    return self._send_json(400, {'error': 'Spotify did not return access token'})
             except Exception as e:
                 return self._send_json(500, {'error': str(e)})
 

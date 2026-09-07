@@ -3,6 +3,8 @@
  * Uses Authorization Code with PKCE flow (no backend secret needed in browser)
  */
 
+import { getBackendUrl } from './backendSync'
+
 export const SPOTIFY_CLIENT_ID = '00c3442807f34300852ec58da893a4be'
 const REDIRECT_URI = `${window.location.origin}/spotify-callback`
 const SCOPES = [
@@ -126,6 +128,18 @@ const TOKEN_KEY = 'spotify_tokens'
 
 export function saveTokens(tokens: SpotifyTokens) {
   localStorage.setItem(TOKEN_KEY, JSON.stringify(tokens))
+  try {
+    const backendUrl = getBackendUrl()
+    fetch(`${backendUrl}/api/spotify/token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token,
+        expires_at: Math.floor(tokens.expires_at / 1000),
+      }),
+    }).catch(() => {})
+  } catch {}
 }
 
 export function loadTokens(): SpotifyTokens | null {
@@ -143,9 +157,31 @@ export function clearTokens() {
 
 export async function getValidToken(): Promise<string | null> {
   let tokens = loadTokens()
-  if (!tokens) return null
-  if (Date.now() >= tokens.expires_at - 60_000) {
-    tokens = await refreshAccessToken(tokens.refresh_token)
+  if (tokens && Date.now() < tokens.expires_at - 60_000) {
+    return tokens.access_token
+  }
+  if (tokens?.refresh_token) {
+    const refreshed = await refreshAccessToken(tokens.refresh_token)
+    if (refreshed?.access_token) return refreshed.access_token
+  }
+  // Pull pre-authenticated or refreshed token from Google Sheets backend
+  try {
+    const backendUrl = getBackendUrl()
+    const res = await fetch(`${backendUrl}/api/spotify/token`, { cache: 'no-store' })
+    if (res.ok) {
+      const data = await res.json()
+      if (data.access_token) {
+        const newTokens: SpotifyTokens = {
+          access_token: data.access_token,
+          refresh_token: data.refresh_token || '',
+          expires_at: data.expires_at ? data.expires_at * 1000 : Date.now() + 3600_000,
+        }
+        localStorage.setItem(TOKEN_KEY, JSON.stringify(newTokens))
+        return data.access_token
+      }
+    }
+  } catch (e) {
+    console.warn('[Spotify] Backend token fetch skipped:', e)
   }
   return tokens?.access_token ?? null
 }
