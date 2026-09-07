@@ -154,11 +154,28 @@ export function useTodayTasks() {
     priority?: 'focus' | 'normal' | 'later'
     time?: string
     categoryType?: 'work' | 'design'
+    subtasksCount?: string
+    subtaskProgress?: number
   }) => {
     const isDesign =
       taskData.categoryType === 'design' ||
       `${taskData.title} ${taskData.category || ''}`.toLowerCase().includes('design')
     const isFocus = taskData.priority === 'focus'
+    const isLater = taskData.priority === 'later'
+
+    let priorityTag = 'Medium'
+    let dotColor = 'bg-amber-400'
+    let tagColor = 'bg-amber-500/20 text-amber-300 border-amber-500/35'
+
+    if (isFocus) {
+      priorityTag = 'High Priority'
+      dotColor = 'bg-rose-400'
+      tagColor = 'bg-rose-500/20 text-rose-300 border-rose-500/35'
+    } else if (isLater) {
+      priorityTag = 'Low'
+      dotColor = 'bg-emerald-400'
+      tagColor = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/35'
+    }
 
     const newTask: TodayTask = {
       id: `task-${Date.now()}`,
@@ -168,11 +185,11 @@ export function useTodayTasks() {
       time: taskData.time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       category: taskData.category || (isDesign ? 'Figma Design System' : 'General Work'),
       categoryType: taskData.categoryType || (isDesign ? 'design' : 'work'),
-      priorityTag: isFocus ? 'High Priority' : 'Normal',
-      dotColor: isFocus ? 'bg-rose-400' : 'bg-[#00F0FF]',
-      tagColor: isFocus
-        ? 'bg-rose-500/20 text-rose-300 border-rose-500/35'
-        : 'bg-cyan-500/20 text-[#00F0FF] border-cyan-500/35',
+      priorityTag,
+      dotColor,
+      tagColor,
+      subtasksCount: taskData.subtasksCount,
+      subtaskProgress: taskData.subtaskProgress,
     }
 
     setTasks(prev => [newTask, ...prev])

@@ -191,9 +191,11 @@ export function App() {
           addTask({
             title: taskData.title,
             priority: taskData.priority,
-            category: taskData.tags?.[0] ? taskData.tags.join(' • ') : undefined,
+            category: taskData.category || (taskData.tags?.[0] ? `#${taskData.tags[0]}` : undefined),
             time: taskData.time,
-            categoryType: taskData.tags?.[0]?.toLowerCase().includes('design') ? 'design' : 'work',
+            categoryType: taskData.categoryType || (taskData.tags?.some((t: string) => /design|ui|ux|figma/i.test(t)) ? 'design' : 'work'),
+            subtasksCount: taskData.subtasks?.length > 0 ? `${taskData.subtasks.filter((s: any) => s.done).length}/${taskData.subtasks.length}` : undefined,
+            subtaskProgress: taskData.subtasks?.length > 0 ? Math.round((taskData.subtasks.filter((s: any) => s.done).length / taskData.subtasks.length) * 100) : undefined,
           })
         }}
       />
