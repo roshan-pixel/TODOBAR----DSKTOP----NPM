@@ -160,7 +160,7 @@ const STORAGE_CUSTOM_KEY = 'todobar_custom_focus_music'
 const STORAGE_ACTIVE_KEY = 'todobar_active_focus_music'
 
 export const CURATED_MEDIA_MAP: Record<string, { videoId?: string; playlistId?: string; title: string }> = {
-  // Top Spotify Playlist IDs (Instant 0ms Full Playback)
+  // Top Spotify & YouTube Playlist IDs (Instant 0ms Full Playback)
   '37i9dqzf1dxcbwigoybm5m': { playlistId: 'PLOHoVaTp8R7dWeCQrKfh7a1a_Gu6KvfWP', title: "Today's Top Hits" },
   '37i9dqzf1dx4wypdgoicn6': { playlistId: 'PLUemwAVGSh5Y2pukyAltSukqLoY2ZZVvY', title: 'Chill Hits Full Playlist' },
   '37i9dqzf1dwzekcadgrdkq': { playlistId: 'PLhcVVbS7iNzD7D6GTIHmtswD9T0cYuSut', title: 'Deep Focus Ambient Playlist' },
@@ -169,53 +169,161 @@ export const CURATED_MEDIA_MAP: Record<string, { videoId?: string; playlistId?: 
   '37i9dqzf1dx24khezmburn': { videoId: '1ZYbU82GVz4', title: 'Brain Food 432Hz Binaural Focus' },
   '37i9dqzf1dx4swspwq3lio': { playlistId: 'PLxA687tYuMWhU2dF228p3N1pY94X9vY0O', title: 'Peaceful Piano Playlist' },
   '37i9dqzf1dx0xusuxwhrqd': { playlistId: 'PLOHoVaTp8R7eC14H6b5eD_l77k6F2jC1x', title: 'RapCaviar Full Playlist' },
-  '37i9dqzf1dx4t95paor1t0': { videoId: 'jfKfPfyJRdk', title: 'Lofi Girl - Relaxing Beats' },
+  '37i9dqzf1dx4t95paor1t0': { videoId: '5qap5aO4i9A', title: 'Lofi Girl - Relaxing Beats' },
   '37i9dqzf1dx3rxvfibe1l0': { playlistId: 'PLOHoVaTp8R7d84fNsmv2e_uJqK6o0kIbg', title: 'Mood Booster Playlist' },
-  '37i9dqzf1dwwqrwui0expn': { videoId: 'jfKfPfyJRdk', title: 'Lo-Fi Cafe Study Beats' },
+  '37i9dqzf1dwwqrwui0expn': { videoId: '5qap5aO4i9A', title: 'Lo-Fi Cafe Study Beats' },
   '37i9dqzf1dx10zkzsj2jva': { playlistId: 'PLOHoVaTp8R7c_xZc3y9pQzS_9y_dJ-4Hk', title: 'Viva Latino Full Playlist' },
   '37i9dqzf1dxbm3nmm0opk': { playlistId: 'PLOHoVaTp8R7dWeCQrKfh7a1a_Gu6KvfWP', title: 'Mega Hit Mix' },
   '37i9dqzf1dx1lvhptiyrda': { playlistId: 'PLOHoVaTp8R7e7sVpE9u5C9d-9qY9K5h6F', title: 'Hot Country Playlist' },
   '37i9dqzf1dx0ybeudqndf6': { playlistId: 'PLOHoVaTp8R7dWeCQrKfh7a1a_Gu6KvfWP', title: 'Songs to Sing in the Car' },
 
-  // Curated Focus and Music Keywords
-  'lofi girl beats': { videoId: 'jfKfPfyJRdk', title: 'Lofi Girl - Relaxing Beats' },
-  'lofi girl': { videoId: 'jfKfPfyJRdk', title: 'Lofi Girl - Relaxing Beats' },
-  'chill lofi': { videoId: 'jfKfPfyJRdk', title: 'Chill Lofi Study Beats' },
-  'lofi': { videoId: 'jfKfPfyJRdk', title: 'Lofi Girl - Relaxing Beats' },
-  'lo-fi': { videoId: 'jfKfPfyJRdk', title: 'Lofi Girl - Relaxing Beats' },
+  // 1. LOFI, CHILL & STUDY BEATS (Including Typo Matches like Lofi Grill)
+  'lofi girl beats': { videoId: '5qap5aO4i9A', title: 'Lofi Girl - Relaxing Beats' },
+  'lofi girl': { videoId: '5qap5aO4i9A', title: 'Lofi Girl - Relaxing Beats' },
+  'lofi grill': { videoId: '5qap5aO4i9A', title: 'Lofi Girl - Relaxing Beats' },
+  'lofi grill beats': { videoId: '5qap5aO4i9A', title: 'Lofi Girl - Relaxing Beats' },
+  'lofi gilr': { videoId: '5qap5aO4i9A', title: 'Lofi Girl - Relaxing Beats' },
+  'chill lofi': { videoId: '5qap5aO4i9A', title: 'Chill Lofi Study Beats' },
+  'lofi': { videoId: '5qap5aO4i9A', title: 'Lofi Girl - Relaxing Beats' },
+  'lo-fi': { videoId: '5qap5aO4i9A', title: 'Lofi Girl - Relaxing Beats' },
+  'chilledcow': { videoId: '5qap5aO4i9A', title: 'Lofi Girl (ChilledCow)' },
+  'lofi sleep': { videoId: 'DWcjZJyZuYg', title: 'Lofi Sleep Beats' },
+  'lofi hip hop': { videoId: '5qap5aO4i9A', title: 'Lofi Hip Hop Radio' },
+  'anime lofi': { videoId: 'TURbeWK2wwg', title: 'Anime Lofi Chill Beats' },
+  'zelda lofi': { videoId: 'GdzrrWA8B7A', title: 'Zelda & Chill Lofi' },
+  'nujabes': { videoId: 'g9hwjQBQFIo', title: 'Nujabes Homework Edit' },
+  'jazzhop': { videoId: '2gliGgeb2ak', title: 'Coffee Shop Jazzhop' },
+  'coffee lofi': { videoId: 'hBGbv2gS3y4', title: 'Coffee Shop Lofi Beats' },
+  'tokyo lofi': { videoId: 'F89Kwh6hPqI', title: 'Tokyo Night Lofi Beats' },
+  'study beats': { videoId: '5qap5aO4i9A', title: 'Study Beats Lofi' },
+  'lofi study': { videoId: '5qap5aO4i9A', title: 'Lofi Study Beats' },
+  'chilled beats': { videoId: '5qap5aO4i9A', title: 'Chilled Lofi Beats' },
+
+  // 2. SYNTHWAVE, RETROWAVE & CYBERPUNK
   'synthwave coding': { videoId: '4xDzrJKXOOY', title: 'Synthwave Radio - Chill Synth / Cyberpunk' },
   'synthwave': { videoId: '4xDzrJKXOOY', title: 'Synthwave Radio - Chill Synth / Cyberpunk' },
+  'synth wave': { videoId: '4xDzrJKXOOY', title: 'Synthwave Radio - Chill Synth / Cyberpunk' },
+  'synthwave code': { videoId: '4xDzrJKXOOY', title: 'Synthwave Radio - Chill Synth / Cyberpunk' },
   'retrowave': { videoId: '4xDzrJKXOOY', title: 'Synthwave Radio - Chill Synth / Cyberpunk' },
-  'hans zimmer focus': { videoId: '14fXm3wG92U', title: 'Hans Zimmer - Interstellar Focus Suite' },
-  'hans zimmer': { videoId: '14fXm3wG92U', title: 'Hans Zimmer - Interstellar Focus Suite' },
-  'interstellar': { videoId: '14fXm3wG92U', title: 'Hans Zimmer - Interstellar Theme' },
+  'cyberpunk': { videoId: 'MVPTG58-fsU', title: 'Cyberpunk 2077 Focus Mix' },
+  'cyberpunk 2077': { videoId: 'MVPTG58-fsU', title: 'Cyberpunk 2077 Focus Mix' },
+  'defcon synthwave': { videoId: '4xDzrJKXOOY', title: 'DEF CON Synthwave Radio' },
+  'synthwave 80s': { videoId: '4xDzrJKXOOY', title: '80s Synthwave Chill' },
+  'blade runner': { videoId: 'Q_H779ge368', title: 'Blade Runner 2049 Ambient Focus' },
+  'blade runner 2049': { videoId: 'Q_H779ge368', title: 'Blade Runner 2049 Ambient Focus' },
+  'tron legacy': { videoId: '18-gL1g8qjE', title: 'Tron Legacy Daft Punk Soundtrack' },
+  'stranger things': { videoId: 'R6h4Jd66e74', title: 'Stranger Things Synth Theme' },
+  'darksynth': { videoId: 'ER4wh0r46c8', title: 'Dark Synthwave Cyberpunk' },
+  'vaporwave': { videoId: 'aQkPcpYME_w', title: 'Vaporwave Chill Beats' },
+
+  // 3. POP HITS, ARTISTS & CHART-TOPPERS
+  'starboy': { videoId: '34Na4j8AVgA', title: 'The Weeknd - Starboy (Official Video)' },
+  'starboy the weeknd': { videoId: '34Na4j8AVgA', title: 'The Weeknd - Starboy' },
+  'star boy': { videoId: '34Na4j8AVgA', title: 'The Weeknd - Starboy' },
+  'the weeknd': { videoId: '34Na4j8AVgA', title: 'The Weeknd - Starboy' },
+  'blinding lights': { videoId: '4NRXx6U8ABQ', title: 'The Weeknd - Blinding Lights' },
+  'coldplay yellow': { videoId: 'yKNxeF4KMsY', title: 'Coldplay - Yellow' },
+  'coldplay': { videoId: 'yKNxeF4KMsY', title: 'Coldplay - Yellow' },
+  'cold play': { videoId: 'yKNxeF4KMsY', title: 'Coldplay - Yellow' },
+  'yellow': { videoId: 'yKNxeF4KMsY', title: 'Coldplay - Yellow' },
+  'viva la vida': { videoId: 'dvgZkm1xWPE', title: 'Coldplay - Viva La Vida' },
+  'fix you': { videoId: 'k4V3Mo61fJM', title: 'Coldplay - Fix You' },
+  'shape of you': { videoId: 'JGwWNGJdvx8', title: 'Ed Sheeran - Shape of You' },
+  'ed sheeran': { videoId: 'JGwWNGJdvx8', title: 'Ed Sheeran - Shape of You' },
+  'as it was': { videoId: 'H5v3kku4y6Q', title: 'Harry Styles - As It Was' },
+  'harry styles': { videoId: 'H5v3kku4y6Q', title: 'Harry Styles - As It Was' },
+  'die with a smile': { videoId: 'kPa7bsKwL-c', title: 'Lady Gaga & Bruno Mars - Die With A Smile' },
+  'lady gaga': { videoId: 'kPa7bsKwL-c', title: 'Lady Gaga & Bruno Mars - Die With A Smile' },
+  'bruno mars': { videoId: 'kPa7bsKwL-c', title: 'Lady Gaga & Bruno Mars - Die With A Smile' },
+  'espresso': { videoId: 'eVli-tstM5E', title: 'Sabrina Carpenter - Espresso' },
+  'sabrina carpenter': { videoId: 'eVli-tstM5E', title: 'Sabrina Carpenter - Espresso' },
+  'birds of a feather': { videoId: 'V9PVRfjEBTI', title: 'Billie Eilish - BIRDS OF A FEATHER' },
+  'billie eilish': { videoId: 'V9PVRfjEBTI', title: 'Billie Eilish - BIRDS OF A FEATHER' },
+  'bad guy': { videoId: '0Bf96tQJ0S8', title: 'Billie Eilish - bad guy' },
+  'good luck babe': { videoId: '1RKqOmSkGgM', title: 'Chappell Roan - Good Luck, Babe!' },
+  'chappell roan': { videoId: '1RKqOmSkGgM', title: 'Chappell Roan - Good Luck, Babe!' },
+  'not like us': { videoId: 'H58vbez_m4E', title: 'Kendrick Lamar - Not Like Us' },
+  'kendrick lamar': { videoId: 'H58vbez_m4E', title: 'Kendrick Lamar - Not Like Us' },
+  'drake': { videoId: 'uxpDa-c-4Mc', title: 'Drake - Hotline Bling' },
+  'gods plan': { videoId: 'xpVfcZ0ZcFM', title: "Drake - God's Plan" },
+  'bad bunny': { videoId: 'c7mOihsA82U', title: 'Bad Bunny - Monaco' },
+  'travis scott': { videoId: 'B9synWjqBn8', title: 'Travis Scott - FE!N' },
+  'fein': { videoId: 'B9synWjqBn8', title: 'Travis Scott - FE!N' },
+  'sza': { videoId: 'M4ZoCHID9GI', title: 'SZA - Kill Bill' },
+  'kill bill': { videoId: 'M4ZoCHID9GI', title: 'SZA - Kill Bill' },
+  'ariana grande': { videoId: 'QYh6mYIJG2Y', title: 'Ariana Grande - 7 rings' },
+  '7 rings': { videoId: 'QYh6mYIJG2Y', title: 'Ariana Grande - 7 rings' },
+  'justin bieber': { videoId: 'tQ0yjYUFKAE', title: 'Justin Bieber - Peaches' },
+  'stay': { videoId: 'kTJczUoc26U', title: 'The Kid LAROI & Justin Bieber - STAY' },
+  'imagine dragons': { videoId: '7wtfhZwyrCA', title: 'Imagine Dragons - Believer' },
+  'believer': { videoId: '7wtfhZwyrCA', title: 'Imagine Dragons - Believer' },
+  'glass animals': { videoId: 'mRD0-GxqHVo', title: 'Glass Animals - Heat Waves' },
+  'heat waves': { videoId: 'mRD0-GxqHVo', title: 'Glass Animals - Heat Waves' },
+
+  // 4. HANS ZIMMER & CINEMATIC SOUNDTRACKS
+  'hans zimmer focus': { videoId: 'UDVtMYqUA4U', title: 'Hans Zimmer - Interstellar Suite' },
+  'hans zimmer': { videoId: 'UDVtMYqUA4U', title: 'Hans Zimmer - Interstellar Suite' },
+  'interstellar': { videoId: 'UDVtMYqUA4U', title: 'Hans Zimmer - Interstellar Suite' },
+  'inception': { videoId: 'RxabA78sufc', title: 'Hans Zimmer - Time (Inception)' },
+  'time': { videoId: 'RxabA78sufc', title: 'Hans Zimmer - Time (Inception)' },
+  'time hans zimmer': { videoId: 'RxabA78sufc', title: 'Hans Zimmer - Time (Inception)' },
+
+  // 5. BINAURAL BEATS, 432HZ & WHITE NOISE
   'deep binaural 432hz': { videoId: '1ZYbU82GVz4', title: '432Hz Deep Focus Binaural Waves' },
   'binaural': { videoId: '1ZYbU82GVz4', title: '432Hz Deep Focus Binaural Waves' },
+  'binaural beats': { videoId: '1ZYbU82GVz4', title: '432Hz Alpha Waves Focus' },
+  '432hz': { videoId: '1ZYbU82GVz4', title: '432Hz Deep Focus Binaural Waves' },
   'brain food': { videoId: '1ZYbU82GVz4', title: 'Brain Food Binaural Focus' },
-  'starboy': { videoId: '34Na4j8AVgA', title: 'The Weeknd - Starboy (Full Audio)' },
-  'starboy the weeknd': { videoId: '34Na4j8AVgA', title: 'The Weeknd - Starboy (Full Audio)' },
-  'the weeknd': { videoId: '34Na4j8AVgA', title: 'The Weeknd - Starboy (Full Audio)' },
-  'blinding lights': { videoId: '4NRXx6U8ABQ', title: 'The Weeknd - Blinding Lights' },
-  'coldplay': { videoId: 'yKNxeF4KMsY', title: 'Coldplay - Yellow (Official Audio)' },
-  'coldplay yellow': { videoId: 'yKNxeF4KMsY', title: 'Coldplay - Yellow (Official Audio)' },
-  'yellow': { videoId: 'yKNxeF4KMsY', title: 'Coldplay - Yellow (Official Audio)' },
-  'viva la vida': { videoId: 'dvgZkm1xWPE', title: 'Coldplay - Viva La Vida' },
-  'shape of you': { videoId: 'JGwWNGJdvx8', title: 'Ed Sheeran - Shape of You' },
-  'as it was': { videoId: 'H5v3kku4y6Q', title: 'Harry Styles - As It Was' },
+  'alpha waves': { videoId: '1ZYbU82GVz4', title: 'Alpha Waves Study Focus' },
+  'brown noise': { videoId: 'RqzGzwTY-6w', title: '10 Hours Deep Brown Noise' },
+  'white noise': { videoId: 'nMfPqeZjc2c', title: '10 Hours Pure White Noise' },
+  'rain sounds': { videoId: 'mPZkdNFkNps', title: 'Heavy Rain & Thunderstorm Focus' },
+
+  // 6. PIANO, CLASSICAL & INSTRUMENTAL
+  'peaceful piano': { playlistId: 'PLxA687tYuMWhU2dF228p3N1pY94X9vY0O', title: 'Peaceful Piano Playlist' },
+  'piano': { playlistId: 'PLxA687tYuMWhU2dF228p3N1pY94X9vY0O', title: 'Peaceful Piano Playlist' },
+  'classical study': { videoId: 'jgpJVI3tDbY', title: 'Mozart & Beethoven Classical Study' },
+  'classical': { videoId: 'jgpJVI3tDbY', title: 'Classical Music Focus' },
+  'ludovico einaudi': { videoId: 'kcihcYn4860', title: 'Ludovico Einaudi - Nuvole Bianche' },
+  'yiruma': { videoId: '7maJOI3QMu0', title: 'Yiruma - River Flows in You' },
+  'river flows in you': { videoId: '7maJOI3QMu0', title: 'Yiruma - River Flows in You' },
+
+  // 7. JAZZ, CAFE & BOSSA NOVA
+  'coffee table jazz': { videoId: 'Dx5qFachd3A', title: 'Warm Cafe Jazz Beats' },
+  'cafe jazz': { videoId: 'Dx5qFachd3A', title: 'Warm Cafe Jazz Beats' },
+  'jazz': { videoId: 'Dx5qFachd3A', title: 'Warm Cafe Jazz Beats' },
+  'smooth jazz': { videoId: 'Dx5qFachd3A', title: 'Relaxing Smooth Jazz' },
+  'bossa nova': { videoId: 'g65oWFMSoqc', title: 'Bossa Nova Cafe Chill' },
+
+  // 8. GAMING & ANIME OSTs
+  'minecraft soundtrack': { videoId: 'N8zaFYb9LzA', title: 'Minecraft C418 Full OST' },
+  'minecraft': { videoId: 'N8zaFYb9LzA', title: 'Minecraft C418 Soundtrack' },
+  'skyrim ambient': { videoId: 'x5R6w4X94wY', title: 'Skyrim Atmospheres Focus' },
+  'skyrim': { videoId: 'x5R6w4X94wY', title: 'Skyrim Atmospheres' },
+  'studio ghibli': { videoId: 'R0VpT17ZtG8', title: 'Studio Ghibli Relaxing Piano' },
+  'spirited away': { videoId: 'dZ0fwJojvoc', title: 'One Summer Day - Spirited Away' },
+
+  // 9. PHONK, EDM, ROCK & METAL
+  'phonk coding': { videoId: '1-s8LVbPjiw', title: 'Drift Phonk Gaming & Coding' },
+  'phonk': { videoId: '1-s8LVbPjiw', title: 'Drift Phonk Focus' },
+  'deep house': { videoId: 'W9pOS4XCHGQ', title: 'Deep House Chill Focus' },
+  'alan walker': { videoId: '60ItHLz5WEA', title: 'Alan Walker - Faded' },
+  'daft punk': { videoId: '5NV6Rdv1a3E', title: 'Daft Punk - Get Lucky' },
+  'rock focus': { videoId: 'fJ9rUzIMcZQ', title: 'Queen - Bohemian Rhapsody' },
+  'linkin park': { videoId: 'eVTXPUF4Oz4', title: 'Linkin Park - Numb' },
+
+  // 10. CURATED PLAYLISTS & COLLECTIONS
   'todays top hits': { playlistId: 'PLOHoVaTp8R7dWeCQrKfh7a1a_Gu6KvfWP', title: "Today's Top Hits" },
   'today top hits': { playlistId: 'PLOHoVaTp8R7dWeCQrKfh7a1a_Gu6KvfWP', title: "Today's Top Hits" },
   'top hits': { playlistId: 'PLOHoVaTp8R7dWeCQrKfh7a1a_Gu6KvfWP', title: "Today's Top Hits" },
   'chill hits': { playlistId: 'PLUemwAVGSh5Y2pukyAltSukqLoY2ZZVvY', title: 'Chill Hits Full Playlist' },
   'deep focus': { playlistId: 'PLhcVVbS7iNzD7D6GTIHmtswD9T0cYuSut', title: 'Deep Focus Ambient Playlist' },
-  'peaceful piano': { playlistId: 'PLxA687tYuMWhU2dF228p3N1pY94X9vY0O', title: 'Peaceful Piano Playlist' },
-  'piano': { playlistId: 'PLxA687tYuMWhU2dF228p3N1pY94X9vY0O', title: 'Peaceful Piano Playlist' },
   'rapcaviar': { playlistId: 'PLOHoVaTp8R7eC14H6b5eD_l77k6F2jC1x', title: 'RapCaviar Full Playlist' },
   'rap caviar': { playlistId: 'PLOHoVaTp8R7eC14H6b5eD_l77k6F2jC1x', title: 'RapCaviar Full Playlist' },
   'beast mode': { playlistId: 'PL_jgm3MFTZUlhI11Bu6f_0yDMwSe8wvKI', title: 'Beast Mode Gym Workout' },
   'workout': { playlistId: 'PL_jgm3MFTZUlhI11Bu6f_0yDMwSe8wvKI', title: 'Workout Focus Mix' },
   'gym': { playlistId: 'PL_jgm3MFTZUlhI11Bu6f_0yDMwSe8wvKI', title: 'Gym Workout Music' },
   'mood booster': { playlistId: 'PLOHoVaTp8R7d84fNsmv2e_uJqK6o0kIbg', title: 'Mood Booster Playlist' },
-  'jazz': { videoId: 'Dx5qFachd3A', title: 'Warm Cafe Jazz Beats' },
 }
 
 export function parseAnyMedia(input: string): {
@@ -1234,15 +1342,30 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
           </form>
 
           {/* Quick Search Chips */}
-          <div className="flex items-center gap-1.5 mt-2.5 overflow-x-auto scrollbar-none">
-            {['Lofi Girl Beats', 'Synthwave Coding', 'Hans Zimmer Focus', 'Deep Binaural 432Hz'].map(tag => (
+          <div className="flex items-center gap-1.5 mt-2.5 overflow-x-auto scrollbar-none py-0.5">
+            {[
+              'Starboy',
+              'Lofi Grill',
+              'Synthwave Coding',
+              'Hans Zimmer Focus',
+              'Deep Binaural 432Hz',
+              'Coldplay Yellow',
+              'Minecraft OST',
+              'Phonk Coding',
+              'Peaceful Piano',
+              'Taylor Swift',
+              'RapCaviar',
+              'Cafe Jazz',
+              'Skyrim Ambient',
+              'Brown Noise'
+            ].map(tag => (
               <button
                 key={tag}
                 type="button"
                 onClick={() => {
                   setSearchInput(tag)
                 }}
-                className="px-2 py-0.5 rounded-full text-[9px] font-mono bg-white/[0.04] hover:bg-white/10 text-neutral-400 hover:text-white border border-white/5 whitespace-nowrap transition-colors"
+                className="px-2.5 py-1 rounded-full text-[10px] font-mono bg-white/[0.06] hover:bg-[#00F0FF]/20 text-neutral-300 hover:text-[#00F0FF] border border-white/10 hover:border-[#00F0FF]/40 whitespace-nowrap transition-all active:scale-95 shadow-sm"
               >
                 + {tag}
               </button>
