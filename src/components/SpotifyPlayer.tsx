@@ -14,8 +14,10 @@ import {
   X,
   Search,
   Zap,
+  ListMusic,
 } from 'lucide-react'
 import { getBackendUrl } from '../services/backendSync'
+import { FULL_MUSIC_CATALOG, CatalogItem } from '../data/musicCatalog'
 
 const YoutubeIcon: React.FC<{ className?: string }> = ({ className = 'w-3.5 h-3.5' }) => (
   <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
@@ -326,6 +328,19 @@ export const CURATED_MEDIA_MAP: Record<string, { videoId?: string; playlistId?: 
   'mood booster': { playlistId: 'PLOHoVaTp8R7d84fNsmv2e_uJqK6o0kIbg', title: 'Mood Booster Playlist' },
 }
 
+// Dynamically inject all 100+ catalog items & keywords
+FULL_MUSIC_CATALOG.forEach(item => {
+  const mapVal = {
+    videoId: item.videoId,
+    playlistId: item.playlistId,
+    title: `${item.title} - ${item.artist}`,
+  }
+  CURATED_MEDIA_MAP[item.title.toLowerCase()] = mapVal
+  item.keywords.forEach(kw => {
+    CURATED_MEDIA_MAP[kw.toLowerCase()] = mapVal
+  })
+})
+
 export function parseAnyMedia(input: string): {
   source: 'spotify' | 'youtube' | 'audio' | 'search'
   type: 'track' | 'playlist' | 'album' | 'video' | 'stream'
@@ -458,6 +473,35 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
   const [searchInput, setSearchInput] = useState('')
   const [isLoadingSearch, setIsLoadingSearch] = useState(false)
   const [searchSuccess, setSearchSuccess] = useState(false)
+
+  // Full 100+ Catalog Browser Drawer State
+  const [isCatalogOpen, setIsCatalogOpen] = useState(false)
+  const [catalogSearch, setCatalogSearch] = useState('')
+  const [catalogGenre, setCatalogGenre] = useState<string>('ALL')
+
+  const handleSelectCatalogItem = (item: CatalogItem) => {
+    const isPlaylist = Boolean(item.playlistId)
+    const embedUrl = isPlaylist
+      ? `https://www.youtube-nocookie.com/embed/videoseries?list=${item.playlistId}&autoplay=1&playsinline=1`
+      : `https://www.youtube-nocookie.com/embed/${item.videoId}?autoplay=1&playsinline=1`
+
+    const newItem: MediaItem = {
+      id: `catalog-${item.id}`,
+      source: 'youtube',
+      type: isPlaylist ? 'playlist' : 'video',
+      embedUrl,
+      title: `${item.title} • ${item.artist}`,
+      subtitle: `100% Full Playback • ${item.genre} • Zero Login`,
+      genreTag: item.genre,
+      color: item.color,
+      sourceUrl: `https://www.youtube.com/watch?v=${item.videoId || ''}`,
+      isCustom: true,
+    }
+
+    setCurrentMedia(newItem)
+    setIsCatalogOpen(false)
+    setCustomList(prev => [newItem, ...prev.filter(x => x.id !== newItem.id)])
+  }
 
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
@@ -875,7 +919,27 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
 
           <button
             type="button"
-            onClick={() => setIsSearchOpen(v => !v)}
+            onClick={() => {
+              setIsCatalogOpen(v => !v)
+              setIsSearchOpen(false)
+            }}
+            title="Browse full catalog list of 100+ working songs & playlists"
+            className={`px-2.5 py-1 rounded-lg border text-[9px] font-mono font-bold transition-all flex items-center gap-1.5 ${
+              isCatalogOpen
+                ? 'bg-[#00F0FF] text-black border-[#00F0FF] shadow-[0_0_12px_rgba(0,240,255,0.5)]'
+                : 'bg-white/[0.06] hover:bg-white/12 text-[#00F0FF] border-cyan-500/30'
+            }`}
+          >
+            <ListMusic className="w-3.5 h-3.5" />
+            <span>List (100+)</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setIsSearchOpen(v => !v)
+              setIsCatalogOpen(false)
+            }}
             title="Search ANY song of your choice or paste link"
             className={`p-1.5 rounded-lg border transition-all ${
               isSearchOpen
@@ -1412,6 +1476,101 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ isRunning = false 
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* ── 5. FULL CATALOG BROWSER DRAWER (100+ Verified Working Tracks & Playlists) ── */}
+      {isCatalogOpen && (
+        <div className="p-3.5 border-t border-white/[0.08] bg-black/90 backdrop-blur-2xl animate-task-entry max-h-[440px] flex flex-col">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-mono font-bold tracking-wider text-white flex items-center gap-1.5">
+              <ListMusic className="w-4 h-4 text-[#00F0FF]" />
+              FULL MUSIC CATALOG (100+ VERIFIED WORKING SONGS & PLAYLISTS)
+            </span>
+            <button
+              type="button"
+              onClick={() => setIsCatalogOpen(false)}
+              className="p-1 rounded-full text-neutral-400 hover:text-white"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          {/* Search Filter input */}
+          <div className="mb-2">
+            <input
+              type="text"
+              value={catalogSearch}
+              onChange={e => setCatalogSearch(e.target.value)}
+              placeholder="Search 100+ songs (e.g. Starboy, Lofi Grill, Synthwave, Coldplay, Rain)..."
+              className="w-full px-3 py-1.5 text-xs font-mono bg-white/[0.06] border border-white/15 rounded-xl text-white placeholder:text-neutral-500 outline-none focus:border-[#00F0FF] transition-all"
+            />
+          </div>
+
+          {/* Genre Category Tabs */}
+          <div className="flex items-center gap-1 overflow-x-auto scrollbar-none pb-2 mb-2 border-b border-white/10 shrink-0">
+            {['ALL', 'POP HITS', 'LOFI & CHILL', 'SYNTHWAVE', 'SOUNDTRACKS', 'BINAURAL', 'PIANO & CLASSICAL', 'JAZZ & CAFE', 'GAMING & ANIME', 'PHONK & EDM', 'ROCK & METAL'].map(cat => (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => setCatalogGenre(cat)}
+                className={`px-2.5 py-1 rounded-lg text-[9px] font-mono font-bold whitespace-nowrap transition-all ${
+                  catalogGenre === cat
+                    ? 'bg-[#00F0FF] text-black shadow-[0_0_8px_rgba(0,240,255,0.4)]'
+                    : 'bg-white/[0.04] text-neutral-400 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          {/* Catalog List */}
+          <div className="overflow-y-auto scrollbar-none flex-1 space-y-1.5 pr-1">
+            {FULL_MUSIC_CATALOG.filter(item => {
+              const matchesGenre = catalogGenre === 'ALL' || item.genre === catalogGenre
+              const query = catalogSearch.trim().toLowerCase()
+              if (!query) return matchesGenre
+              const matchesSearch =
+                item.title.toLowerCase().includes(query) ||
+                item.artist.toLowerCase().includes(query) ||
+                item.keywords.some(k => k.includes(query))
+              return matchesGenre && matchesSearch
+            }).map(item => (
+              <div
+                key={item.id}
+                onClick={() => handleSelectCatalogItem(item)}
+                className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.08] hover:border-[#00F0FF]/40 cursor-pointer transition-all group"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div
+                    className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm"
+                    style={{ backgroundColor: item.color, boxShadow: `0 0 8px ${item.color}` }}
+                  />
+                  <div className="min-w-0">
+                    <div className="text-xs font-semibold text-white group-hover:text-[#00F0FF] transition-colors truncate">
+                      {item.title}
+                    </div>
+                    <div className="text-[10px] font-mono text-neutral-400 truncate">
+                      {item.artist} • <span className="text-neutral-500">{item.genre}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={e => {
+                    e.stopPropagation()
+                    handleSelectCatalogItem(item)
+                  }}
+                  className="px-2.5 py-1 rounded-lg text-[9px] font-mono font-bold bg-[#00F0FF]/20 text-[#00F0FF] border border-[#00F0FF]/40 hover:bg-[#00F0FF] hover:text-black transition-all shrink-0 flex items-center gap-1"
+                >
+                  <Play className="w-2.5 h-2.5 fill-current" />
+                  <span>Play</span>
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
