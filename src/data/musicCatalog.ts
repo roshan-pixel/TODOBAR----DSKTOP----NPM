@@ -17,7 +17,7 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     artist: 'The Weeknd ft. Daft Punk',
     genre: 'POP HITS',
     color: '#ef4444',
-    videoId: '34Na4j8AVgA',
+    videoId: 'Rif-RTvmmss',
     keywords: ['starboy', 'star boy', 'the weeknd', 'daft punk', 'starboy the weeknd']
   },
   {
@@ -26,7 +26,7 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     artist: 'The Weeknd',
     genre: 'POP HITS',
     color: '#f97316',
-    videoId: '4NRXx6U8ABQ',
+    videoId: 'fHI8X4OXluQ',
     keywords: ['blinding lights', 'the weeknd', 'blinding lights weeknd']
   },
   {
@@ -35,7 +35,7 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     artist: 'Coldplay',
     genre: 'POP HITS',
     color: '#eab308',
-    videoId: 'yKNxeF4KMsY',
+    videoId: 'tdVAqxNLXiw',
     keywords: ['coldplay yellow', 'coldplay', 'cold play', 'yellow']
   },
   {
@@ -44,7 +44,7 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     artist: 'Coldplay',
     genre: 'POP HITS',
     color: '#84cc16',
-    videoId: 'dvgZkm1xWPE',
+    videoId: 'MY4eEOB1wSI',
     keywords: ['viva la vida', 'coldplay viva la vida', 'coldplay']
   },
   {
@@ -53,7 +53,7 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     artist: 'Coldplay',
     genre: 'POP HITS',
     color: '#06b6d4',
-    videoId: 'k4V3Mo61fJM',
+    videoId: 'uUv5Z3HFHpU',
     keywords: ['fix you', 'coldplay fix you', 'coldplay']
   },
   {
@@ -62,7 +62,7 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     artist: 'Ed Sheeran',
     genre: 'POP HITS',
     color: '#3b82f6',
-    videoId: 'JGwWNGJdvx8',
+    videoId: '_dK2tDK9grQ',
     keywords: ['shape of you', 'ed sheeran']
   },
   {
@@ -71,7 +71,7 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     artist: 'Harry Styles',
     genre: 'POP HITS',
     color: '#ec4899',
-    videoId: 'H5v3kku4y6Q',
+    videoId: 'V1Z586zoeeE',
     keywords: ['as it was', 'harry styles']
   },
   {
@@ -89,7 +89,7 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     artist: 'Sabrina Carpenter',
     genre: 'POP HITS',
     color: '#f43f5e',
-    videoId: 'eVli-tstM5E',
+    videoId: '51zjlMhdSTE',
     keywords: ['espresso', 'sabrina carpenter']
   },
   {
@@ -100,6 +100,15 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     color: '#10b981',
     videoId: 'V9PVRfjEBTI',
     keywords: ['birds of a feather', 'billie eilish']
+  },
+  {
+    id: 'billie-bad-guy',
+    title: 'bad guy',
+    artist: 'Billie Eilish',
+    genre: 'POP HITS',
+    color: '#10b981',
+    videoId: 'YD4utuFiexw',
+    keywords: ['bad guy', 'billie eilish']
   },
   {
     id: 'good-luck-babe',
@@ -116,7 +125,7 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     artist: 'Kendrick Lamar',
     genre: 'POP HITS',
     color: '#e11d48',
-    videoId: 'H58vbez_m4E',
+    videoId: 'T6eK-2OQtew',
     keywords: ['not like us', 'kendrick lamar']
   },
   {
@@ -125,7 +134,7 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     artist: 'Drake',
     genre: 'POP HITS',
     color: '#8b5cf6',
-    videoId: 'xpVfcZ0ZcFM',
+    videoId: 'm1a_GqJf02M',
     keywords: ['gods plan', 'drake']
   },
   {
@@ -134,7 +143,7 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     artist: 'Travis Scott ft. Playboi Carti',
     genre: 'POP HITS',
     color: '#6366f1',
-    videoId: 'B9synWjqBn8',
+    videoId: 'U-l4ya3ejko',
     keywords: ['fein', 'travis scott', 'playboi carti']
   },
   {
@@ -143,7 +152,7 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     artist: 'SZA',
     genre: 'POP HITS',
     color: '#14b8a6',
-    videoId: 'M4ZoCHID9GI',
+    videoId: 'SQnc1QibapQ',
     keywords: ['kill bill', 'sza']
   },
   {
@@ -152,7 +161,7 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     artist: 'Ariana Grande',
     genre: 'POP HITS',
     color: '#f472b6',
-    videoId: 'QYh6mYIJG2Y',
+    videoId: 'M84fFXooS5w',
     keywords: ['7 rings', 'ariana grande']
   },
   {
@@ -161,7 +170,7 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     artist: 'Justin Bieber',
     genre: 'POP HITS',
     color: '#fb923c',
-    videoId: 'tQ0yjYUFKAE',
+    videoId: 'AwYQGtwoF68',
     keywords: ['peaches', 'justin bieber']
   },
   {
@@ -170,8 +179,17 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     artist: 'The Kid LAROI & Justin Bieber',
     genre: 'POP HITS',
     color: '#38bdf8',
-    videoId: 'kTJczUoc26U',
+    videoId: 'Qb8q4ijHk_M',
     keywords: ['stay', 'kid laroi', 'justin bieber']
+  },
+  {
+    id: 'imagine-believer',
+    title: 'Believer',
+    artist: 'Imagine Dragons',
+    genre: 'POP HITS',
+    color: '#ef4444',
+    videoId: 'IhP3J0j9JmY',
+    keywords: ['believer', 'imagine dragons']
   },
   {
     id: 'heat-waves',
@@ -179,7 +197,7 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     artist: 'Glass Animals',
     genre: 'POP HITS',
     color: '#06b6d4',
-    videoId: 'mRD0-GxqHVo',
+    videoId: 'pzeefqfSMjY',
     keywords: ['heat waves', 'glass animals']
   },
 
@@ -190,7 +208,7 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     artist: 'Lofi Girl Live',
     genre: 'LOFI & CHILL',
     color: '#f59e0b',
-    videoId: '5qap5aO4i9A',
+    videoId: 'rFZHOHl-L8A',
     keywords: ['lofi girl', 'lofi grill', 'lofi grill beats', 'lofi gilr', 'lofi beats', 'chilledcow', 'lofi hip hop', 'lofi']
   },
   {
@@ -199,7 +217,7 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     artist: 'Lofi Records',
     genre: 'LOFI & CHILL',
     color: '#6366f1',
-    videoId: 'DWcjZJyZuYg',
+    videoId: 'UJs6__K7gSY',
     keywords: ['lofi sleep', 'sleep lofi', 'chill lofi']
   },
   {
@@ -208,7 +226,7 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     artist: 'Anime Lofi Studio',
     genre: 'LOFI & CHILL',
     color: '#ec4899',
-    videoId: 'TURbeWK2wwg',
+    videoId: 'GNWLILeztaI',
     keywords: ['anime lofi', 'anime chill', 'ghibli lofi']
   },
   {
@@ -217,7 +235,7 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     artist: 'GameChops',
     genre: 'LOFI & CHILL',
     color: '#10b981',
-    videoId: 'GdzrrWA8B7A',
+    videoId: 'icwbu-9douY',
     keywords: ['zelda lofi', 'zelda and chill', 'nintendo lofi']
   },
   {
@@ -226,7 +244,7 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     artist: 'Nujabes Tribute',
     genre: 'LOFI & CHILL',
     color: '#f97316',
-    videoId: 'g9hwjQBQFIo',
+    videoId: '5yYMicbSf98',
     keywords: ['nujabes', 'nujabes homework', 'hip hop lofi']
   },
   {
@@ -235,7 +253,7 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     artist: 'Jazzhop Cafe',
     genre: 'LOFI & CHILL',
     color: '#84cc16',
-    videoId: '2gliGgeb2ak',
+    videoId: 'PY4hAAs-XQo',
     keywords: ['jazzhop', 'coffee shop lofi', 'cafe beats']
   },
   {
@@ -244,7 +262,7 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     artist: 'Chillhop Music',
     genre: 'LOFI & CHILL',
     color: '#06b6d4',
-    videoId: 'F89Kwh6hPqI',
+    videoId: 'TxvoPoBAvDM',
     keywords: ['tokyo lofi', 'tokyo night', 'japan lofi']
   },
 
@@ -259,12 +277,21 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     keywords: ['synthwave coding', 'synthwave', 'synth wave', 'retrowave', 'cyberpunk', 'defcon synthwave']
   },
   {
+    id: 'synthwave-coding-mix',
+    title: 'Synthwave Coding Mix',
+    artist: 'Retro Synth Studio',
+    genre: 'SYNTHWAVE',
+    color: '#8b5cf6',
+    videoId: 'cu_vihKMWeA',
+    keywords: ['synthwave coding mix', 'coding synthwave', 'synthwave code']
+  },
+  {
     id: 'cyberpunk-2077',
     title: 'Cyberpunk 2077 Focus Mix',
     artist: 'Night City Radio',
     genre: 'SYNTHWAVE',
     color: '#e11d48',
-    videoId: 'MVPTG58-fsU',
+    videoId: 'KyfvIw48V6g',
     keywords: ['cyberpunk', 'cyberpunk 2077', 'night city', 'darksynth']
   },
   {
@@ -273,7 +300,7 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     artist: 'Hans Zimmer & Vangelis',
     genre: 'SYNTHWAVE',
     color: '#38bdf8',
-    videoId: 'Q_H779ge368',
+    videoId: 'yw4WXw9kiDg',
     keywords: ['blade runner', 'blade runner 2049', 'ambient synth']
   },
   {
@@ -282,7 +309,7 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     artist: 'Daft Punk',
     genre: 'SYNTHWAVE',
     color: '#0284c7',
-    videoId: '18-gL1g8qjE',
+    videoId: 'cNK5xSs_A28',
     keywords: ['tron legacy', 'daft punk tron', 'tron soundtrack']
   },
   {
@@ -291,18 +318,27 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     artist: 'Kyle Dixon & Michael Stein',
     genre: 'SYNTHWAVE',
     color: '#be123c',
-    videoId: 'R6h4Jd66e74',
+    videoId: 'Ha2OcL_0gtM',
     keywords: ['stranger things', 'stranger things synth', '80s synth']
+  },
+  {
+    id: 'darksynth-cyberpunk',
+    title: 'Dark Synthwave Cyberpunk',
+    artist: 'Cyber Synth',
+    genre: 'SYNTHWAVE',
+    color: '#ef4444',
+    videoId: 'XxQCs5fWM2A',
+    keywords: ['darksynth', 'dark synthwave']
   },
 
   // 4. 🎬 SOUNDTRACKS & HANS ZIMMER
   {
     id: 'interstellar-suite',
-    title: 'Hans Zimmer - Interstellar Suite',
+    title: 'Hans Zimmer - Interstellar Theme',
     artist: 'Hans Zimmer',
     genre: 'SOUNDTRACKS',
     color: '#38bdf8',
-    videoId: 'UDVtMYqUA4U',
+    videoId: 'UDVtMYqUAyw',
     keywords: ['hans zimmer focus', 'hans zimmer', 'interstellar', 'interstellar theme']
   },
   {
@@ -311,8 +347,17 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     artist: 'Hans Zimmer',
     genre: 'SOUNDTRACKS',
     color: '#a855f7',
-    videoId: 'RxabA78sufc',
+    videoId: 'c56t7upa8Bk',
     keywords: ['inception', 'time', 'time hans zimmer', 'hans zimmer time']
+  },
+  {
+    id: 'dune-soundtrack',
+    title: 'Dune Soundtrack Focus',
+    artist: 'Hans Zimmer',
+    genre: 'SOUNDTRACKS',
+    color: '#f59e0b',
+    videoId: '_j5GgGdSwjE',
+    keywords: ['dune', 'dune soundtrack', 'hans zimmer dune']
   },
 
   // 5. 🧠 BINAURAL & BRAINWAVES
@@ -322,8 +367,17 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     artist: 'Neuro Focus Labs',
     genre: 'BINAURAL',
     color: '#10b981',
-    videoId: '1ZYbU82GVz4',
+    videoId: 'RYcaG64JkqM',
     keywords: ['deep binaural 432hz', 'binaural', 'binaural beats', '432hz', 'brain food', 'alpha waves']
+  },
+  {
+    id: 'alpha-waves-study',
+    title: 'Alpha Waves Study Focus',
+    artist: 'Brainwave Entrainment',
+    genre: 'BINAURAL',
+    color: '#06b6d4',
+    videoId: 'i2jlLv5db7Y',
+    keywords: ['alpha waves', 'alpha waves focus', 'study waves']
   },
   {
     id: 'brown-noise-10h',
@@ -331,7 +385,7 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     artist: 'Sleep & Focus Therapy',
     genre: 'BINAURAL',
     color: '#78350f',
-    videoId: 'RqzGzwTY-6w',
+    videoId: 'dZLDYli5xTA',
     keywords: ['brown noise', 'deep brown noise', 'focus noise']
   },
   {
@@ -349,27 +403,27 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     artist: 'Nature Soundscapes',
     genre: 'BINAURAL',
     color: '#0284c7',
-    videoId: 'mPZkdNFkNps',
+    videoId: '7ev8I2AW9ko',
     keywords: ['rain sounds', 'rain', 'thunderstorm', 'heavy rain']
   },
 
   // 6. 🎹 PIANO & CLASSICAL
   {
-    id: 'peaceful-piano-pl',
-    title: 'Peaceful Piano Focus Playlist',
+    id: 'peaceful-piano-focus',
+    title: 'Peaceful Piano Focus',
     artist: 'Acoustic Piano',
     genre: 'PIANO & CLASSICAL',
     color: '#38bdf8',
-    playlistId: 'PLxA687tYuMWhU2dF228p3N1pY94X9vY0O',
+    videoId: 'sAcj8me7wGI',
     keywords: ['peaceful piano', 'piano', 'piano focus', 'relaxing piano']
   },
   {
     id: 'classical-study-mix',
-    title: 'Mozart & Beethoven Classical Study',
+    title: 'Mozart Classical Study',
     artist: 'Classical Focus Ensemble',
     genre: 'PIANO & CLASSICAL',
     color: '#f59e0b',
-    videoId: 'jgpJVI3tDbY',
+    videoId: '3AkZazth0a0',
     keywords: ['classical study', 'classical', 'mozart', 'beethoven', 'classical focus']
   },
   {
@@ -378,7 +432,7 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     artist: 'Ludovico Einaudi',
     genre: 'PIANO & CLASSICAL',
     color: '#818cf8',
-    videoId: 'kcihcYn4860',
+    videoId: '4VR-6AS0-l4',
     keywords: ['ludovico einaudi', 'nuvole bianche', 'einaudi']
   },
   {
@@ -398,7 +452,7 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     artist: 'Coffee Table Jazz',
     genre: 'JAZZ & CAFE',
     color: '#fb923c',
-    videoId: 'Dx5qFachd3A',
+    videoId: '4OItGUhpNWM',
     keywords: ['coffee table jazz', 'cafe jazz', 'jazz', 'smooth jazz']
   },
   {
@@ -407,7 +461,7 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     artist: 'Bossa Nova Trio',
     genre: 'JAZZ & CAFE',
     color: '#facc15',
-    videoId: 'g65oWFMSoqc',
+    videoId: 'G6gRMc6v0mI',
     keywords: ['bossa nova', 'bossa nova cafe', 'brazilian jazz']
   },
 
@@ -418,7 +472,7 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     artist: 'C418',
     genre: 'GAMING & ANIME',
     color: '#22c55e',
-    videoId: 'N8zaFYb9LzA',
+    videoId: '-CKR-McWeYk',
     keywords: ['minecraft soundtrack', 'minecraft', 'c418', 'sweden minecraft']
   },
   {
@@ -427,7 +481,7 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     artist: 'Jeremy Soule',
     genre: 'GAMING & ANIME',
     color: '#64748b',
-    videoId: 'x5R6w4X94wY',
+    videoId: 'iXKMJ7M88Uc',
     keywords: ['skyrim ambient', 'skyrim', 'skyrim atmospheres']
   },
   {
@@ -436,8 +490,17 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     artist: 'Joe Hisaishi Piano',
     genre: 'GAMING & ANIME',
     color: '#a7f3d0',
-    videoId: 'R0VpT17ZtG8',
+    videoId: 'bHFKkCcUjW0',
     keywords: ['studio ghibli', 'spirited away', 'totoro', 'ghibli piano']
+  },
+  {
+    id: 'spirited-away-summer',
+    title: 'Spirited Away - One Summer Day',
+    artist: 'Joe Hisaishi',
+    genre: 'GAMING & ANIME',
+    color: '#38bdf8',
+    videoId: 'TK1Ij_-mank',
+    keywords: ['spirited away', 'one summer day']
   },
 
   // 9. 🎧 PHONK & EDM
@@ -447,7 +510,7 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     artist: 'Phonk Nation',
     genre: 'PHONK & EDM',
     color: '#dc2626',
-    videoId: '1-s8LVbPjiw',
+    videoId: 's-DLF26EKMA',
     keywords: ['phonk coding', 'phonk', 'drift phonk']
   },
   {
@@ -456,7 +519,7 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     artist: 'Deep House Lounge',
     genre: 'PHONK & EDM',
     color: '#2563eb',
-    videoId: 'W9pOS4XCHGQ',
+    videoId: 'b86XYCNjMI0',
     keywords: ['deep house', 'deep house chill', 'house music']
   },
 
@@ -476,7 +539,7 @@ export const FULL_MUSIC_CATALOG: CatalogItem[] = [
     artist: 'Linkin Park',
     genre: 'ROCK & METAL',
     color: '#64748b',
-    videoId: 'eVTXPUF4Oz4',
+    videoId: 'vuFdq_jWeko',
     keywords: ['linkin park', 'numb', 'rock']
   }
 ]
